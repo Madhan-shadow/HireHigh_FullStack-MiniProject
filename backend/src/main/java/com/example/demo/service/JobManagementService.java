@@ -1,5 +1,5 @@
 package com.example.demo.service;
 
-public class AuthService {
+public class JobManagementService {
     
 }
