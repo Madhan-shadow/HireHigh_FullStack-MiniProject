@@ -77,5 +77,19 @@ public class JobPosting {
         this.status = status;
     }
 
+    public JobPosting() {
+    }
+
+    public JobPosting(Long id, String title, String department, String description, Integer hiringGoal,
+            Integer currentFills, String status) {
+        this.id = id;
+        this.title = title;
+        this.department = department;
+        this.description = description;
+        this.hiringGoal = hiringGoal;
+        this.currentFills = currentFills;
+        this.status = status;
+    }
+
     
 }
