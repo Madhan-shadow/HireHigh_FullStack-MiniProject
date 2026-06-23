@@ -9,5 +9,12 @@ public class CandidateProfile {
     private Long id;
 
     private String user;
+
+    private String resumeUrl;
+
+    private String primarySkill;
+
+    private Integer yearsExperience;
+    
     
 }
