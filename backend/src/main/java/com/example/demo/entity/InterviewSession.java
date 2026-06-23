@@ -6,7 +6,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
-import jakarta.websocket.Decoder.Text;
 
 @Entity
 public class InterviewSession {
@@ -73,7 +72,5 @@ public class InterviewSession {
         this.feedback = feedback;
         this.rating = rating;
     }
-
-
 
 }
