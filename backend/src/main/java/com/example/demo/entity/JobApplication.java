@@ -2,15 +2,12 @@ package com.example.demo.entity;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.ManyToAny;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 
 @Entity
 public class JobApplication {
@@ -28,7 +25,59 @@ public class JobApplication {
     private String currentStage;
 
     @Column(name = "applied_at", nullable = false)
-    @PrePersist private LocalDateTime appliedAt;
+    private LocalDateTime appliedAt;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public JobPosting getJob() {
+        return job;
+    }
+
+    public void setJob(JobPosting job) {
+        this.job = job;
+    }
+
+    public CandidateProfile getCandidate() {
+        return candidate;
+    }
+
+    public void setCandidate(CandidateProfile candidate) {
+        this.candidate = candidate;
+    }
+
+    public String getCurrentStage() {
+        return currentStage;
+    }
+
+    public void setCurrentStage(String currentStage) {
+        this.currentStage = currentStage;
+    }
+
+    public LocalDateTime getAppliedAt() {
+        return appliedAt;
+    }
+
+    public void setAppliedAt(LocalDateTime appliedAt) {
+        this.appliedAt = appliedAt;
+    }
+
+    public JobApplication() {
+    }
+
+    public JobApplication(Long id, JobPosting job, CandidateProfile candidate, String currentStage,
+            LocalDateTime appliedAt) {
+        this.id = id;
+        this.job = job;
+        this.candidate = candidate;
+        this.currentStage = currentStage;
+        this.appliedAt = appliedAt;
+    }
 
 
 
