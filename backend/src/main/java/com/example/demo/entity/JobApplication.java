@@ -26,9 +26,9 @@ public class JobApplication {
     @Column(name = "current_Stage", nullable = false)
     private String currentStage;
 
-    @Column(name = "")
+    @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
 
-
+    
 
 }
