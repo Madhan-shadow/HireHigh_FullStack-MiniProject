@@ -18,7 +18,7 @@ public class InterviewSession {
 
     private LocalDateTime scheduledAt;
     
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String feedback;
 
     private Integer rating;
@@ -47,11 +47,11 @@ public class InterviewSession {
         this.scheduledAt = scheduledAt;
     }
 
-    public Text getFeedback() {
+    public String getFeedback() {
         return feedback;
     }
 
-    public void setFeedback(Text feedback) {
+    public void setFeedback(String feedback) {
         this.feedback = feedback;
     }
 
@@ -66,7 +66,7 @@ public class InterviewSession {
     public InterviewSession() {
     }
 
-    public InterviewSession(Long id, ForeignKey application, LocalDateTime scheduledAt, Text feedback, Integer rating) {
+    public InterviewSession(Long id, ForeignKey application, LocalDateTime scheduledAt, String feedback, Integer rating) {
         this.id = id;
         this.application = application;
         this.scheduledAt = scheduledAt;
