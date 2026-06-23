@@ -1,7 +1,12 @@
 package com.example.demo.entity;
 
+import org.hibernate.annotations.ManyToAny;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class JobApplication {
@@ -9,6 +14,9 @@ public class JobApplication {
     @Id
     private Long id;
 
-    @
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "job_id", nullable = false)
     private JobPosting job;
+
+    @
+    private CandidateProfile candidate;
 }
