@@ -17,6 +17,11 @@ public class JobApplication {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "job_id", nullable = false)
     private JobPosting job;
 
-    @
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "candidate_id",nullable = false)
     private CandidateProfile candidate;
+
+    @
+    private String currentStage;
+
+
 }
