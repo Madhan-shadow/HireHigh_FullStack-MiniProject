@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 
 @Entity
 public class JobApplication {
@@ -27,8 +28,8 @@ public class JobApplication {
     private String currentStage;
 
     @Column(name = "applied_at", nullable = false)
-    private LocalDateTime appliedAt;
+    @PrePersist private LocalDateTime appliedAt;
 
-    
+
 
 }
