@@ -15,5 +15,67 @@ public class JobPosting {
 
     private String description;
 
+    private Integer hiringGoal;
+
+    private Integer currentFills;
+
+    private String status;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Integer getHiringGoal() {
+        return hiringGoal;
+    }
+
+    public void setHiringGoal(Integer hiringGoal) {
+        this.hiringGoal = hiringGoal;
+    }
+
+    public Integer getCurrentFills() {
+        return currentFills;
+    }
+
+    public void setCurrentFills(Integer currentFills) {
+        this.currentFills = currentFills;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     
 }
