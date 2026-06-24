@@ -4,9 +4,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 
 @Entity
+@Table(
+    name = "system_user",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email")
+    }
+)
 public class SystemUser {
     
     @Id
