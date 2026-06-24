@@ -18,10 +18,9 @@ public class InterviewSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-     @OneToOne
+    @OneToOne
     @JoinColumn(name = "application_id")
     private JobApplication application;
-    private ForeignKey application;
 
     private LocalDateTime scheduledAt;
     
@@ -38,11 +37,11 @@ public class InterviewSession {
         this.id = id;
     }
 
-    public ForeignKey getApplication() {
+    public JobApplication getApplication() {
         return application;
     }
 
-    public void setApplication(ForeignKey application) {
+    public void setApplication(JobApplication application) {
         this.application = application;
     }
 
@@ -73,7 +72,7 @@ public class InterviewSession {
     public InterviewSession() {
     }
 
-    public InterviewSession(Long id, ForeignKey application, LocalDateTime scheduledAt, String feedback, Integer rating) {
+    public InterviewSession(Long id, JobApplication application, LocalDateTime scheduledAt, String feedback, Integer rating) {
         this.id = id;
         this.application = application;
         this.scheduledAt = scheduledAt;
