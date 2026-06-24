@@ -8,6 +8,8 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class InterviewSession {
@@ -16,6 +18,9 @@ public class InterviewSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+     @OneToOne
+    @JoinColumn(name = "application_id")
+    private JobApplication application;
     private ForeignKey application;
 
     private LocalDateTime scheduledAt;
