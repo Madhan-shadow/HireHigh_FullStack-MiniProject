@@ -12,7 +12,6 @@ public class SystemUser {
 
     private String username;
 
-    @Enc
     private String password;
 
     private String fullname;
