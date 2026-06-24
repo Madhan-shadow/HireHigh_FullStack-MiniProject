@@ -25,7 +25,8 @@ public class JobApplication {
     @Column(name = "current_Stage", nullable = false)
     private String currentStage;
 
-    
+    @PrePersist
+    @Column(name = "applied_at",nullable = false)
     private LocalDateTime appliedAt;
 
     public Long getId() {
