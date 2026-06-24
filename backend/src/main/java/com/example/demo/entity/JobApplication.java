@@ -16,18 +16,24 @@ public class JobApplication {
     @Id
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "job_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "job_id", nullable = false)
     private JobPosting job;
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "candidate_id",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "candidate_id",nullable = false)
     private CandidateProfile candidate;
 
     @Column(name = "current_Stage", nullable = false)
     private String currentStage;
 
-    @PrePersist
     @Column(name = "applied_at",nullable = false)
     private LocalDateTime appliedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        appliedAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
