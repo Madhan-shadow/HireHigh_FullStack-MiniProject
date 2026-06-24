@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 
 @Entity
@@ -20,6 +21,10 @@ public class CandidateProfile {
     private String primarySkill;
 
     private Integer yearsExperience;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private SystemUser user1;
 
     public Long getId() {
         return id;
