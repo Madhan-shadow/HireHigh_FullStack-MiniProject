@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Email;
 
 @Entity
 @Table(
-    name = "system_user",
+    name = "SystemUser",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email")
