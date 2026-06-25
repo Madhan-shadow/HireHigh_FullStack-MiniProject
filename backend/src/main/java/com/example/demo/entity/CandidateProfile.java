@@ -19,7 +19,6 @@ public class CandidateProfile {
     private Integer yearsExperience;
 
     @OneToOne
-    @JoinColumn(name = "user_id", unique = true)
     private SystemUser user1;
 
     public Long getId() {
