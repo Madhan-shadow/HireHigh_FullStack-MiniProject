@@ -7,7 +7,7 @@ import com.example.demo.entity.JobApplication;
 import com.example.demo.repository.JobApplicationRepository;
 
 @Service
-public class JobApplicationService {
+public class RecruitmentService {
 
     @Autowired
     private JobApplicationRepository repository;
