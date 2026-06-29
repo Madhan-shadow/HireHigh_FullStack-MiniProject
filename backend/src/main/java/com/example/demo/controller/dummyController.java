@@ -34,7 +34,7 @@ public class dummyController {
     }
 
     @GetMapping("/fetchById")
-    public Optional<dummy> fetchById(@PathVariable id Long){
-        return ser.fetchbyid();
+    public Optional<dummy> fetchById(@PathVariable Long id ){
+        return ser.fetchbyid(id);
     }
 }
