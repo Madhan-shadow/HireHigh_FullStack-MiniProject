@@ -27,5 +27,7 @@ public class dummyController {
     }
 
     @GetMapping("/fetch")
-    public List<
+    public List<dummy> fetch(){
+        return ser.fetchdetail()
+    }
 }
