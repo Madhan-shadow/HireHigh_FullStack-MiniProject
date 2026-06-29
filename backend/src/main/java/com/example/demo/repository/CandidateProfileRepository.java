@@ -1,5 +1,7 @@
 package com.example.demo.repository;
 
-public interface CandidateProfileRepository {
+
+@
+public interface CandidateProfileRepository extends {
     
 }
