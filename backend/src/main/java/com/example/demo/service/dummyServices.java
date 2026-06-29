@@ -24,6 +24,6 @@ public class dummyServices {
         return rep.findAll();
     }
     public Optional<dummy> fetchbyid(@PathVariable Long id){
-            return rep.findById(dmy);
+            return rep.findById(id);
     }
 }

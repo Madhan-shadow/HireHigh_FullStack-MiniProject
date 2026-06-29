@@ -34,6 +34,6 @@ public class dummyController {
 
     @GetMapping("/fetchById")
     public Optional<dummy> fetchById(){
-        return ser.fetchByid();
+        return ser.fetchbyid(id);
     }
 }
