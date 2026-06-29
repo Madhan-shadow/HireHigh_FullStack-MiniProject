@@ -23,7 +23,7 @@ public class dummyServices {
     public List<dummy> fetchdetail(){
         return rep.findAll();
     }
-    // public Optional<dummy> fetchbyid(@PathVariable Long id){
-    //         return rep.findById(dmy);
-    // }
+    public Optional<dummy> fetchbyid(@PathVariable Long id){
+            return rep.findById(dmy);
+    }
 }

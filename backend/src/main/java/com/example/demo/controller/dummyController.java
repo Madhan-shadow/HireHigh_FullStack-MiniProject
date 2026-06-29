@@ -32,8 +32,8 @@ public class dummyController {
         return ser.fetchdetail();
     }
 
-    // @GetMapping("/fetchById")
-    // public Optional<dummy> fetchById(){
-    //     return ser.fetchbyid(id:Long);
-    // }
+    @GetMapping("/fetchById")
+    public Optional<dummy> fetchById(){
+        return ser.fetchByid();
+    }
 }
