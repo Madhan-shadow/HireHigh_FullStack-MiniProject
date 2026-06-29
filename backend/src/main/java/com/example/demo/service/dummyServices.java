@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.demo.entity.dummy;
 import com.example.demo.repository.dummyRepository;
@@ -22,7 +23,7 @@ public class dummyServices {
     public List<dummy> fetchdetail(){
         return rep.findAll();
     }
-    public Optional<dummy> fetchbyid(Long id){
-            return rep.findById(dummy);
-    }
+    // public Optional<dummy> fetchbyid(@PathVariable Long id){
+    //         return rep.findById(dmy);
+    // }
 }
