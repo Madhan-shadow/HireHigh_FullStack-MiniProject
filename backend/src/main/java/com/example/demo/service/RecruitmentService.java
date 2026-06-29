@@ -1,29 +1,29 @@
-package com.example.demo.service;
+// package com.example.demo.service;
 
-import java.util.List;
+// import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.lang.NonNull;
+// import org.springframework.stereotype.Service;
 
-import com.example.demo.entity.JobApplication;
-import com.example.demo.repository.JobApplicationRepository;
+// import com.example.demo.entity.JobApplication;
+// import com.example.demo.repository.JobApplicationRepository;
 
-@Service
-public class RecruitmentService {
+// @Service
+// public class RecruitmentService {
 
-    @Autowired
-    private JobApplicationRepository repository;
+//     @Autowired
+//     private JobApplicationRepository repository;
 
-    public JobApplication saveApplication(@NonNull JobApplication application) {
-        return repository.save(application);
-    }
+//     public JobApplication saveApplication(@NonNull JobApplication application) {
+//         return repository.save(application);
+//     }
 
-    public List<JobApplication> getAllApplications() {
-        return repository.findAll();
-    }
+//     public List<JobApplication> getAllApplications() {
+//         return repository.findAll();
+//     }
 
-    public JobApplication getApplicationById(@NonNull Long id) {
-        return repository.findById(id).orElse(null);
-    }
-}
+//     public JobApplication getApplicationById(@NonNull Long id) {
+//         return repository.findById(id).orElse(null);
+//     }
+// }
