@@ -13,7 +13,7 @@ public class dummyServices {
     dummyRepository rep;
 
     public dummy ct(dummy dmy) {
-        
+        return rep.save(dmy);
     }
     
 }
