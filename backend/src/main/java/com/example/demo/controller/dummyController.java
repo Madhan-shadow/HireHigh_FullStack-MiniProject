@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.entity.dummy;
 import com.example.demo.service.dummyServices;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api")
