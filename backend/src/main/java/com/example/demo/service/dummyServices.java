@@ -22,7 +22,7 @@ public class dummyServices {
     public List<dummy> fetchdetail(){
         return rep.findAll();
     }
-    public Optional<dummy> fetchbyid(){
-        return rep.fetchbyid(dummy);
+    public Optional<dummy> fetchbyid(Long id){
+            return rep.findById(dummy);
     }
 }
