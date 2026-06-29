@@ -2,33 +2,49 @@ package com.example.demo.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="JobApplication")
+@Table(name = "job_application")
 public class JobApplication {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY) 
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
     private JobPosting job;
 
-    @ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "candidate_id",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "candidate_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
     private CandidateProfile candidate;
 
-    @Column(name = "current_Stage", nullable = false)
+    @Column(name = "current_stage", nullable = false)
     private String currentStage;
 
-    @Column(name = "applied_at",nullable = false)
+    @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
 
     @PrePersist
-    protected void onCreate() {
-        appliedAt = LocalDateTime.now();
+    public void onCreate() {
+        this.appliedAt = LocalDateTime.now();
+    }
+
+    public JobApplication() {
+    }
+
+    public JobApplication(Long id, JobPosting job, CandidateProfile candidate,
+                          String currentStage, LocalDateTime appliedAt) {
+        this.id = id;
+        this.job = job;
+        this.candidate = candidate;
+        this.currentStage = currentStage;
+        this.appliedAt = appliedAt;
     }
 
     public Long getId() {
@@ -70,19 +86,4 @@ public class JobApplication {
     public void setAppliedAt(LocalDateTime appliedAt) {
         this.appliedAt = appliedAt;
     }
-
-    public JobApplication() {
-    }
-
-    public JobApplication(Long id, JobPosting job, CandidateProfile candidate, String currentStage,
-            LocalDateTime appliedAt) {
-        this.id = id;
-        this.job = job;
-        this.candidate = candidate;
-        this.currentStage = currentStage;
-        this.appliedAt = appliedAt;
-    }
-
-
-
 }
