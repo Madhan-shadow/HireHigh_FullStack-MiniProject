@@ -1,3 +1,5 @@
+package com.example.demo.service;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +14,15 @@ public class RecruitmentService {
     @Autowired
     private JobApplicationRepository repository;
 
-    public JobApplication save(JobApplication application) {
+    public JobApplication saveApplication(JobApplication application) {
         return repository.save(application);
     }
 
-    public List<JobApplication> getAll() {
+    public List<JobApplication> getAllApplications() {
         return repository.findAll();
     }
 
-    public JobApplication getById(Long id) {
+    public JobApplication getApplicationById(Long id) {
         return repository.findById(id).orElse(null);
     }
 }
