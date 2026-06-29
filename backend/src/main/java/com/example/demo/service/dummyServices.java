@@ -1,11 +1,16 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.dummy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-@Ser
+import com.example.demo.entity.dummy;
+import com.example.demo.repository.dummyRepository;
+
+@Service
 public class dummyServices {
 
-    @Autoweired
+    @Autowired
+    dummyRepository rep;
 
     public dummy ct(dummy dmy) {
         
