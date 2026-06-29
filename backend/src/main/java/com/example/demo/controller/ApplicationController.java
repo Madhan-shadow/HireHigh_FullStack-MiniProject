@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.JobApplication;
@@ -16,7 +17,7 @@ public class ApplicationController {
     private RecruitmentService service;
 
     @PostMapping("/create")
-    public JobApplication saveApplication(@RequestBody JobApplication application) {
+    public JobApplication saveApplication(@RequestBody @NonNull JobApplication application) {
         return service.saveApplication(application);
     }
 
@@ -26,7 +27,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/fetchById")
-    public JobApplication getApplicationById(@PathVariable Long id) {
+    public JobApplication getApplicationById(@PathVariable @NonNull Long id) {
         return service.getApplicationById(id);
     }
 }
