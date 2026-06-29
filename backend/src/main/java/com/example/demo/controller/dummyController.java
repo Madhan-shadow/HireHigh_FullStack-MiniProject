@@ -33,7 +33,7 @@ public class dummyController {
         return ser.fetchdetail();
     }
 
-    @GetMapping("/fetchById")
+    @GetMapping("/fetchById/{id}")
     public Optional<dummy> fetchById(@PathVariable Long id ){
         return ser.fetchbyid(id);
     }
