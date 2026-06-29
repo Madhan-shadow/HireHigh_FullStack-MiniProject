@@ -1,7 +1,7 @@
 package com.example.demo.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@
-public interface CandidateProfileRepository extends {
+public interface CandidateProfileRepository extends  JpaRepository{
     
 }

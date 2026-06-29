@@ -1,5 +1,7 @@
 package com.example.demo.repository;
 
-public interface InterviewSessionRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface InterviewSessionRepository extends JpaRepository{
     
 }
