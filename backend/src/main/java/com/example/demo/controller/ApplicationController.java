@@ -9,23 +9,23 @@ import com.example.demo.entity.JobApplication;
 import com.example.demo.service.RecruitmentService;
 
 @RestController
-@RequestMapping("/applications")
+@RequestMapping("/api")
 public class ApplicationController {
 
     @Autowired
     private RecruitmentService service;
 
-    @PostMapping
+    @PostMapping("/create")
     public JobApplication saveApplication(@RequestBody JobApplication application) {
         return service.saveApplication(application);
     }
 
-    @GetMapping
+    @GetMapping("fetch")
     public List<JobApplication> getAllApplications() {
         return service.getAllApplications();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/fetchById")
     public JobApplication getApplicationById(@PathVariable Long id) {
         return service.getApplicationById(id);
     }

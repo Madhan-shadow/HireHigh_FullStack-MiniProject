@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.JobApplication;
@@ -14,7 +15,7 @@ public class RecruitmentService {
     @Autowired
     private JobApplicationRepository repository;
 
-    public JobApplication saveApplication(JobApplication application) {
+    public JobApplication saveApplication(@NonNull JobApplication application) {
         return repository.save(application);
     }
 
@@ -22,7 +23,7 @@ public class RecruitmentService {
         return repository.findAll();
     }
 
-    public JobApplication getApplicationById(Long id) {
+    public JobApplication getApplicationById(@NonNull Long id) {
         return repository.findById(id).orElse(null);
     }
 }
