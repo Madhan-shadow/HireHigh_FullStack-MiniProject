@@ -1,0 +1,26 @@
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.entity.JobApplication;
+import com.example.demo.repository.JobApplicationRepository;
+
+@Service
+public class JobApplicationService {
+
+    @Autowired
+    private JobApplicationRepository repository;
+
+    public JobApplication save(JobApplication application) {
+        return repository.save(application);
+    }
+
+    public List<JobApplication> getAll() {
+        return repository.findAll();
+    }
+
+    public JobApplication getById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+}
