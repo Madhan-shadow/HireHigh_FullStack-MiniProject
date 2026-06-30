@@ -54,14 +54,4 @@ public class dummyServices {
         }
         
     }
-
-    public Optional<dummy> delid(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delid'");
-    }
-
-    public String delid(Optional<dummy> dy) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delid'");
-    }
 }
