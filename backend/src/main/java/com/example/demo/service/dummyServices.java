@@ -34,7 +34,7 @@ public class dummyServices {
     public String update(Optional<dummy> id,String password){
         if(id.isPresent()){
             dummy d=id.get();
-            d=setPassword(password);
+            d.setPassword(password);
             rep.save(d);
             return "Data updated successfully";
 
@@ -44,7 +44,8 @@ public class dummyServices {
         }
     }
 
-    public dummy delid(@RequestBody dummy dmy){
+    public dummy delid(Optional<dummy> dmy,){
+        if(dmy)
         
     }
 }
