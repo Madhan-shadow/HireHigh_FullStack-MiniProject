@@ -27,4 +27,5 @@ public class dummyServices {
     public Optional<dummy> fetchbyid(@PathVariable @NonNull Long id){
             return rep.findById(id);
     }
+    public dummy delall()
 }
