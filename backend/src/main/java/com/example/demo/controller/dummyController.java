@@ -49,7 +49,7 @@ public class dummyController {
     }
 
    @DeleteMapping("/delete/{id}")
-    public String deletedata(Optional<dummy> dy,@PathVariable @NonNull Long id){
+    public String deletedata(@PathVariable @NonNull Long id){
         Optional<dummy> dy1= ser.fetchbyid(id);
         return ser.delid(dy1);
     }
