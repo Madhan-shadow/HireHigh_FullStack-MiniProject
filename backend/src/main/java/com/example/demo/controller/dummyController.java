@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,4 +39,6 @@ public class dummyController {
     public Optional<dummy> fetchById(@PathVariable @NonNull Long id ){
         return ser.fetchbyid(id);
     }
+    @DeleteMapping("/deleteall")
+    
 }
