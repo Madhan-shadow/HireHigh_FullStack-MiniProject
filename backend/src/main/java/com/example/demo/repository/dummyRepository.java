@@ -1,10 +1,10 @@
-package com.example.demo.repository;
+// package com.example.demo.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.demo.entity.dummy;
+// import com.example.demo.entity.dummy;
 
-public interface dummyRepository extends JpaRepository <dummy, Long>{
+// public interface dummyRepository extends JpaRepository <dummy, Long>{
 
     
-}
+// }

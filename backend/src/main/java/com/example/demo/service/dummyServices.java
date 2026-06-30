@@ -1,55 +1,55 @@
-package com.example.demo.service;
+// package com.example.demo.service;
 
-import java.util.List;
-import java.util.Optional;
+// import java.util.List;
+// import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.lang.NonNull;
+// import org.springframework.stereotype.Service;
 
-import com.example.demo.entity.dummy;
-import com.example.demo.repository.dummyRepository;
+// import com.example.demo.entity.dummy;
+// import com.example.demo.repository.dummyRepository;
 
 
-@Service
-public class dummyServices {
+// @Service
+// public class dummyServices {
 
-    @Autowired
-    dummyRepository rep;
+//     @Autowired
+//     dummyRepository rep;
 
-    public dummy ct(@NonNull dummy dmy) {
-        return rep.save(dmy);
-    }
+//     public dummy ct(@NonNull dummy dmy) {
+//         return rep.save(dmy);
+//     }
     
-    public List<dummy> fetchdetail(){
-        return rep.findAll();
-    }
+//     public List<dummy> fetchdetail(){
+//         return rep.findAll();
+//     }
 
-    public Optional<dummy> fetchbyid(@NonNull Long id){
-            return rep.findById(id); 
-    }
+//     public Optional<dummy> fetchbyid(@NonNull Long id){
+//             return rep.findById(id); 
+//     }
 
-    public String update(Optional<dummy> id,String password){
-        if(id.isPresent()){
-            dummy d=id.get();
-            d.setPassword(password);
-            rep.save(d);
-            return "Data updated successfully";
+//     public String update(Optional<dummy> id,String password){
+//         if(id.isPresent()){
+//             dummy d=id.get();
+//             d.setPassword(password);
+//             rep.save(d);
+//             return "Data updated successfully";
 
-        }
-        else{
-            return "Data not found";
-        }
-    }
+//         }
+//         else{
+//             return "Data not found";
+//         }
+//     }
 
 
-    public String delid(Optional<dummy> dy,@NonNull Long id) {
-        if(dy.isPresent()){
-            rep.deleteById(id);
-            return "Data delete Successfully";
-        }
-        else{
-            return "Data not found";
-        }
-    }
-}
+//     public String delid(Optional<dummy> dy,@NonNull Long id) {
+//         if(dy.isPresent()){
+//             rep.deleteById(id);
+//             return "Data delete Successfully";
+//         }
+//         else{
+//             return "Data not found";
+//         }
+//     }
+// }
