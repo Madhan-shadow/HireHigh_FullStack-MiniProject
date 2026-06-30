@@ -29,6 +29,9 @@ public class dummyServices {
     public Optional<dummy> fetchbyid(@PathVariable @NonNull Long id){
             return rep.findById(id); 
     }
+    public String update(@PathVariable id,@PathVariable password){
+        
+    }
     public dummy delall(@RequestBody dummy dmy){
         return rep.deleteAll();
     }

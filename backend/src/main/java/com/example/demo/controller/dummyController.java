@@ -44,7 +44,7 @@ public class dummyController {
     @PutMapping("/update")
     public String updatedata(@PathVariable Long id,@PathVariable String password){
         Optional<dummy> dy= fetchById(id);
-        return 
+        return ser.update(dy,password);
 
     }
 
