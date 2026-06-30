@@ -29,7 +29,7 @@ public class dummyServices {
     public Optional<dummy> fetchbyid(@PathVariable @NonNull Long id){
             return rep.findById(id);
     }
-    public dummy delall(dummy dmy){
-        return rep.deleteAll(dmy);
+    public dummy delall(@RequestBody dummy dmy){
+        return rep.deleteAll();
     }
 }
