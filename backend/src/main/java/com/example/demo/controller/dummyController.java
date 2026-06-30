@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ public class dummyController {
     dummyServices ser;
 
     @PostMapping("/create")
-    public dummy create(@RequestBody dummy dmy){
+    public dummy create(@RequestBody @NonNull dummy dmy){
             return ser.ct(dmy);
         
     }
@@ -34,7 +35,7 @@ public class dummyController {
     }
 
     @GetMapping("/fetchById/{id}")
-    public Optional<dummy> fetchById(@PathVariable Long id ){
+    public Optional<dummy> fetchById(@PathVariable @NonNull Long id ){
         return ser.fetchbyid(id);
     }
 }
