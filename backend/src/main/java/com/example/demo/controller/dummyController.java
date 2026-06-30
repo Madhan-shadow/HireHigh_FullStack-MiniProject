@@ -43,13 +43,15 @@ public class dummyController {
 
     @PutMapping("/update/{id}/{password}")
     public String updatedata(@PathVariable @NonNull Long id,@PathVariable String password){
-        Optional<dummy> dy= fetchById(id);
+        Optional<dummy> dy= ser.fetchbyid(id);
         return ser.update(dy,password);
 
     }
 
-    @DeleteMapping("/deleteall")
-    public dummy deleteall(@RequestBody dummy dmy){
-        return ser.delall(dmy);
+   @DeleteMappingMapping("/delete/{id}")
+    public String deletedata(@PathVariable @NonNull Long id){
+        Optional<dummy> dy= ser.de(id);
+        return ser.update(dy,password);
+
     }
 }
