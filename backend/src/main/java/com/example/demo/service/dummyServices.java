@@ -27,7 +27,7 @@ public class dummyServices {
         return rep.findAll();
     }
     public Optional<dummy> fetchbyid(@PathVariable @NonNull Long id){
-            return rep.findById(id);
+            return rep.findById(id); 
     }
     public dummy delall(@RequestBody dummy dmy){
         return rep.deleteAll();
