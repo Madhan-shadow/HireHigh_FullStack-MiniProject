@@ -48,10 +48,10 @@ public class dummyController {
 
     }
 
-   @DeleteMappingMapping("/delete/{id}")
+   @DeleteMapping("/delete/{id}")
     public String deletedata(@PathVariable @NonNull Long id){
-        Optional<dummy> dy= ser.de(id);
-        return ser.update(dy,password);
+        Optional<dummy> dy= ser.delid(id);
+        return ser.delid(dy);
 
     }
 }

@@ -32,7 +32,7 @@ public class dummyServices {
     }
 
     public String update(Optional<dummy> id,String password){
-        if(dy.isPresent()){
+        if(id.isPresent()){
             dummy d=dy.get();
             d=setPassword(password);
             rep.save(d);
@@ -44,7 +44,7 @@ public class dummyServices {
         }
     }
 
-    public dummy delall(@RequestBody dummy dmy){
-        return rep.deleteAll();
+    public dummy delid(@RequestBody dummy dmy){
+        
     }
 }
