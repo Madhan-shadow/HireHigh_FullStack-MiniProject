@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import com.example.demo.entity.dummy;
 import com.example.demo.repository.dummyRepository;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+
 @Service
 public class dummyServices {
 
@@ -27,5 +29,7 @@ public class dummyServices {
     public Optional<dummy> fetchbyid(@PathVariable @NonNull Long id){
             return rep.findById(id);
     }
-    public dummy delall()
+    public dummy delall(@RequestBody dummy dmy){
+        return rep.deleteAll(dmy);
+    }
 }
