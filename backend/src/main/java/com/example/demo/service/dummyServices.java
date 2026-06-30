@@ -44,7 +44,7 @@ public class dummyServices {
         }
     }
 
-    public String delid(Optional<dummy> dmy,Long id){
+    public String delid(Optional<dummy> dmy,@NonNull Long id){
         if(dmy.isPresent()){
             rep.deleteById(id);
             return "Data delete Successfully";
@@ -56,6 +56,11 @@ public class dummyServices {
     }
 
     public Optional<dummy> delid(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'delid'");
+    }
+
+    public String delid(Optional<dummy> dy) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'delid'");
     }
