@@ -44,14 +44,24 @@ public class dummyServices {
         }
     }
 
-    public String delid(Long id){
-        if(id.isPresent()){
-            rep.deleteById(id);
+    // public String delid(Long id){
+    //     if(id.isPresent()){
+    //         rep.deleteById(id);
+    //         return "Data delete Successfully";
+    //     }
+    //     else{
+    //         return "Data not found";
+    //     }
+        
+    // }
+
+    public String delid(Optional<dummy> dy1) {
+        if(dy1.isPresent()){
+            rep.deleteById(Long id);
             return "Data delete Successfully";
         }
         else{
             return "Data not found";
         }
-        
     }
 }
