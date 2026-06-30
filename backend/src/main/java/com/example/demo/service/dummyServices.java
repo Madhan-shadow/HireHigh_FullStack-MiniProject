@@ -55,9 +55,9 @@ public class dummyServices {
         
     // }
 
-    public String delid(Optional<dummy> dy1) {
+    public String delid(Optional<dummy> dy1,@NonNull Long id) {
         if(dy1.isPresent()){
-            rep.deleteById(Long id);
+            rep.deleteById(id);
             return "Data delete Successfully";
         }
         else{
