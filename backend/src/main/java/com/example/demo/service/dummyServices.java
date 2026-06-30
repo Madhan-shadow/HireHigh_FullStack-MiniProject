@@ -30,6 +30,6 @@ public class dummyServices {
             return rep.findById(id);
     }
     public dummy delall(@RequestBody dummy dmy){
-        return rep.deleteAll();
+        return rep.delete(dmy);
     }
 }
