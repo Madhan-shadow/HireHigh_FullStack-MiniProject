@@ -44,14 +44,19 @@ public class dummyServices {
         }
     }
 
-    public du
-    mmy delid(Optional<dummy> dmy,Long id){
+    public String delid(Optional<dummy> dmy,Long id){
         if(dmy.isPresent()){
-
+            rep.deleteById(id);
+            return "Data delete Successfully";
         }
         else{
             return "Data not found";
         }
         
+    }
+
+    public Optional<dummy> delid(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'delid'");
     }
 }
