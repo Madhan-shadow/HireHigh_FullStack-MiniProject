@@ -31,9 +31,14 @@ public class dummyServices {
     }
     public String update(@PathVariable id,@PathVariable password){
         if(dy.isPresent()){
-            
+            dummy d=dy.get();
+            d=setPass
+            return "Data updated successfully";
+
         }
-        return "Data updated successfully";
+        else{
+            return "Data not found";
+        }
     }
     public dummy delall(@RequestBody dummy dmy){
         return rep.deleteAll();
