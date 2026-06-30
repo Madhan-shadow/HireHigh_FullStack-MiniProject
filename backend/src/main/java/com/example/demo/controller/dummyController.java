@@ -41,6 +41,6 @@ public class dummyController {
     }
     @DeleteMapping("/deleteall")
     public dummy deleteall(@RequestBody dummy dmy){
-        return ser.delall();
+        return ser.delall(dmy);
     }
 }
