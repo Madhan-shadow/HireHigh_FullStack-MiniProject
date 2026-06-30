@@ -26,13 +26,15 @@ public class dummyServices {
     public List<dummy> fetchdetail(){
         return rep.findAll();
     }
-    public Optional<dummy> fetchbyid(@PathVariable @NonNull Long id){
+
+    public Optional<dummy> fetchbyid(@NonNull Long id){
             return rep.findById(id); 
     }
-    public String update(@PathVariable id,@PathVariable password){
+
+    public String update(Optional<dummy> id,String password){
         if(dy.isPresent()){
             dummy d=dy.get();
-            d=setPass
+            d=setPassword(password);
             return "Data updated successfully";
 
         }
@@ -40,6 +42,7 @@ public class dummyServices {
             return "Data not found";
         }
     }
+
     public dummy delall(@RequestBody dummy dmy){
         return rep.deleteAll();
     }
