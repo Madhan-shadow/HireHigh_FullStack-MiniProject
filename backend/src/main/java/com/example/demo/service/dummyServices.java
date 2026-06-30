@@ -35,6 +35,7 @@ public class dummyServices {
         if(dy.isPresent()){
             dummy d=dy.get();
             d=setPassword(password);
+            rep.save(d);
             return "Data updated successfully";
 
         }
