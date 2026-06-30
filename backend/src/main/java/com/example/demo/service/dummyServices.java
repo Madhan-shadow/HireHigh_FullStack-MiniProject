@@ -30,7 +30,10 @@ public class dummyServices {
             return rep.findById(id); 
     }
     public String update(@PathVariable id,@PathVariable password){
-        
+        if(dy.isPresent()){
+            
+        }
+        return "Data updated successfully";
     }
     public dummy delall(@RequestBody dummy dmy){
         return rep.deleteAll();
