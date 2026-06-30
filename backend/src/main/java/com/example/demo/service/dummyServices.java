@@ -33,7 +33,7 @@ public class dummyServices {
 
     public String update(Optional<dummy> id,String password){
         if(id.isPresent()){
-            dummy d=dy.get();
+            dummy d=id.get();
             d=setPassword(password);
             rep.save(d);
             return "Data updated successfully";
