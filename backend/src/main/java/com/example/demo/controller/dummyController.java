@@ -42,7 +42,12 @@ public class dummyController {
     }
 
     @PutMapping("/update")
-    public String updatedata(@PathVariable Long id,)
+    public String updatedata(@PathVariable Long id,@PathVariable String password){
+        Optional<dummy> dy= fetchById(id);
+        return 
+
+    }
+
     @DeleteMapping("/deleteall")
     public dummy deleteall(@RequestBody dummy dmy){
         return ser.delall(dmy);
