@@ -44,8 +44,14 @@ public class dummyServices {
         }
     }
 
-    public dummy delid(Optional<dummy> dmy,){
-        if(dmy)
+    public du
+    mmy delid(Optional<dummy> dmy,Long id){
+        if(dmy.isPresent()){
+
+        }
+        else{
+            return "Data not found";
+        }
         
     }
 }
