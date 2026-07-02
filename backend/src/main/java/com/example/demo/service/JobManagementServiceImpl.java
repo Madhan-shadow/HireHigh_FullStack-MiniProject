@@ -27,19 +27,20 @@ public class JobManagementServiceImpl implements JobManagementService {
     }
 
     @Override
-    public JobPosting updateJob(Long id, JobPosting job) {
+public JobPosting updateJob(Long id, JobPosting job) {
 
-        JobPosting existing = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job Not Found"));
+    JobPosting existing = jobRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Job Not Found"));
 
-        existing.setTitle(job.getTitle());
-        existing.setCompany(job.getCompany());
-        existing.setLocation(job.getLocation());
-        existing.setDescription(job.getDescription());
-        existing.setSalary(job.getSalary());
+    existing.setTitle(job.getTitle());
+    existing.setDepartment(job.getDepartment());
+    existing.setDescription(job.getDescription());
+    existing.setHiringGoal(job.getHiringGoal());
+    existing.setCurrentFills(job.getCurrentFills());
+    existing.setStatus(job.getStatus());
 
-        return jobRepository.save(existing);
-    }
+    return jobRepository.save(existing);
+}
 
     @Override
     public void deleteJob(@NonNull Long id) {
