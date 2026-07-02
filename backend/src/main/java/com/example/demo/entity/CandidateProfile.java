@@ -18,8 +18,6 @@ public class CandidateProfile {
 
     private Integer yearsExperience;
 
-    @OneToOne
-    private SystemUser user1;
 
     public Long getId() {
         return id;
