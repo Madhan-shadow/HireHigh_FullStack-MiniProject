@@ -11,11 +11,9 @@ import com.example.demo.entity.JobApplication;
 
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long>{
-    Optional<JobApplication> findById(Long id);
+    List<JobApplication> findByCandidateUserEmail(String email);
 
-List<JobApplication> findByCandidateUserEmail(String email);
-
-boolean existsByCandidateCandidateIdAndJobJobId(
-        Long candidateId,
-        Long jobId);
+    boolean existsByCandidateCandidateIdAndJobJobId(
+            Long candidateId,
+            Long jobId);
 }
