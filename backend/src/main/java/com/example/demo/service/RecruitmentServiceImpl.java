@@ -51,7 +51,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         JobApplication application = new JobApplication();
         application.setCandidate(candidate);
         application.setJob(job);
-        application.setApplicationStatus("APPLIED");
+        application.setCurrentStage("APPLIED");
 
         return applicationRepository.save(application);
     }
@@ -62,7 +62,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         JobApplication application = applicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application Not Found"));
 
-        application.setApplicationStatus(stage);
+        application.setCurrentStage(stage);
 
         applicationRepository.save(application);
     }
@@ -73,7 +73,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         JobApplication application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application Not Found"));
 
-        application.setApplicationStatus("HIRED");
+        application.setCurrentStage("HIRED");
 
         applicationRepository.save(application);
     }
