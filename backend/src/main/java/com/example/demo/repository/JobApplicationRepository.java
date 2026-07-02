@@ -13,7 +13,7 @@ import com.example.demo.entity.JobApplication;
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long>{
     List<JobApplication> findByCandidateUserEmail(String email);
 
-    boolean existsByCandidateCandidateIdAndJobJobId(
-            Long candidateId,
-            Long jobId);
+    // boolean existsByCandidateCandidateIdAndJobJobId(
+    //         Long candidateId,
+    //         Long jobId);
 }
