@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.JobPosting;
@@ -30,7 +31,7 @@ public class JobManagementServiceImpl implements JobManagementService {
         JobPosting existing = jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job Not Found"));
 
-        existing.setJobTitle(job.getJobTitle());
+        existing.setTitle(job.getTitle());
         existing.setCompany(job.getCompany());
         existing.setLocation(job.getLocation());
         existing.setDescription(job.getDescription());
@@ -40,7 +41,7 @@ public class JobManagementServiceImpl implements JobManagementService {
     }
 
     @Override
-    public void deleteJob(Long id) {
+    public void deleteJob(@NonNull Long id) {
         jobRepository.deleteById(id);
     }
 

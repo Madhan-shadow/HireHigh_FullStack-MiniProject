@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         SystemUser user = new SystemUser();
-        user.setFullName(dto.getFullName());
+        user.setFullname(dto.getFullName());
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword()); // No PasswordEncoder
         user.setRole(dto.getRole());
