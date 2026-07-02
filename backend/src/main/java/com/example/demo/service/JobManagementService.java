@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.lang.NonNull;
+
 import com.example.demo.entity.JobPosting;
 
 public interface JobManagementService {
@@ -12,7 +14,7 @@ public interface JobManagementService {
 
     JobPosting updateJob(Long id, JobPosting job);
 
-    void deleteJob(Long id);
+    void deleteJob(@NonNull Long id);
 
     void checkAndCloseJob(Long jobId);
 
