@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.entity.ApplicationStage;
 import com.example.demo.entity.CandidateProfile;
 import com.example.demo.entity.JobApplication;
 import com.example.demo.entity.JobPosting;
@@ -51,7 +52,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         JobApplication application = new JobApplication();
         application.setCandidate(candidate);
         application.setJob(job);
-        application.setCurrentStage("APPLIED");
+        application.setCurrentStage(ApplicationStage.APPLIED); // Enum
 
         return applicationRepository.save(application);
     }
@@ -62,7 +63,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         JobApplication application = applicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application Not Found"));
 
-        application.setCurrentStage(stage);
+        application.setCurrentStage(ApplicationStage.valueOf(stage.toUpperCase()));
 
         applicationRepository.save(application);
     }
@@ -73,7 +74,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         JobApplication application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application Not Found"));
 
-        application.setCurrentStage("HIRED");
+        application.setCurrentStage(ApplicationStage.HIRED);
 
         applicationRepository.save(application);
     }
