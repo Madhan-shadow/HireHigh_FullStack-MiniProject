@@ -45,26 +45,26 @@
         </dependency>
 
         <!-- Security -->
-        <dependency>
+        <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- Explicit security jars for test compilation -->
-        <dependency>
+        <!-- <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-        </dependency>
+        </dependency> -->
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
-        </dependency> 
+        </dependency>  -->
 
-         <dependency>
+         <!-- <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- Validation -->
         <dependency>
