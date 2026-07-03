@@ -43,7 +43,7 @@ public class RegisterDto {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
