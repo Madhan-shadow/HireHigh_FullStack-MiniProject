@@ -1,5 +1,7 @@
 package com.example.demo.dto;
 
+import com.example.demo.entity.Role;
+
 public class RegisterDto {
 
     private String fullName;
@@ -41,7 +43,7 @@ public class RegisterDto {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
