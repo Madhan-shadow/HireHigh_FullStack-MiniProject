@@ -24,7 +24,8 @@ public class SystemUser {
 
     private String fullname;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Email
     @Column(nullable = false, unique = true)
