@@ -51,10 +51,10 @@
         </dependency>
 
         <!-- Explicit security jars for test compilation -->
-        <!-- <dependency>
+        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-        </dependency> -->
+        </dependency>
 
         <!-- <dependency>
             <groupId>org.springframework.security</groupId>
