@@ -24,7 +24,8 @@ public class SystemUser {
 
     private String fullname;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Email
     @Column(nullable = false, unique = true)
@@ -62,7 +63,7 @@ public class SystemUser {
         this.fullname = fullname;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
@@ -81,7 +82,7 @@ public class SystemUser {
     public SystemUser() {
     }
 
-    public SystemUser(Long id, String username, String password, String fullname, String role, String email) {
+    public SystemUser(Long id, String username, String password, String fullname, Role role, String email) {
         this.id = id;
         this.username = username;
         this.password = password;
