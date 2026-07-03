@@ -7,12 +7,12 @@ public class RegisterDto {
     private String fullName;
     private String email;
     private String password;
-    private String role;
+    private Role role;
 
     public RegisterDto() {
     }
 
-    public RegisterDto(String fullName, String email, String password, String role) {
+    public RegisterDto(String fullName, String email, String password, Role role) {
         this.fullName = fullName;
         this.email = email;
         this.password = password;
@@ -47,7 +47,7 @@ public class RegisterDto {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 

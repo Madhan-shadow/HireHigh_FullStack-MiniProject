@@ -9,6 +9,7 @@ import com.example.demo.dto.AuthRequestDto;
 import com.example.demo.dto.AuthResponseDto;
 import com.example.demo.dto.RegisterDto;
 import com.example.demo.entity.CandidateProfile;
+import com.example.demo.entity.Role;
 import com.example.demo.entity.SystemUser;
 import com.example.demo.repository.CandidateProfileRepository;
 import com.example.demo.repository.SystemUserRepository;
@@ -39,11 +40,11 @@ public class AuthServiceImpl implements AuthService {
 
         user = userRepository.save(user);
 
-        if ("CANDIDATE".equalsIgnoreCase(dto.getRole())) {
-            CandidateProfile profile = new CandidateProfile();
-            profile.setUser(user);
-            candidateRepository.save(profile);
-        }
+        if (dto.getRole() == Role.CANDIDATE) {
+        CandidateProfile profile = new CandidateProfile();
+        profile.setUser(user);
+        candidateRepository.save(profile);
+    }
     }
 
     @Override
