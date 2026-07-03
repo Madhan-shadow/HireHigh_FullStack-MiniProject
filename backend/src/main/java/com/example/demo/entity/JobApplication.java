@@ -25,7 +25,8 @@ public class JobApplication {
     private CandidateProfile candidate;
 
     @Column(name = "current_stage", nullable = false)
-    private String currentStage;
+    @Enumerated(EnumType.STRING)
+    private ApplicationStage currentStage;
 
     @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
@@ -39,7 +40,7 @@ public class JobApplication {
     }
 
     public JobApplication(Long id, JobPosting job, CandidateProfile candidate,
-                          String currentStage, LocalDateTime appliedAt) {
+                          ApplicationStage currentStage, LocalDateTime appliedAt) {
         this.id = id;
         this.job = job;
         this.candidate = candidate;
@@ -71,11 +72,11 @@ public class JobApplication {
         this.candidate = candidate;
     }
 
-    public String getCurrentStage() {
+    public ApplicationStage getCurrentStage() {
         return currentStage;
     }
 
-    public void setCurrentStage(String currentStage) {
+    public void setCurrentStage(ApplicationStage currentStage) {
         this.currentStage = currentStage;
     }
 
