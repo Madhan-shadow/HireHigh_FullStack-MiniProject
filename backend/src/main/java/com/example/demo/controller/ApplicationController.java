@@ -45,6 +45,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('RECRUITER'.'TA_LEAD')")
     public ResponseEntity<JobApplication> getApplication(
             @PathVariable Long id){
 
