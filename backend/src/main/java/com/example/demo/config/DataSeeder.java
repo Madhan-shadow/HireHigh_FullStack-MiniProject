@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.entity.JobPosting;
+import com.example.demo.entity.Role;
 import com.example.demo.entity.SystemUser;
 import com.example.demo.repository.JobPostingRepository;
 import com.example.demo.repository.SystemUserRepository;
@@ -16,9 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class DataSeeder implements CommandLineRunner {
 
     private final SystemUserRepository userRepository;
-
     private final JobPostingRepository jobRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -31,7 +30,7 @@ public class DataSeeder implements CommandLineRunner {
             admin.setFullname("System Admin");
             admin.setEmail("admin@hirehigh.com");
             admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setRole("ADMIN");
+            admin.setRole(Role.TA_LEAD);
 
             userRepository.save(admin);
         }
@@ -43,7 +42,7 @@ public class DataSeeder implements CommandLineRunner {
             recruiter.setFullname("Recruiter");
             recruiter.setEmail("recruiter@hirehigh.com");
             recruiter.setPassword(passwordEncoder.encode("recruit123"));
-            recruiter.setRole("RECRUITER");
+            recruiter.setRole(Role.RECRUITER);
 
             userRepository.save(recruiter);
         }
@@ -55,7 +54,7 @@ public class DataSeeder implements CommandLineRunner {
             candidate.setFullname("Candidate");
             candidate.setEmail("candidate@hirehigh.com");
             candidate.setPassword(passwordEncoder.encode("candidate123"));
-            candidate.setRole("CANDIDATE");
+            candidate.setRole(Role.CANDIDATE);
 
             userRepository.save(candidate);
         }
