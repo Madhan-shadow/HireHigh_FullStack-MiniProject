@@ -4,10 +4,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.example.demo.entity.Job;
-import com.example.demo.entity.User;
-import com.example.demo.repository.JobRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.entity.JobPosting;
+import com.example.demo.entity.SystemUser;
+import com.example.demo.repository.JobPostingRepository;
+import com.example.demo.repository.SystemUserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,65 +15,72 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
-    private final UserRepository userRepository;
-    private final JobRepository jobRepository;
+    private final SystemUserRepository userRepository;
+
+    private final JobPostingRepository jobRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
 
-        // Prevent duplicate data
-        if (userRepository.count() > 0) {
-            return;
+        if (!userRepository.existsByEmail("admin@hirehigh.com")) {
+
+            SystemUser admin = new SystemUser();
+            admin.setUsername("admin");
+            admin.setFullname("System Admin");
+            admin.setEmail("admin@hirehigh.com");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole("ADMIN");
+
+            userRepository.save(admin);
         }
 
-        // Admin User
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setEmail("admin@example.com");
-        admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setRole("ADMIN");
-        userRepository.save(admin);
+        if (!userRepository.existsByEmail("recruiter@hirehigh.com")) {
 
-        // Recruiter
-        User recruiter = new User();
-        recruiter.setUsername("recruiter");
-        recruiter.setEmail("recruiter@example.com");
-        recruiter.setPassword(passwordEncoder.encode("recruiter123"));
-        recruiter.setRole("RECRUITER");
-        userRepository.save(recruiter);
+            SystemUser recruiter = new SystemUser();
+            recruiter.setUsername("recruiter");
+            recruiter.setFullname("Recruiter");
+            recruiter.setEmail("recruiter@hirehigh.com");
+            recruiter.setPassword(passwordEncoder.encode("recruit123"));
+            recruiter.setRole("RECRUITER");
 
-        // TA Lead
-        User taLead = new User();
-        taLead.setUsername("talead");
-        taLead.setEmail("talead@example.com");
-        taLead.setPassword(passwordEncoder.encode("talead123"));
-        taLead.setRole("TA_LEAD");
-        userRepository.save(taLead);
+            userRepository.save(recruiter);
+        }
 
-        // Candidate
-        User candidate = new User();
-        candidate.setUsername("candidate");
-        candidate.setEmail("candidate@example.com");
-        candidate.setPassword(passwordEncoder.encode("candidate123"));
-        candidate.setRole("CANDIDATE");
-        userRepository.save(candidate);
+        if (!userRepository.existsByEmail("candidate@hirehigh.com")) {
 
-        // Sample Job
-        Job job = new Job();
-        job.setTitle("Software Engineer");
-        job.setDescription("Spring Boot Developer");
-        job.setLocation("Chennai");
-        job.setHiringGoal(5);
-        jobRepository.save(job);
+            SystemUser candidate = new SystemUser();
+            candidate.setUsername("candidate");
+            candidate.setFullname("Candidate");
+            candidate.setEmail("candidate@hirehigh.com");
+            candidate.setPassword(passwordEncoder.encode("candidate123"));
+            candidate.setRole("CANDIDATE");
 
-        System.out.println("====================================");
-        System.out.println("Default Users Seeded Successfully");
-        System.out.println("Admin      : admin / admin123");
-        System.out.println("Recruiter  : recruiter / recruiter123");
-        System.out.println("TA Lead    : talead / talead123");
-        System.out.println("Candidate  : candidate / candidate123");
-        System.out.println("Sample Job Created");
-        System.out.println("====================================");
+            userRepository.save(candidate);
+        }
+
+        if (jobRepository.count() == 0) {
+
+            JobPosting job1 = new JobPosting();
+            job1.setTitle("Java Full Stack Developer");
+            job1.setDepartment("Software");
+            job1.setDescription("Java + Spring Boot + React");
+            job1.setHiringGoal(5);
+            job1.setCurrentFills(0);
+            job1.setStatus("OPEN");
+
+            jobRepository.save(job1);
+
+            JobPosting job2 = new JobPosting();
+            job2.setTitle("AI Engineer");
+            job2.setDepartment("AI & DS");
+            job2.setDescription("Machine Learning and Python");
+            job2.setHiringGoal(3);
+            job2.setCurrentFills(0);
+            job2.setStatus("OPEN");
+
+            jobRepository.save(job2);
+        }
     }
 }
