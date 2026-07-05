@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.JobApplication;
@@ -13,9 +14,11 @@ import com.example.demo.repository.JobApplicationRepository;
 import com.example.demo.service.RecruitmentService;
 
 @RestController
+@PreAuthorize("hasRole('RECRUITER')")
 @RequestMapping("/api/applications")
 @CrossOrigin("*")
 public class ApplicationController {
+
 
     @Autowired
     private RecruitmentService recruitmentService;
