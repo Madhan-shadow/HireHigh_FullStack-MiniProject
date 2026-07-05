@@ -14,27 +14,28 @@ import com.example.demo.repository.JobApplicationRepository;
 import com.example.demo.service.RecruitmentService;
 
 @RestController
-@PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD'')")
 
 @RequestMapping("/api/applications")
 @CrossOrigin("*")
 public class ApplicationController {
-
-
+    
+    
     @Autowired
     private RecruitmentService recruitmentService;
-
+    
     @Autowired
     private JobApplicationRepository applicationRepository;
-
+    
     @GetMapping
+    @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<List<JobApplication>> getAllApplications() {
-
+        
         return ResponseEntity.ok(applicationRepository.findAll());
-
+        
     }
-
+    
     @GetMapping("/my-applications")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<List<JobApplication>> getMyApplications(
             @RequestParam String username){
 
