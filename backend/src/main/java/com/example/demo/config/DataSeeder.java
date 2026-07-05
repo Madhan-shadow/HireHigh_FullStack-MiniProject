@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -10,15 +11,15 @@ import com.example.demo.entity.SystemUser;
 import com.example.demo.repository.JobPostingRepository;
 import com.example.demo.repository.SystemUserRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
-    private final SystemUserRepository userRepository;
-    private final JobPostingRepository jobRepository;
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    SystemUserRepository userRepository;
+    @Autowired
+    JobPostingRepository jobRepository;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
