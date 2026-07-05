@@ -60,7 +60,7 @@ public class SecurityConfig {
                     ).permitAll()
 
                     .requestMatchers(HttpMethod.GET,"/api/jobs/**")
-                    .permitAll()
+                    .authenticated()
 
                     .anyRequest()
                     .authenticated()
