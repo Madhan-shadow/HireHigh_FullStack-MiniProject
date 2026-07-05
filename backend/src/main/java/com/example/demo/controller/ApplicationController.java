@@ -45,7 +45,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('RECRUITER'.'TA_LEAD')")
+    @PreAuthorize("hasAnyRole('RECRUITER'.'TA_LEAD')")
     public ResponseEntity<JobApplication> getApplication(
             @PathVariable Long id){
 
@@ -56,6 +56,7 @@ public class ApplicationController {
     }
 
     @PostMapping("/apply/{jobId}")
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Map<String,String>> apply(
             @PathVariable Long jobId,
             @RequestParam String username){
@@ -71,6 +72,7 @@ public class ApplicationController {
     }
 
     @PutMapping("/{id}/stage")
+    @PreAuthorize("hasRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<Void> updateStage(
             @PathVariable Long id,
             @RequestParam String stage){
