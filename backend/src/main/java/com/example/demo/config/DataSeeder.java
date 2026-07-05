@@ -4,11 +4,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.example.demo.entity.Job;
-import com.example.demo.entity.User;
-import com.example.demo.repository.JobRepository;
-import com.example.demo.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 
 @Component
