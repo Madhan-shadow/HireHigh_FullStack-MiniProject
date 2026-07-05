@@ -14,7 +14,8 @@ import com.example.demo.repository.JobApplicationRepository;
 import com.example.demo.service.RecruitmentService;
 
 @RestController
-@PreAuthorize("hasRole('RECRUITER')")
+@PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD',)")
+
 @RequestMapping("/api/applications")
 @CrossOrigin("*")
 public class ApplicationController {
