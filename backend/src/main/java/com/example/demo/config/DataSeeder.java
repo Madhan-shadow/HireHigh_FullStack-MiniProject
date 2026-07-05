@@ -4,6 +4,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import com.example.demo.entity.Job;
+import com.example.demo.entity.User;
+import com.example.demo.repository.JobRepository;
+import com.example.demo.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -17,12 +22,12 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        // Prevent duplicate seeding
+        // Prevent duplicate data
         if (userRepository.count() > 0) {
             return;
         }
 
-        // Admin
+        // Admin User
         User admin = new User();
         admin.setUsername("admin");
         admin.setEmail("admin@example.com");
@@ -38,13 +43,13 @@ public class DataSeeder implements CommandLineRunner {
         recruiter.setRole("RECRUITER");
         userRepository.save(recruiter);
 
-        // Manager
-        User manager = new User();
-        manager.setUsername("manager");
-        manager.setEmail("manager@example.com");
-        manager.setPassword(passwordEncoder.encode("manager123"));
-        manager.setRole("MANAGER");
-        userRepository.save(manager);
+        // TA Lead
+        User taLead = new User();
+        taLead.setUsername("talead");
+        taLead.setEmail("talead@example.com");
+        taLead.setPassword(passwordEncoder.encode("talead123"));
+        taLead.setRole("TA_LEAD");
+        userRepository.save(taLead);
 
         // Candidate
         User candidate = new User();
@@ -62,6 +67,13 @@ public class DataSeeder implements CommandLineRunner {
         job.setHiringGoal(5);
         jobRepository.save(job);
 
-        System.out.println("Default users and jobs seeded successfully.");
+        System.out.println("====================================");
+        System.out.println("Default Users Seeded Successfully");
+        System.out.println("Admin      : admin / admin123");
+        System.out.println("Recruiter  : recruiter / recruiter123");
+        System.out.println("TA Lead    : talead / talead123");
+        System.out.println("Candidate  : candidate / candidate123");
+        System.out.println("Sample Job Created");
+        System.out.println("====================================");
     }
 }
