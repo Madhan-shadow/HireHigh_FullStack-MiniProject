@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.JobPosting;
@@ -29,6 +30,7 @@ public class JobController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<JobPosting> createJob(
             @Valid @RequestBody JobPosting job){
 
@@ -37,6 +39,7 @@ public class JobController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<JobPosting> updateJob(
             @PathVariable Long id,
             @Valid @RequestBody JobPosting job){
@@ -46,6 +49,7 @@ public class JobController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<Map<String,String>> deleteJob(
             @PathVariable Long id){
 

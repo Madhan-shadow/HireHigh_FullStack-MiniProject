@@ -84,6 +84,7 @@ public class ApplicationController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<Map<String,String>> delete(
             @PathVariable Long id){
 
