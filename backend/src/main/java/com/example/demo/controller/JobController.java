@@ -31,8 +31,7 @@ public class JobController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
-    public ResponseEntity<JobPosting> createJob(
-            @Valid @RequestBody JobPosting job){
+    public ResponseEntity<JobPosting> createJob(@Valid @RequestBody JobPosting job){
 
         return ResponseEntity.ok(jobService.createJob(job));
 
@@ -40,9 +39,7 @@ public class JobController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
-    public ResponseEntity<JobPosting> updateJob(
-            @PathVariable Long id,
-            @Valid @RequestBody JobPosting job){
+    public ResponseEntity<JobPosting> updateJob(@PathVariable Long id,@Valid @RequestBody JobPosting job){
 
         return ResponseEntity.ok(jobService.updateJob(id, job));
 
@@ -50,8 +47,7 @@ public class JobController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
-    public ResponseEntity<Map<String,String>> deleteJob(
-            @PathVariable Long id){
+    public ResponseEntity<Map<String,String>> deleteJob(@PathVariable Long id){
 
         jobService.deleteJob(id);
 
