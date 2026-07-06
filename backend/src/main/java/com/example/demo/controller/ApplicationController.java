@@ -55,9 +55,7 @@ public class ApplicationController {
 
     @PostMapping("/apply/{jobId}")
     @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<Map<String,String>> apply(
-            @PathVariable Long jobId,
-            @RequestParam String username){
+    public ResponseEntity<Map<String,String>> apply(@PathVariable Long jobId,@RequestParam String username){
 
         recruitmentService.apply(jobId, username);
 
@@ -71,9 +69,7 @@ public class ApplicationController {
 
     @PutMapping("/{id}/stage")
     @PreAuthorize("hasRole('RECRUITER','TA_LEAD')")
-    public ResponseEntity<Void> updateStage(
-            @PathVariable Long id,
-            @RequestParam String stage){
+    public ResponseEntity<Void> updateStage(@PathVariable Long id,@RequestParam String stage){
 
         recruitmentService.updateStage(id, stage);
 
@@ -83,8 +79,7 @@ public class ApplicationController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('RECRUITER','TA_LEAD')")
-    public ResponseEntity<Map<String,String>> delete(
-            @PathVariable Long id){
+    public ResponseEntity<Map<String,String>> delete(@PathVariable Long id){
 
         recruitmentService.deleteApplication(id);
 
