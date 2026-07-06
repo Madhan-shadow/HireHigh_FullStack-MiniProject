@@ -36,8 +36,7 @@ public class ApplicationController {
     
     @GetMapping("/my-applications")
     @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<List<JobApplication>> getMyApplications(
-            @RequestParam String username){
+    public ResponseEntity<List<JobApplication>> getMyApplications(@RequestParam String username){
 
         return ResponseEntity.ok(
                 recruitmentService.getApplicationsByUsername(username));
@@ -46,8 +45,7 @@ public class ApplicationController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('RECRUITER'.'TA_LEAD')")
-    public ResponseEntity<JobApplication> getApplication(
-            @PathVariable Long id){
+    public ResponseEntity<JobApplication> getApplication(@PathVariable Long id){
 
         return ResponseEntity.ok(
                 applicationRepository.findById(id)
