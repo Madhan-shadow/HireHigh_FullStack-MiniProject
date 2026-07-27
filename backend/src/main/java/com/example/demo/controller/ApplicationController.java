@@ -68,7 +68,7 @@ public class ApplicationController {
     }
 
     @PutMapping("/{id}/stage")
-    @PreAuthorize("hasRole('RECRUITER','TA_LEAD')")
+    @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<Void> updateStage(@PathVariable Long id,@RequestParam String stage){
 
         recruitmentService.updateStage(id, stage);
@@ -78,7 +78,7 @@ public class ApplicationController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('RECRUITER','TA_LEAD')")
+    @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<Map<String,String>> delete(@PathVariable Long id){
 
         recruitmentService.deleteApplication(id);
