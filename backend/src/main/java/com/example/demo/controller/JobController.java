@@ -26,7 +26,7 @@ public class JobController {
     public ResponseEntity<List<JobPosting>> getAllJobs() {
 
         return ResponseEntity.ok(jobService.getAllJobs());
-
+        
     }
 
     @PostMapping
