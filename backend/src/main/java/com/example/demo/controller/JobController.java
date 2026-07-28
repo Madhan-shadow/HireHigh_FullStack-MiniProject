@@ -21,7 +21,7 @@ public class JobController {
 
     @Autowired
     private JobManagementService jobService;
-
+    
     @GetMapping
     public ResponseEntity<List<JobPosting>> getAllJobs() {
 
