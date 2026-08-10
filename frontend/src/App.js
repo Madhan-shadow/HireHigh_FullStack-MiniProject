@@ -29,7 +29,7 @@ import App1 from './App1'
 const App = () => {
   return (
     <div>
-      <App1
+      <App1/>
     </div>
   )
 }
