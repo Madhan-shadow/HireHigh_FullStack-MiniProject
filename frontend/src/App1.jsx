@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 const App1 = () => {
     let a=100
-    let[count,setCount]=useState(0);
+    // let[count,setCount]=useState(0);
   return (
     <div align = "center">
         <h1 style={{color:"green"}}>It's Worked</h1>
