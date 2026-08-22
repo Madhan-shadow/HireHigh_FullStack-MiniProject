@@ -65,8 +65,7 @@ export const deleteInterview =
     async (id, thunkAPI) => {
       try {
         await interviewService.delete(id);
-
-        return { id };
+        return id;
       } catch (error) {
         return thunkAPI.rejectWithValue(
           error.response?.data?.message ||
@@ -176,12 +175,11 @@ const interviewSlice =
               state.items.filter(
                 (item) =>
                   item.id !==
-                  action.payload.id
+                  action.payload
               );
           }
         );
     }
-
   });
 
 export default interviewSlice.reducer;

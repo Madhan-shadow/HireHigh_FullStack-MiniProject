@@ -1,16 +1,17 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 
-import App from "./App";
-import store from "./store";
+import authReducer from "./slices/authSlice";
+import jobReducer from "./slices/jobSlice";
+import applicationReducer from "./slices/applicationSlice";
+import interviewReducer from "./slices/interviewSlice";
 
-const root = ReactDOM.createRoot(
-  document.getElementById("root")
-);
+const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    jobs: jobReducer,
+    applications: applicationReducer,
+    interviews: interviewReducer
+  }
+});
 
-root.render(
-  <Provider store={store}>
-    <App />
-  </Provider>
-);
+export default store;

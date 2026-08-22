@@ -64,16 +64,12 @@ export const deleteJob =
     "jobs/deleteJob",
     async (id, thunkAPI) => {
       try {
-        const result =
+        const response =
           await jobService.delete(id);
 
         return {
           id,
-          ...(
-            typeof result === "object"
-              ? result
-              : {}
-          )
+          response
         };
       } catch (error) {
         return thunkAPI.rejectWithValue(
@@ -86,19 +82,17 @@ export const deleteJob =
 
 const initialState = {
   items: [],
+  searchQuery: "",
   loading: false,
-  error: null,
-  searchQuery: ""
+  error: null
 };
 
 const jobSlice = createSlice({
-
   name: "jobs",
 
   initialState,
 
   reducers: {
-
     setSearchQuery: (
       state,
       action
@@ -106,7 +100,6 @@ const jobSlice = createSlice({
       state.searchQuery =
         action.payload;
     }
-
   },
 
   extraReducers: (builder) => {
@@ -126,7 +119,7 @@ const jobSlice = createSlice({
         (state, action) => {
           state.loading = false;
           state.items =
-            action.payload;
+            action.payload || [];
         }
       )
 
@@ -203,7 +196,6 @@ const jobSlice = createSlice({
         }
       );
   }
-
 });
 
 export const {

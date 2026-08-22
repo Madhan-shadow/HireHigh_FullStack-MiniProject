@@ -38,13 +38,11 @@ export const register = createAsyncThunk(
   }
 );
 
-const getStoredUser = () => {
+const getUser = () => {
   const user =
     localStorage.getItem("user");
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   try {
     return JSON.parse(user);
@@ -60,8 +58,7 @@ const initialState = {
   role:
     localStorage.getItem("role"),
 
-  user:
-    getStoredUser(),
+  user: getUser(),
 
   isAuthenticated:
     !!localStorage.getItem("token"),
@@ -72,7 +69,6 @@ const initialState = {
 };
 
 const authSlice = createSlice({
-
   name: "auth",
 
   initialState,
@@ -80,7 +76,6 @@ const authSlice = createSlice({
   reducers: {
 
     hydrate: (state) => {
-
       state.token =
         localStorage.getItem("token");
 
@@ -88,7 +83,7 @@ const authSlice = createSlice({
         localStorage.getItem("role");
 
       state.user =
-        getStoredUser();
+        getUser();
 
       state.isAuthenticated =
         !!state.token;
@@ -171,12 +166,9 @@ const authSlice = createSlice({
       .addCase(
         login.rejected,
         (state, action) => {
-
           state.loading = false;
-
           state.error =
-            action.payload ||
-            "Login failed";
+            action.payload;
         }
       )
 
@@ -199,16 +191,12 @@ const authSlice = createSlice({
       .addCase(
         register.rejected,
         (state, action) => {
-
           state.loading = false;
-
           state.error =
-            action.payload ||
-            "Registration failed";
+            action.payload;
         }
       );
   }
-
 });
 
 export const {
