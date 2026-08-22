@@ -18,7 +18,7 @@ function ApplicationList() {
   const dispatch = useDispatch();
 
   const { role } = useSelector(
-    state => state.auth
+    (state) => state.auth
   );
 
   const {
@@ -26,7 +26,7 @@ function ApplicationList() {
     loading,
     error
   } = useSelector(
-    state => state.applications
+    (state) => state.applications
   );
 
   const [search, setSearch] =
@@ -38,11 +38,11 @@ function ApplicationList() {
   const searchInputRef =
     useRef(null);
 
-  const isCandidate =
-    role === "CANDIDATE";
-
+  /*
+   * Load applications
+   */
   useEffect(() => {
-    if (isCandidate) {
+    if (role === "CANDIDATE") {
       dispatch(fetchMyApplications());
     } else {
       dispatch(
@@ -53,14 +53,21 @@ function ApplicationList() {
         })
       );
     }
-  }, [dispatch, isCandidate]);
+  }, [dispatch, role]);
 
+  /*
+   * T12
+   * Focus search box when page loads
+   */
   useEffect(() => {
     searchInputRef.current?.focus();
   }, []);
 
+  /*
+   * Search + stage filtering
+   */
   const filteredApplications =
-    items.filter(application => {
+    items.filter((application) => {
 
       const username =
         application.candidate
@@ -72,12 +79,12 @@ function ApplicationList() {
           ?.user
           ?.email || "";
 
-      const job =
+      const jobTitle =
         application.job
           ?.title || "";
 
       const searchValue =
-        `${username} ${email} ${job}`
+        `${username} ${email} ${jobTitle}`
           .toLowerCase();
 
       const matchesSearch =
@@ -96,8 +103,17 @@ function ApplicationList() {
       );
     });
 
+  const isCandidate =
+    role === "CANDIDATE";
+
+  const isRecruitmentRole =
+    role === "RECRUITER" ||
+    role === "TA_LEAD" ||
+    role === "ADMIN";
+
   return (
     <div>
+
       <h1>
         {isCandidate
           ? "My Applications"
@@ -107,7 +123,10 @@ function ApplicationList() {
       {error && (
         <div
           role="alert"
-          style={{ color: "red" }}
+          style={{
+            color: "red",
+            marginBottom: "10px"
+          }}
         >
           {error}
         </div>
@@ -118,14 +137,14 @@ function ApplicationList() {
         type="text"
         placeholder="Search applications"
         value={search}
-        onChange={e =>
+        onChange={(e) =>
           setSearch(e.target.value)
         }
       />
 
       <select
         value={stageFilter}
-        onChange={e =>
+        onChange={(e) =>
           setStageFilter(e.target.value)
         }
       >
@@ -158,7 +177,7 @@ function ApplicationList() {
         </option>
       </select>
 
-      {!isCandidate && (
+      {isRecruitmentRole && (
         <section>
           <h2>
             Recruitment Pipeline
@@ -173,19 +192,38 @@ function ApplicationList() {
         </section>
       )}
 
+      {isCandidate && (
+        <section>
+          <h2>
+            My Applications
+          </h2>
+        </section>
+      )}
+
       {loading ? (
-        <p>Loading applications...</p>
+        <p>
+          Loading applications...
+        </p>
       ) : (
         <table>
           <thead>
             <tr>
-              <th>Candidate</th>
-              <th>Job</th>
-              <th>Stage</th>
+              <th>
+                Candidate
+              </th>
+
+              <th>
+                Job
+              </th>
+
+              <th>
+                Stage
+              </th>
             </tr>
           </thead>
 
           <tbody>
+
             {filteredApplications.length ===
             0 ? (
               <tr>
@@ -195,10 +233,11 @@ function ApplicationList() {
               </tr>
             ) : (
               filteredApplications.map(
-                application => (
+                (application) => (
                   <tr
                     key={application.id}
                   >
+
                     <td>
                       {application.candidate
                         ?.user
@@ -219,13 +258,16 @@ function ApplicationList() {
                       {application.currentStage ||
                         "APPLIED"}
                     </td>
+
                   </tr>
                 )
               )
             )}
+
           </tbody>
         </table>
       )}
+
     </div>
   );
 }

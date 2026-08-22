@@ -7,48 +7,37 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(
-  (config) => {
-
+  config => {
     const token =
       localStorage.getItem("token");
 
     if (token) {
+      config.headers =
+        config.headers || {};
+
       config.headers.Authorization =
         `Bearer ${token}`;
     }
 
     return config;
-  }
+  },
+  error => Promise.reject(error)
 );
 
 api.interceptors.response.use(
-  (response) => response,
+  response => response,
 
-  (error) => {
-
-    /*
-     * T20 — 401 session expiry
-     */
+  error => {
     if (
       error.response?.status === 401
     ) {
-      localStorage.removeItem(
-        "token"
-      );
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("user");
+      localStorage.removeItem("username");
 
-      localStorage.removeItem(
-        "role"
-      );
-
-      localStorage.removeItem(
-        "user"
-      );
-
-      localStorage.removeItem(
-        "username"
-      );
-
-      window.location.href = "/login";
+      window.location.href =
+        "/login";
     }
 
     return Promise.reject(error);

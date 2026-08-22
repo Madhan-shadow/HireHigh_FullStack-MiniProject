@@ -2,9 +2,20 @@ import api from "./api";
 
 const applicationService = {
 
-  async getAll() {
+  async getAll(
+    page = 0,
+    size = 5,
+    search = ""
+  ) {
     const response = await api.get(
-      "/applications"
+      "/applications",
+      {
+        params: {
+          page,
+          size,
+          search
+        }
+      }
     );
 
     return response.data;
@@ -35,7 +46,10 @@ const applicationService = {
     return response.data;
   },
 
-  async updateStage(id, stage) {
+  async updateStage(
+    id,
+    stage
+  ) {
     const response = await api.put(
       `/applications/${id}/stage`,
       null,
@@ -50,9 +64,10 @@ const applicationService = {
   },
 
   async delete(id) {
-    const response = await api.delete(
-      `/applications/${id}`
-    );
+    const response =
+      await api.delete(
+        `/applications/${id}`
+      );
 
     return response.data;
   }
