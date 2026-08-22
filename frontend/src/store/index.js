@@ -1,4 +1,6 @@
-import { configureStore } from "@reduxjs/toolkit";
+import {
+  configureStore
+} from "@reduxjs/toolkit";
 
 import authReducer from "./slices/authSlice";
 import jobReducer from "./slices/jobSlice";
@@ -9,8 +11,10 @@ const store = configureStore({
   reducer: {
     auth: authReducer,
     jobs: jobReducer,
-    applications: applicationReducer,
-    interviews: interviewReducer
+    applications:
+      applicationReducer,
+    interviews:
+      interviewReducer
   }
 });
 

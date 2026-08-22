@@ -1,30 +1,51 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { register } from "../store/slices/authSlice";
+import React, {
+  useState
+} from "react";
+
+import {
+  Link,
+  useNavigate
+} from "react-router-dom";
+
+import {
+  useDispatch,
+  useSelector
+} from "react-redux";
+
+import {
+  register
+} from "../store/slices/authSlice";
 
 function Register() {
   const dispatch = useDispatch();
+
   const navigate = useNavigate();
 
-  const { loading, error } = useSelector(
+  const {
+    loading,
+    error
+  } = useSelector(
     (state) => state.auth
   );
 
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-    email: "",
-    fullName: "",
-    role: "CANDIDATE"
-  });
+  const [form, setForm] =
+    useState({
+      username: "",
+      password: "",
+      email: "",
+      fullName: "",
+      role: "CANDIDATE"
+    });
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] =
+    useState({});
 
   const handleChange = (e) => {
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [e.target.name]:
+        e.target.value
     });
 
     setErrors({
@@ -34,6 +55,7 @@ function Register() {
   };
 
   const validate = () => {
+
     const newErrors = {};
 
     if (!form.fullName.trim()) {
@@ -59,25 +81,33 @@ function Register() {
     setErrors(newErrors);
 
     return (
-      Object.keys(newErrors).length === 0
+      Object.keys(newErrors)
+        .length === 0
     );
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit =
+    async (e) => {
 
-    if (!validate()) {
-      return;
-    }
+      e.preventDefault();
 
-    const result = await dispatch(
-      register(form)
-    );
+      if (!validate()) {
+        return;
+      }
 
-    if (register.fulfilled.match(result)) {
-      navigate("/login");
-    }
-  };
+      const result =
+        await dispatch(
+          register(form)
+        );
+
+      if (
+        register.fulfilled.match(
+          result
+        )
+      ) {
+        navigate("/login");
+      }
+    };
 
   return (
     <div className="register-container">
@@ -87,7 +117,9 @@ function Register() {
         noValidate
       >
 
-        <h1>Create Account</h1>
+        <h1>
+          Create Account
+        </h1>
 
         <p>
           Join HireHigh Talent Acquisition
@@ -160,6 +192,7 @@ function Register() {
           value={form.role}
           onChange={handleChange}
         >
+
           <option value="CANDIDATE">
             Candidate
           </option>
@@ -175,6 +208,7 @@ function Register() {
           <option value="TA_LEAD">
             TA Lead
           </option>
+
         </select>
 
         <label htmlFor="password">
