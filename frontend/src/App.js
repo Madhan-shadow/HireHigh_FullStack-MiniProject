@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 
+import store from "./store";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import JobList from "./components/jobs/JobList";
@@ -11,14 +12,14 @@ import { hydrate } from "./store/slices/authSlice";
 function ProtectedRoute() {
   const { isAuthenticated } = useSelector((state) => state.auth);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <Outlet />;
+  return isAuthenticated ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/login" replace />
+  );
 }
 
-function App() {
+function AppContent() {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -40,6 +41,14 @@ function App() {
         <Route path="*" element={<Navigate to="/jobs" replace />} />
       </Routes>
     </BrowserRouter>
+  );
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContent />
+    </Provider>
   );
 }
 

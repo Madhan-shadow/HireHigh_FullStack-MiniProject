@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/slices/authSlice";
 
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading, error } = useSelector(
+    (state) => state.auth
+  );
 
   const [form, setForm] = useState({
     username: "",
@@ -20,6 +22,11 @@ function Login() {
     setForm({
       ...form,
       [e.target.name]: e.target.value
+    });
+
+    setErrors({
+      ...errors,
+      [e.target.name]: ""
     });
   };
 
@@ -42,9 +49,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
     const result = await dispatch(login(form));
 
@@ -55,10 +60,12 @@ function Login() {
 
   return (
     <div className="login-container">
-      <form onSubmit={handleSubmit}>
-        <h1>Login</h1>
+      <form onSubmit={handleSubmit} noValidate>
+        <h1>HireHigh Login</h1>
 
-        <label htmlFor="username">Username</label>
+        <label htmlFor="username">
+          Username
+        </label>
 
         <input
           id="username"
@@ -72,7 +79,9 @@ function Login() {
           <span>{errors.username}</span>
         )}
 
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">
+          Password
+        </label>
 
         <input
           id="password"
@@ -92,13 +101,18 @@ function Login() {
           </div>
         )}
 
-        <button type="submit" disabled={loading}>
+        <button
+          type="submit"
+          disabled={loading}
+        >
           {loading ? "Logging in..." : "Login"}
         </button>
 
         <p>
           Don't have an account?{" "}
-          <Link to="/register">Register</Link>
+          <Link to="/register">
+            Register here
+          </Link>
         </p>
       </form>
     </div>
