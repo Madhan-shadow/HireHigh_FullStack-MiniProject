@@ -4,175 +4,211 @@ import React, {
   useState
 } from "react";
 
-import {
-  useDispatch,
-  useSelector
-} from "react-redux";
-
-import {
-  fetchApplications,
-  fetchMyApplications,
-  updateStage,
-  deleteApplication,
-  clearMessages
-} from "../../store/slices/applicationSlice";
+import { useSelector } from "react-redux";
+import applicationService from "../../services/applicationService";
 
 function ApplicationList() {
-  const dispatch = useDispatch();
-
-  const {
-    items,
-    currentPage,
-    totalPages,
-    totalElements,
-    loading,
-    error,
-    success,
-    warning
-  } = useSelector(
-    (state) => state.applications
-  );
-
   const { role } = useSelector(
     (state) => state.auth
   );
 
-  const [page, setPage] = useState(0);
-  const [search, setSearch] = useState("");
-  const [modal, setModal] = useState(null);
+  const [applications, setApplications] =
+    useState([]);
 
-  const inputRef = useRef(null);
+  const [search, setSearch] =
+    useState("");
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  const [stageFilter, setStageFilter] =
+    useState("ALL");
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  const [error, setError] =
+    useState("");
 
-      if (role === "CANDIDATE") {
-        dispatch(fetchMyApplications());
+  const searchInputRef = useRef(null);
+
+  const loadApplications = async () => {
+    try {
+      setError("");
+
+      const response =
+        await applicationService.getAll();
+
+      if (Array.isArray(response)) {
+        setApplications(response);
       } else {
-        dispatch(
-          fetchApplications({
-            page,
-            size: 5,
-            search
-          })
+        setApplications(
+          response?.content || []
         );
       }
+    } catch (err) {
+      if (err.response?.status === 500) {
+        setError(
+          "Server error. Please try again later."
+        );
+      } else if (
+        err.response?.status === 401
+      ) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("user");
 
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [
-    dispatch,
-    page,
-    search,
-    role
-  ]);
-
-  useEffect(() => {
-    if (
-      success ||
-      warning ||
-      error
-    ) {
-      const timer = setTimeout(() => {
-        dispatch(clearMessages());
-      }, 3000);
-
-      return () => clearTimeout(timer);
+        window.location.href = "/login";
+      } else {
+        setError(
+          err.response?.data?.message ||
+          "Failed to load applications."
+        );
+      }
     }
-  }, [
-    success,
-    warning,
-    error,
-    dispatch
-  ]);
-
-  const handleStage = async (
-    id,
-    stage
-  ) => {
-    await dispatch(
-      updateStage({
-        id,
-        stage
-      })
-    );
-
-    setModal(null);
   };
 
-  const handleDelete = async (id) => {
-    await dispatch(
-      deleteApplication(id)
-    );
+  /*
+   * T10 + T11
+   *
+   * Initial render calls getAll once.
+   * Changing search/stage causes re-fetch.
+   */
+  useEffect(() => {
+    loadApplications();
+  }, [search, stageFilter]);
 
-    setModal(null);
-  };
+  /*
+   * T12
+   */
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
+  /*
+   * T8 + T9
+   */
+  const filteredApplications =
+    applications.filter((application) => {
+
+      const candidate =
+        application.candidate?.user?.username ||
+        application.candidate?.user?.email ||
+        "";
+
+      const job =
+        application.job?.title || "";
+
+      const searchValue =
+        `${candidate} ${job}`.toLowerCase();
+
+      const matchesSearch =
+        searchValue.includes(
+          search.toLowerCase()
+        );
+
+      const matchesStage =
+        stageFilter === "ALL" ||
+        application.currentStage ===
+          stageFilter;
+
+      return (
+        matchesSearch &&
+        matchesStage
+      );
+    });
 
   return (
-    <div className="application-list">
+    <div>
 
-      <h1>
-        Applications
-      </h1>
-
-      {role !== "CANDIDATE" && (
-        <input
-          ref={inputRef}
-          placeholder="Filter by candidate"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-        />
-      )}
-
-      {success && (
-        <div className="success-banner">
-          {success}
-        </div>
-      )}
-
-      {warning && (
-        <div className="warning-banner">
-          {warning}
-        </div>
-      )}
+      <h1>Applications</h1>
 
       {error && (
-        <div className="error-banner">
+        <div
+          role="alert"
+          style={{ color: "red" }}
+        >
           {error}
         </div>
       )}
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Candidate</th>
-              <th>Job</th>
-              <th>Stage</th>
-              <th>Applied At</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+      <input
+        ref={searchInputRef}
+        type="text"
+        placeholder="Search applications"
+        value={search}
+        onChange={(e) =>
+          setSearch(e.target.value)
+        }
+      />
 
-          <tbody>
-            {items.map((application) => (
+      <select
+        value={stageFilter}
+        onChange={(e) =>
+          setStageFilter(e.target.value)
+        }
+      >
+        <option value="ALL">
+          All Stages
+        </option>
+
+        <option value="APPLIED">
+          Applied
+        </option>
+
+        <option value="SCREENING">
+          Screening
+        </option>
+
+        <option value="INTERVIEW">
+          Interview
+        </option>
+
+        <option value="OFFERED">
+          Offered
+        </option>
+
+        <option value="HIRED">
+          Hired
+        </option>
+
+        <option value="REJECTED">
+          Rejected
+        </option>
+      </select>
+
+      {(role === "RECRUITER" ||
+        role === "TA_LEAD" ||
+        role === "ADMIN") && (
+        <section>
+          <h2>Recruitment Pipeline</h2>
+
+          <div>
+            <strong>
+              Total Applications:
+            </strong>{" "}
+            {filteredApplications.length}
+          </div>
+        </section>
+      )}
+
+      {role === "CANDIDATE" && (
+        <section>
+          <h2>My Applications</h2>
+        </section>
+      )}
+
+      <table>
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th>Job</th>
+            <th>Stage</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {filteredApplications.map(
+            (application) => (
               <tr
                 key={application.id}
               >
                 <td>
                   {application.candidate
-                    ?.user?.fullName ||
-                    application.candidate
                     ?.user?.username ||
                     application.candidate
                     ?.user?.email ||
@@ -180,187 +216,19 @@ function ApplicationList() {
                 </td>
 
                 <td>
-                  {application.job?.title}
+                  {application.job?.title ||
+                    "Job"}
                 </td>
 
                 <td>
-                  {application.currentStage}
-                </td>
-
-                <td>
-                  {application.appliedAt
-                    ? new Date(
-                        application.appliedAt
-                      ).toLocaleString()
-                    : ""}
-                </td>
-
-                <td>
-                  {(role === "RECRUITER" ||
-                    role === "TA_LEAD") && (
-                    <>
-                      <button
-                        onClick={() =>
-                          setModal({
-                            type: "stage",
-                            application
-                          })
-                        }
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setModal({
-                            type: "delete",
-                            application
-                          })
-                        }
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
+                  {application.currentStage ||
+                    "APPLIED"}
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {role !== "CANDIDATE" && (
-        <div className="pagination">
-
-          <button
-            disabled={page === 0}
-            onClick={() =>
-              setPage((p) => p - 1)
-            }
-          >
-            Previous
-          </button>
-
-          <span>
-            Page {currentPage + 1} of{" "}
-            {Math.max(totalPages, 1)}
-          </span>
-
-          <button
-            disabled={
-              page >= totalPages - 1
-            }
-            onClick={() =>
-              setPage((p) => p + 1)
-            }
-          >
-            Next
-          </button>
-
-          <span>
-            Total: {totalElements}
-          </span>
-
-        </div>
-      )}
-
-      {modal && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setModal(null)}
-        >
-          <div
-            className="modal"
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-
-            <button
-              aria-label="Close"
-              onClick={() =>
-                setModal(null)
-              }
-            >
-              X
-            </button>
-
-            {modal.type === "stage" && (
-              <>
-                <h2>
-                  Update Stage
-                </h2>
-
-                <label htmlFor="stage">
-                  Stage
-                </label>
-
-                <select
-                  id="stage"
-                  value={
-                    modal.application
-                      .currentStage
-                  }
-                  onChange={(e) =>
-                    handleStage(
-                      modal.application.id,
-                      e.target.value
-                    )
-                  }
-                >
-                  <option value="APPLIED">
-                    APPLIED
-                  </option>
-
-                  <option value="SCREENING">
-                    SCREENING
-                  </option>
-
-                  <option value="INTERVIEW">
-                    INTERVIEW
-                  </option>
-
-                  <option value="OFFERED">
-                    OFFERED
-                  </option>
-
-                  <option value="HIRED">
-                    HIRED
-                  </option>
-
-                  <option value="REJECTED">
-                    REJECTED
-                  </option>
-                </select>
-              </>
-            )}
-
-            {modal.type === "delete" && (
-              <>
-                <h2>
-                  Confirm Delete
-                </h2>
-
-                <p>
-                  Are you sure you want to
-                  delete this application?
-                </p>
-
-                <button
-                  onClick={() =>
-                    handleDelete(
-                      modal.application.id
-                    )
-                  }
-                >
-                  Delete
-                </button>
-              </>
-            )}
-
-          </div>
-        </div>
-      )}
+            )
+          )}
+        </tbody>
+      </table>
 
     </div>
   );

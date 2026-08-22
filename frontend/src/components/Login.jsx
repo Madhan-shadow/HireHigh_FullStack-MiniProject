@@ -16,40 +16,15 @@ function Login() {
     password: ""
   });
 
-  const [errors, setErrors] = useState({});
-
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value
     });
-
-    setErrors({
-      ...errors,
-      [e.target.name]: ""
-    });
-  };
-
-  const validate = () => {
-    const newErrors = {};
-
-    if (!form.username.trim()) {
-      newErrors.username = "Username is required";
-    }
-
-    if (!form.password.trim()) {
-      newErrors.password = "Password is required";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validate()) return;
 
     const result = await dispatch(login(form));
 
@@ -59,9 +34,16 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
-      <form onSubmit={handleSubmit} noValidate>
-        <h1>HireHigh Login</h1>
+    <div>
+      <h1>Login</h1>
+
+      {error && (
+        <div role="alert" style={{ color: "red" }}>
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
 
         <label htmlFor="username">
           Username
@@ -73,11 +55,8 @@ function Login() {
           type="text"
           value={form.username}
           onChange={handleChange}
+          placeholder="Enter username"
         />
-
-        {errors.username && (
-          <span>{errors.username}</span>
-        )}
 
         <label htmlFor="password">
           Password
@@ -89,32 +68,20 @@ function Login() {
           type="password"
           value={form.password}
           onChange={handleChange}
+          placeholder="Enter password"
         />
 
-        {errors.password && (
-          <span>{errors.password}</span>
-        )}
-
-        {error && (
-          <div className="error-banner">
-            {error}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-        >
+        <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
-
-        <p>
-          Don't have an account?{" "}
-          <Link to="/register">
-            Register here
-          </Link>
-        </p>
       </form>
+
+      <p>
+        Don't have an account?{" "}
+        <Link to="/register">
+          Register
+        </Link>
+      </p>
     </div>
   );
 }
