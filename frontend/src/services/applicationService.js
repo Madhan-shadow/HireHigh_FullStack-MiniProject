@@ -1,27 +1,73 @@
 import api from "./api";
 
-const jobService = {
-  async getAll() {
-    const response = await api.get(
-      "/jobs"
-    );
+const applicationService = {
+  async apply(jobId) {
+    const user =
+      localStorage.getItem("user");
 
-    return response.data;
-  },
+    let username =
+      localStorage.getItem("username") ||
+      "";
 
-  async create(jobData) {
+    try {
+      if (user) {
+        const parsed =
+          JSON.parse(user);
+
+        username =
+          parsed.username ||
+          username;
+      }
+    } catch {
+      username =
+        localStorage.getItem("username") ||
+        "";
+    }
+
     const response = await api.post(
-      "/jobs",
-      jobData
+      `/applications/apply/${jobId}`,
+      null,
+      {
+        params: {
+          username
+        }
+      }
     );
 
     return response.data;
   },
 
-  async update(id, jobData) {
+  async getAll(page = 0, size = 5) {
+    const response = await api.get(
+      "/applications",
+      {
+        params: {
+          page,
+          size
+        }
+      }
+    );
+
+    return response.data;
+  },
+
+  async getMyApplications() {
+    const response = await api.get(
+      "/applications/my-applications"
+    );
+
+    return response.data;
+  },
+
+  async updateStage(id, stage) {
     const response = await api.put(
-      `/jobs/${id}`,
-      jobData
+      `/applications/${id}/stage`,
+      null,
+      {
+        params: {
+          stage
+        }
+      }
     );
 
     return response.data;
@@ -29,11 +75,11 @@ const jobService = {
 
   async delete(id) {
     const response = await api.delete(
-      `/jobs/${id}`
+      `/applications/${id}`
     );
 
     return response.data;
   }
 };
 
-export default jobService;
+export default applicationService;
