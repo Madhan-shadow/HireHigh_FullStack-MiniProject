@@ -4,16 +4,30 @@ import React, {
   useState
 } from "react";
 
-import { useSelector } from "react-redux";
-import applicationService from "../../services/applicationService";
+import {
+  useDispatch,
+  useSelector
+} from "react-redux";
+
+import {
+  fetchApplications,
+  fetchMyApplications
+} from "../../store/slices/applicationSlice";
 
 function ApplicationList() {
+  const dispatch = useDispatch();
+
   const { role } = useSelector(
-    (state) => state.auth
+    state => state.auth
   );
 
-  const [applications, setApplications] =
-    useState([]);
+  const {
+    items,
+    loading,
+    error
+  } = useSelector(
+    state => state.applications
+  );
 
   const [search, setSearch] =
     useState("");
@@ -21,80 +35,50 @@ function ApplicationList() {
   const [stageFilter, setStageFilter] =
     useState("ALL");
 
-  const [error, setError] =
-    useState("");
+  const searchInputRef =
+    useRef(null);
 
-  const searchInputRef = useRef(null);
+  const isCandidate =
+    role === "CANDIDATE";
 
-  const loadApplications = async () => {
-    try {
-      setError("");
-
-      const response =
-        await applicationService.getAll();
-
-      if (Array.isArray(response)) {
-        setApplications(response);
-      } else {
-        setApplications(
-          response?.content || []
-        );
-      }
-    } catch (err) {
-      if (err.response?.status === 500) {
-        setError(
-          "Server error. Please try again later."
-        );
-      } else if (
-        err.response?.status === 401
-      ) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        localStorage.removeItem("user");
-
-        window.location.href = "/login";
-      } else {
-        setError(
-          err.response?.data?.message ||
-          "Failed to load applications."
-        );
-      }
-    }
-  };
-
-  /*
-   * T10 + T11
-   *
-   * Initial render calls getAll once.
-   * Changing search/stage causes re-fetch.
-   */
   useEffect(() => {
-    loadApplications();
-  }, [search, stageFilter]);
+    if (isCandidate) {
+      dispatch(fetchMyApplications());
+    } else {
+      dispatch(
+        fetchApplications({
+          page: 0,
+          size: 100,
+          search: ""
+        })
+      );
+    }
+  }, [dispatch, isCandidate]);
 
-  /*
-   * T12
-   */
   useEffect(() => {
     searchInputRef.current?.focus();
   }, []);
 
-  /*
-   * T8 + T9
-   */
   const filteredApplications =
-    applications.filter((application) => {
+    items.filter(application => {
 
-      const candidate =
-        application.candidate?.user?.username ||
-        application.candidate?.user?.email ||
-        "";
+      const username =
+        application.candidate
+          ?.user
+          ?.username || "";
+
+      const email =
+        application.candidate
+          ?.user
+          ?.email || "";
 
       const job =
-        application.job?.title || "";
+        application.job
+          ?.title || "";
 
       const searchValue =
-        `${candidate} ${job}`.toLowerCase();
+        `${username} ${email} ${job}`
+          .toLowerCase();
 
       const matchesSearch =
         searchValue.includes(
@@ -114,8 +98,11 @@ function ApplicationList() {
 
   return (
     <div>
-
-      <h1>Applications</h1>
+      <h1>
+        {isCandidate
+          ? "My Applications"
+          : "Applications"}
+      </h1>
 
       {error && (
         <div
@@ -131,14 +118,14 @@ function ApplicationList() {
         type="text"
         placeholder="Search applications"
         value={search}
-        onChange={(e) =>
+        onChange={e =>
           setSearch(e.target.value)
         }
       />
 
       <select
         value={stageFilter}
-        onChange={(e) =>
+        onChange={e =>
           setStageFilter(e.target.value)
         }
       >
@@ -171,11 +158,11 @@ function ApplicationList() {
         </option>
       </select>
 
-      {(role === "RECRUITER" ||
-        role === "TA_LEAD" ||
-        role === "ADMIN") && (
+      {!isCandidate && (
         <section>
-          <h2>Recruitment Pipeline</h2>
+          <h2>
+            Recruitment Pipeline
+          </h2>
 
           <div>
             <strong>
@@ -186,50 +173,59 @@ function ApplicationList() {
         </section>
       )}
 
-      {role === "CANDIDATE" && (
-        <section>
-          <h2>My Applications</h2>
-        </section>
-      )}
+      {loading ? (
+        <p>Loading applications...</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Candidate</th>
+              <th>Job</th>
+              <th>Stage</th>
+            </tr>
+          </thead>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Candidate</th>
-            <th>Job</th>
-            <th>Stage</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredApplications.map(
-            (application) => (
-              <tr
-                key={application.id}
-              >
-                <td>
-                  {application.candidate
-                    ?.user?.username ||
-                    application.candidate
-                    ?.user?.email ||
-                    "Candidate"}
-                </td>
-
-                <td>
-                  {application.job?.title ||
-                    "Job"}
-                </td>
-
-                <td>
-                  {application.currentStage ||
-                    "APPLIED"}
+          <tbody>
+            {filteredApplications.length ===
+            0 ? (
+              <tr>
+                <td colSpan="3">
+                  No applications found.
                 </td>
               </tr>
-            )
-          )}
-        </tbody>
-      </table>
+            ) : (
+              filteredApplications.map(
+                application => (
+                  <tr
+                    key={application.id}
+                  >
+                    <td>
+                      {application.candidate
+                        ?.user
+                        ?.username ||
+                        application.candidate
+                          ?.user
+                          ?.email ||
+                        "Candidate"}
+                    </td>
 
+                    <td>
+                      {application.job
+                        ?.title ||
+                        "Job"}
+                    </td>
+
+                    <td>
+                      {application.currentStage ||
+                        "APPLIED"}
+                    </td>
+                  </tr>
+                )
+              )
+            )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

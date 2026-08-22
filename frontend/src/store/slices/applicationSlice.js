@@ -14,7 +14,7 @@ export const fetchApplications =
         page = 0,
         size = 5,
         search = ""
-      },
+      } = {},
       thunkAPI
     ) => {
       try {
@@ -57,12 +57,11 @@ export const applyJob =
           jobId
         );
       } catch (error) {
-
         return thunkAPI.rejectWithValue(
           {
             message:
               error.response?.data?.message ||
-              "Application capacity exceeded"
+              "Application failed"
           }
         );
       }
@@ -78,11 +77,10 @@ export const updateStage =
     ) => {
       try {
         const response =
-          await applicationService
-            .updateStage(
-              id,
-              stage
-            );
+          await applicationService.updateStage(
+            id,
+            stage
+          );
 
         return {
           id,
@@ -108,9 +106,7 @@ export const deleteApplication =
     async (id, thunkAPI) => {
       try {
         const response =
-          await applicationService.delete(
-            id
-          );
+          await applicationService.delete(id);
 
         return {
           id,
@@ -139,25 +135,22 @@ const initialState = {
 
 const applicationSlice =
   createSlice({
-
     name: "applications",
 
     initialState,
 
     reducers: {
-
       clearMessages: (state) => {
         state.error = null;
         state.success = null;
         state.warning = null;
       }
-
     },
 
     extraReducers: (builder) => {
-
       builder
 
+        // FETCH ALL
         .addCase(
           fetchApplications.pending,
           (state) => {
@@ -169,20 +162,22 @@ const applicationSlice =
         .addCase(
           fetchApplications.fulfilled,
           (state, action) => {
-
             state.loading = false;
 
             const data =
               action.payload;
 
             state.items =
-              data.content || [];
+              Array.isArray(data)
+                ? data
+                : data.content || [];
 
             state.totalPages =
-              data.totalPages || 0;
+              data.totalPages || 1;
 
             state.totalElements =
-              data.totalElements || 0;
+              data.totalElements ??
+              state.items.length;
 
             state.currentPage =
               data.number || 0;
@@ -197,16 +192,29 @@ const applicationSlice =
           (state, action) => {
             state.loading = false;
             state.error =
-              action.payload;
+              action.payload ||
+              "Failed to fetch applications";
+          }
+        )
+
+        // FETCH MY APPLICATIONS
+        .addCase(
+          fetchMyApplications.pending,
+          (state) => {
+            state.loading = true;
+            state.error = null;
           }
         )
 
         .addCase(
           fetchMyApplications.fulfilled,
           (state, action) => {
+            state.loading = false;
 
             state.items =
-              action.payload || [];
+              Array.isArray(action.payload)
+                ? action.payload
+                : action.payload?.content || [];
 
             state.currentPage = 0;
             state.totalPages = 1;
@@ -219,15 +227,17 @@ const applicationSlice =
         .addCase(
           fetchMyApplications.rejected,
           (state, action) => {
+            state.loading = false;
             state.error =
-              action.payload;
+              action.payload ||
+              "Failed to fetch applications";
           }
         )
 
+        // APPLY
         .addCase(
           applyJob.fulfilled,
           (state, action) => {
-
             state.success =
               action.payload?.message ||
               "Application submitted successfully.";
@@ -237,43 +247,30 @@ const applicationSlice =
         .addCase(
           applyJob.rejected,
           (state, action) => {
-
             state.warning =
               action.payload?.message ||
-              "Application capacity exceeded";
+              "Application failed";
           }
         )
 
+        // UPDATE STAGE
         .addCase(
-          updateStage.pending,
+          updateStage.fulfilled,
           (state, action) => {
-
-            const {
-              id,
-              stage
-            } = action.meta.arg;
-
             const item =
               state.items.find(
-                (application) =>
-                  application.id === id
+                application =>
+                  application.id ===
+                  action.payload.id
               );
 
             if (item) {
               item.currentStage =
-                stage;
+                action.payload.stage;
             }
-          }
-        )
-
-        .addCase(
-          updateStage.fulfilled,
-          (state, action) => {
 
             state.success =
-              action.payload
-                ?.response
-                ?.message ||
+              action.payload?.response?.message ||
               "Application updated successfully.";
           }
         )
@@ -287,13 +284,13 @@ const applicationSlice =
           }
         )
 
+        // DELETE
         .addCase(
           deleteApplication.fulfilled,
           (state, action) => {
-
             state.items =
               state.items.filter(
-                (application) =>
+                application =>
                   application.id !==
                   action.payload.id
               );
@@ -305,9 +302,7 @@ const applicationSlice =
               );
 
             state.success =
-              action.payload
-                ?.response
-                ?.message ||
+              action.payload?.response?.message ||
               "Application deleted successfully.";
           }
         )
@@ -316,7 +311,8 @@ const applicationSlice =
           deleteApplication.rejected,
           (state, action) => {
             state.error =
-              action.payload;
+              action.payload ||
+              "Application delete failed";
           }
         );
     }
