@@ -26,38 +26,53 @@ function Register() {
       ...form,
       [e.target.name]: e.target.value
     });
+
+    setErrors({
+      ...errors,
+      [e.target.name]: ""
+    });
   };
 
   const validate = () => {
     const newErrors = {};
 
     if (!form.fullName.trim()) {
-      newErrors.fullName = "Full Name is required";
+      newErrors.fullName =
+        "Full Name is required";
     }
 
     if (!form.email.trim()) {
-      newErrors.email = "Email Address is required";
+      newErrors.email =
+        "Email Address is required";
     }
 
     if (!form.username.trim()) {
-      newErrors.username = "Username is required";
+      newErrors.username =
+        "Username is required";
     }
 
     if (!form.password.trim()) {
-      newErrors.password = "Password is required";
+      newErrors.password =
+        "Password is required";
     }
 
     setErrors(newErrors);
 
-    return Object.keys(newErrors).length === 0;
+    return (
+      Object.keys(newErrors).length === 0
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
-    const result = await dispatch(register(form));
+    const result = await dispatch(
+      register(form)
+    );
 
     if (register.fulfilled.match(result)) {
       navigate("/login");
@@ -66,7 +81,11 @@ function Register() {
 
   return (
     <div className="register-container">
-      <form onSubmit={handleSubmit} noValidate>
+
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+      >
 
         <h1>Create Account</h1>
 
@@ -88,7 +107,9 @@ function Register() {
         />
 
         {errors.fullName && (
-          <span>{errors.fullName}</span>
+          <span>
+            {errors.fullName}
+          </span>
         )}
 
         <label htmlFor="email">
@@ -99,13 +120,15 @@ function Register() {
           id="email"
           name="email"
           type="email"
-          placeholder="john@example.com"
+          placeholder="name@hirehigh.com"
           value={form.email}
           onChange={handleChange}
         />
 
         {errors.email && (
-          <span>{errors.email}</span>
+          <span>
+            {errors.email}
+          </span>
         )}
 
         <label htmlFor="username">
@@ -116,12 +139,15 @@ function Register() {
           id="username"
           name="username"
           type="text"
+          placeholder="Enter username"
           value={form.username}
           onChange={handleChange}
         />
 
         {errors.username && (
-          <span>{errors.username}</span>
+          <span>
+            {errors.username}
+          </span>
         )}
 
         <label htmlFor="role">
@@ -159,16 +185,22 @@ function Register() {
           id="password"
           name="password"
           type="password"
+          placeholder="Enter password"
           value={form.password}
           onChange={handleChange}
         />
 
         {errors.password && (
-          <span>{errors.password}</span>
+          <span>
+            {errors.password}
+          </span>
         )}
 
         {error && (
-          <div className="error-banner">
+          <div
+            className="error-banner"
+            role="alert"
+          >
             {error}
           </div>
         )}
@@ -177,17 +209,21 @@ function Register() {
           type="submit"
           disabled={loading}
         >
-          {loading ? "Registering..." : "Register"}
+          {loading
+            ? "Registering..."
+            : "Register"}
         </button>
 
         <p>
           Already have an account?{" "}
+
           <Link to="/login">
             Login here
           </Link>
         </p>
 
       </form>
+
     </div>
   );
 }

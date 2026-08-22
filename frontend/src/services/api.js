@@ -8,6 +8,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+
     const token =
       localStorage.getItem("token");
 
@@ -24,12 +25,28 @@ api.interceptors.response.use(
   (response) => response,
 
   (error) => {
+
+    /*
+     * T20 — 401 session expiry
+     */
     if (
       error.response?.status === 401
     ) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("user");
+      localStorage.removeItem(
+        "token"
+      );
+
+      localStorage.removeItem(
+        "role"
+      );
+
+      localStorage.removeItem(
+        "user"
+      );
+
+      localStorage.removeItem(
+        "username"
+      );
 
       window.location.href = "/login";
     }
