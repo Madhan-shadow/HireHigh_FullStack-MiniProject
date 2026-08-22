@@ -1,36 +1,73 @@
 import api from "./api";
 
-const interviewService = {
+const applicationService = {
+  async apply(jobId) {
+    const user =
+      localStorage.getItem("user");
 
-  async getAll() {
-    const response = await api.get(
-      "/interviews"
-    );
+    let username =
+      localStorage.getItem("username") ||
+      "";
 
-    return response.data;
-  },
+    try {
+      if (user) {
+        const parsed =
+          JSON.parse(user);
 
-  async getById(id) {
-    const response = await api.get(
-      `/interviews/${id}`
-    );
+        username =
+          parsed.username ||
+          username;
+      }
+    } catch {
+      username =
+        localStorage.getItem("username") ||
+        "";
+    }
 
-    return response.data;
-  },
-
-  async create(data) {
     const response = await api.post(
-      "/interviews",
-      data
+      `/applications/apply/${jobId}`,
+      null,
+      {
+        params: {
+          username
+        }
+      }
     );
 
     return response.data;
   },
 
-  async update(id, data) {
+  async getAll(page = 0, size = 5) {
+    const response = await api.get(
+      "/applications",
+      {
+        params: {
+          page,
+          size
+        }
+      }
+    );
+
+    return response.data;
+  },
+
+  async getMyApplications() {
+    const response = await api.get(
+      "/applications/my-applications"
+    );
+
+    return response.data;
+  },
+
+  async updateStage(id, stage) {
     const response = await api.put(
-      `/interviews/${id}`,
-      data
+      `/applications/${id}/stage`,
+      null,
+      {
+        params: {
+          stage
+        }
+      }
     );
 
     return response.data;
@@ -38,21 +75,11 @@ const interviewService = {
 
   async delete(id) {
     const response = await api.delete(
-      `/interviews/${id}`
-    );
-
-    return response.data;
-  },
-
-  async feedback(id, data) {
-    const response = await api.put(
-      `/interviews/${id}/feedback`,
-      data
+      `/applications/${id}`
     );
 
     return response.data;
   }
-
 };
 
-export default interviewService;
+export default applicationService;

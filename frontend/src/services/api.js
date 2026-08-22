@@ -17,9 +17,7 @@ api.interceptors.request.use(
     }
 
     return config;
-  },
-  (error) =>
-    Promise.reject(error)
+  }
 );
 
 api.interceptors.response.use(
@@ -27,8 +25,7 @@ api.interceptors.response.use(
 
   (error) => {
     if (
-      error.response &&
-      error.response.status === 401
+      error.response?.status === 401
     ) {
       localStorage.removeItem("token");
       localStorage.removeItem("role");

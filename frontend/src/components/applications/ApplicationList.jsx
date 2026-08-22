@@ -4,7 +4,10 @@ import React, {
   useState
 } from "react";
 
-import { useDispatch, useSelector } from "react-redux";
+import {
+  useDispatch,
+  useSelector
+} from "react-redux";
 
 import {
   fetchApplications,
@@ -35,9 +38,7 @@ function ApplicationList() {
   );
 
   const [page, setPage] = useState(0);
-
   const [search, setSearch] = useState("");
-
   const [modal, setModal] = useState(null);
 
   const inputRef = useRef(null);
@@ -64,10 +65,19 @@ function ApplicationList() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [dispatch, page, search, role]);
+  }, [
+    dispatch,
+    page,
+    search,
+    role
+  ]);
 
   useEffect(() => {
-    if (success || error || warning) {
+    if (
+      success ||
+      warning ||
+      error
+    ) {
       const timer = setTimeout(() => {
         dispatch(clearMessages());
       }, 3000);
@@ -76,12 +86,12 @@ function ApplicationList() {
     }
   }, [
     success,
-    error,
     warning,
+    error,
     dispatch
   ]);
 
-  const handleStageChange = async (
+  const handleStage = async (
     id,
     stage
   ) => {
@@ -113,7 +123,6 @@ function ApplicationList() {
       {role !== "CANDIDATE" && (
         <input
           ref={inputRef}
-          type="text"
           placeholder="Filter by candidate"
           value={search}
           onChange={(e) => {
@@ -151,7 +160,7 @@ function ApplicationList() {
               <th>Job</th>
               <th>Stage</th>
               <th>Applied At</th>
-              <th>Action</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
@@ -257,88 +266,99 @@ function ApplicationList() {
 
       {modal && (
         <div
-          className="modal"
-          role="dialog"
+          className="modal-backdrop"
+          onClick={() => setModal(null)}
         >
-
-          <button
-            onClick={() => setModal(null)}
+          <div
+            className="modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
           >
-            X
-          </button>
 
-          {modal.type === "stage" && (
-            <>
-              <h2>
-                Update Application
-              </h2>
+            <button
+              aria-label="Close"
+              onClick={() =>
+                setModal(null)
+              }
+            >
+              X
+            </button>
 
-              <label htmlFor="stage">
-                Stage
-              </label>
+            {modal.type === "stage" && (
+              <>
+                <h2>
+                  Update Stage
+                </h2>
 
-              <select
-                id="stage"
-                value={
-                  modal.application
-                    .currentStage
-                }
-                onChange={(e) =>
-                  handleStageChange(
-                    modal.application.id,
-                    e.target.value
-                  )
-                }
-              >
-                <option value="APPLIED">
-                  APPLIED
-                </option>
+                <label htmlFor="stage">
+                  Stage
+                </label>
 
-                <option value="SCREENING">
-                  SCREENING
-                </option>
+                <select
+                  id="stage"
+                  value={
+                    modal.application
+                      .currentStage
+                  }
+                  onChange={(e) =>
+                    handleStage(
+                      modal.application.id,
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="APPLIED">
+                    APPLIED
+                  </option>
 
-                <option value="INTERVIEW">
-                  INTERVIEW
-                </option>
+                  <option value="SCREENING">
+                    SCREENING
+                  </option>
 
-                <option value="OFFERED">
-                  OFFERED
-                </option>
+                  <option value="INTERVIEW">
+                    INTERVIEW
+                  </option>
 
-                <option value="HIRED">
-                  HIRED
-                </option>
+                  <option value="OFFERED">
+                    OFFERED
+                  </option>
 
-                <option value="REJECTED">
-                  REJECTED
-                </option>
-              </select>
-            </>
-          )}
+                  <option value="HIRED">
+                    HIRED
+                  </option>
 
-          {modal.type === "delete" && (
-            <>
-              <h2>
-                Confirm Delete
-              </h2>
+                  <option value="REJECTED">
+                    REJECTED
+                  </option>
+                </select>
+              </>
+            )}
 
-              <p>
-                Are you sure?
-              </p>
+            {modal.type === "delete" && (
+              <>
+                <h2>
+                  Confirm Delete
+                </h2>
 
-              <button
-                onClick={() =>
-                  handleDelete(
-                    modal.application.id
-                  )
-                }
-              >
-                Delete
-              </button>
-            </>
-          )}
+                <p>
+                  Are you sure you want to
+                  delete this application?
+                </p>
 
+                <button
+                  onClick={() =>
+                    handleDelete(
+                      modal.application.id
+                    )
+                  }
+                >
+                  Delete
+                </button>
+              </>
+            )}
+
+          </div>
         </div>
       )}
 

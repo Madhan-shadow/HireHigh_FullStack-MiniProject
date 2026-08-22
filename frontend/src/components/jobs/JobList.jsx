@@ -1,338 +1,195 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { register } from "../store/slices/authSlice";
 
-import {
-  fetchJobs,
-  createJob,
-  updateJob,
-  deleteJob,
-  setSearchQuery
-} from "../../store/slices/jobSlice";
-
-import { applyJob } from "../../store/slices/applicationSlice";
-
-function JobList() {
+function Register() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const {
-    items,
-    loading,
-    error,
-    searchQuery
-  } = useSelector((state) => state.jobs);
+  const { loading, error } = useSelector(
+    (state) => state.auth
+  );
 
-  const { role } = useSelector((state) => state.auth);
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+    email: "",
+    fullName: "",
+    role: "CANDIDATE"
+  });
 
-  const [form, setForm] = useState(null);
-  const [deleteJobData, setDeleteJobData] = useState(null);
-  const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    dispatch(fetchJobs());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => {
-        setMessage("");
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-
-  const filteredJobs = useMemo(() => {
-    return items.filter((job) => {
-      const text = `
-        ${job.title || ""}
-        ${job.department || ""}
-        ${job.description || ""}
-      `.toLowerCase();
-
-      return text.includes(searchQuery.toLowerCase());
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
     });
-  }, [items, searchQuery]);
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!form.fullName.trim()) {
+      newErrors.fullName = "Full Name is required";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email Address is required";
+    }
+
+    if (!form.username.trim()) {
+      newErrors.username = "Username is required";
+    }
+
+    if (!form.password.trim()) {
+      newErrors.password = "Password is required";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const jobData = {
-      title: form.title,
-      department: form.department,
-      description: form.description,
-      hiringGoal: Number(form.hiringGoal)
-    };
+    if (!validate()) return;
 
-    let result;
+    const result = await dispatch(register(form));
 
-    if (form.id) {
-      result = await dispatch(
-        updateJob({
-          id: form.id,
-          jobData
-        })
-      );
-    } else {
-      result = await dispatch(
-        createJob(jobData)
-      );
-    }
-
-    if (
-      createJob.fulfilled.match(result) ||
-      updateJob.fulfilled.match(result)
-    ) {
-      setForm(null);
-      setMessage(
-        result.payload?.message ||
-        "Job saved successfully."
-      );
-    }
-  };
-
-  const handleDelete = async () => {
-    const result = await dispatch(
-      deleteJob(deleteJobData.id)
-    );
-
-    if (deleteJob.fulfilled.match(result)) {
-      setDeleteJobData(null);
-      setMessage(
-        result.payload?.message ||
-        "Job deleted successfully."
-      );
-    }
-  };
-
-  const handleApply = async (jobId) => {
-    const result = await dispatch(
-      applyJob(jobId)
-    );
-
-    if (applyJob.fulfilled.match(result)) {
-      setMessage(
-        result.payload?.message ||
-        "Application submitted successfully."
-      );
+    if (register.fulfilled.match(result)) {
+      navigate("/login");
     }
   };
 
   return (
-    <div className="job-list">
+    <div className="register-container">
+      <form onSubmit={handleSubmit} noValidate>
 
-      <h1>Jobs</h1>
+        <h1>Create Account</h1>
 
-      <input
-        type="text"
-        placeholder="Search jobs"
-        value={searchQuery}
-        onChange={(e) =>
-          dispatch(setSearchQuery(e.target.value))
-        }
-      />
+        <p>
+          Join HireHigh Talent Acquisition
+        </p>
 
-      {message && (
-        <div className="success-banner">
-          {message}
-        </div>
-      )}
+        <label htmlFor="fullName">
+          Full Name
+        </label>
 
-      {error && (
-        <div className="error-banner">
-          {error}
-        </div>
-      )}
+        <input
+          id="fullName"
+          name="fullName"
+          type="text"
+          placeholder="John Doe"
+          value={form.fullName}
+          onChange={handleChange}
+        />
 
-      {(role === "RECRUITER" ||
-        role === "TA_LEAD") && (
+        {errors.fullName && (
+          <span>{errors.fullName}</span>
+        )}
+
+        <label htmlFor="email">
+          Email Address
+        </label>
+
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="john@example.com"
+          value={form.email}
+          onChange={handleChange}
+        />
+
+        {errors.email && (
+          <span>{errors.email}</span>
+        )}
+
+        <label htmlFor="username">
+          Username
+        </label>
+
+        <input
+          id="username"
+          name="username"
+          type="text"
+          value={form.username}
+          onChange={handleChange}
+        />
+
+        {errors.username && (
+          <span>{errors.username}</span>
+        )}
+
+        <label htmlFor="role">
+          Role
+        </label>
+
+        <select
+          id="role"
+          name="role"
+          value={form.role}
+          onChange={handleChange}
+        >
+          <option value="CANDIDATE">
+            Candidate
+          </option>
+
+          <option value="RECRUITER">
+            Recruiter
+          </option>
+
+          <option value="HIRING_MANAGER">
+            Hiring Manager
+          </option>
+
+          <option value="TA_LEAD">
+            TA Lead
+          </option>
+        </select>
+
+        <label htmlFor="password">
+          Password
+        </label>
+
+        <input
+          id="password"
+          name="password"
+          type="password"
+          value={form.password}
+          onChange={handleChange}
+        />
+
+        {errors.password && (
+          <span>{errors.password}</span>
+        )}
+
+        {error && (
+          <div className="error-banner">
+            {error}
+          </div>
+        )}
+
         <button
-          onClick={() =>
-            setForm({
-              title: "",
-              department: "",
-              description: "",
-              hiringGoal: 1
-            })
-          }
+          type="submit"
+          disabled={loading}
         >
-          Create Job
+          {loading ? "Registering..." : "Register"}
         </button>
-      )}
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div>
-          {filteredJobs.map((job) => (
-            <div
-              className="job-card"
-              key={job.id}
-            >
-              <h2>{job.title}</h2>
+        <p>
+          Already have an account?{" "}
+          <Link to="/login">
+            Login here
+          </Link>
+        </p>
 
-              <p>
-                Department: {job.department}
-              </p>
-
-              <p>
-                {job.description}
-              </p>
-
-              <p>
-                Hiring Goal: {job.hiringGoal}
-              </p>
-
-              {role === "CANDIDATE" && (
-                <button
-                  onClick={() =>
-                    handleApply(job.id)
-                  }
-                >
-                  Apply
-                </button>
-              )}
-
-              {(role === "RECRUITER" ||
-                role === "TA_LEAD") && (
-                <>
-                  <button
-                    onClick={() =>
-                      setForm(job)
-                    }
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setDeleteJobData(job)
-                    }
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {form && (
-        <div
-          className="modal"
-          role="dialog"
-        >
-          <button
-            onClick={() => setForm(null)}
-          >
-            X
-          </button>
-
-          <form onSubmit={handleSubmit}>
-
-            <label htmlFor="title">
-              Title
-            </label>
-
-            <input
-              id="title"
-              value={form.title}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  title: e.target.value
-                })
-              }
-              required
-            />
-
-            <label htmlFor="department">
-              Department
-            </label>
-
-            <input
-              id="department"
-              value={form.department}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  department: e.target.value
-                })
-              }
-              required
-            />
-
-            <label htmlFor="description">
-              Description
-            </label>
-
-            <textarea
-              id="description"
-              value={form.description}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  description: e.target.value
-                })
-              }
-              required
-            />
-
-            <label htmlFor="hiringGoal">
-              Hiring Goal
-            </label>
-
-            <input
-              id="hiringGoal"
-              type="number"
-              value={form.hiringGoal}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  hiringGoal: e.target.value
-                })
-              }
-              required
-            />
-
-            <button type="submit">
-              Save
-            </button>
-
-          </form>
-        </div>
-      )}
-
-      {deleteJobData && (
-        <div
-          className="modal"
-          role="dialog"
-        >
-          <h2>
-            Confirm Delete
-          </h2>
-
-          <p>
-            Are you sure you want to delete{" "}
-            {deleteJobData.title}?
-          </p>
-
-          <button onClick={handleDelete}>
-            Delete
-          </button>
-
-          <button
-            onClick={() =>
-              setDeleteJobData(null)
-            }
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-
+      </form>
     </div>
   );
 }
 
-export default JobList;
+export default Register;

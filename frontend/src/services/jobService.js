@@ -1,41 +1,23 @@
 import api from "./api";
 
-const jobService = {
-
-  async getAll() {
-    const response = await api.get(
-      "/jobs"
-    );
-
-    return response.data;
-  },
-
-  async create(jobData) {
+const authService = {
+  async login(credentials) {
     const response = await api.post(
-      "/jobs",
-      jobData
+      "/auth/login",
+      credentials
     );
 
     return response.data;
   },
 
-  async update(id, jobData) {
-    const response = await api.put(
-      `/jobs/${id}`,
-      jobData
-    );
-
-    return response.data;
-  },
-
-  async delete(id) {
-    const response = await api.delete(
-      `/jobs/${id}`
+  async register(userData) {
+    const response = await api.post(
+      "/auth/register",
+      userData
     );
 
     return response.data;
   }
-
 };
 
-export default jobService;
+export default authService;

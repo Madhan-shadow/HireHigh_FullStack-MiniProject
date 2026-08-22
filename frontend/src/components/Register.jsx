@@ -1,17 +1,22 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../store/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { register } from "../store/slices/authSlice";
 
-function Login() {
+function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading, error } = useSelector(
+    (state) => state.auth
+  );
 
   const [form, setForm] = useState({
     username: "",
-    password: ""
+    password: "",
+    email: "",
+    fullName: "",
+    role: "CANDIDATE"
   });
 
   const [errors, setErrors] = useState({});
@@ -25,6 +30,14 @@ function Login() {
 
   const validate = () => {
     const newErrors = {};
+
+    if (!form.fullName.trim()) {
+      newErrors.fullName = "Full Name is required";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email Address is required";
+    }
 
     if (!form.username.trim()) {
       newErrors.username = "Username is required";
@@ -42,23 +55,62 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
-    const result = await dispatch(login(form));
+    const result = await dispatch(register(form));
 
-    if (login.fulfilled.match(result)) {
-      navigate("/jobs");
+    if (register.fulfilled.match(result)) {
+      navigate("/login");
     }
   };
 
   return (
-    <div className="login-container">
-      <form onSubmit={handleSubmit}>
-        <h1>Login</h1>
+    <div className="register-container">
+      <form onSubmit={handleSubmit} noValidate>
 
-        <label htmlFor="username">Username</label>
+        <h1>Create Account</h1>
+
+        <p>
+          Join HireHigh Talent Acquisition
+        </p>
+
+        <label htmlFor="fullName">
+          Full Name
+        </label>
+
+        <input
+          id="fullName"
+          name="fullName"
+          type="text"
+          placeholder="John Doe"
+          value={form.fullName}
+          onChange={handleChange}
+        />
+
+        {errors.fullName && (
+          <span>{errors.fullName}</span>
+        )}
+
+        <label htmlFor="email">
+          Email Address
+        </label>
+
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="john@example.com"
+          value={form.email}
+          onChange={handleChange}
+        />
+
+        {errors.email && (
+          <span>{errors.email}</span>
+        )}
+
+        <label htmlFor="username">
+          Username
+        </label>
 
         <input
           id="username"
@@ -72,7 +124,36 @@ function Login() {
           <span>{errors.username}</span>
         )}
 
-        <label htmlFor="password">Password</label>
+        <label htmlFor="role">
+          Role
+        </label>
+
+        <select
+          id="role"
+          name="role"
+          value={form.role}
+          onChange={handleChange}
+        >
+          <option value="CANDIDATE">
+            Candidate
+          </option>
+
+          <option value="RECRUITER">
+            Recruiter
+          </option>
+
+          <option value="HIRING_MANAGER">
+            Hiring Manager
+          </option>
+
+          <option value="TA_LEAD">
+            TA Lead
+          </option>
+        </select>
+
+        <label htmlFor="password">
+          Password
+        </label>
 
         <input
           id="password"
@@ -92,17 +173,23 @@ function Login() {
           </div>
         )}
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+        <button
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? "Registering..." : "Register"}
         </button>
 
         <p>
-          Don't have an account?{" "}
-          <Link to="/register">Register</Link>
+          Already have an account?{" "}
+          <Link to="/login">
+            Login here
+          </Link>
         </p>
+
       </form>
     </div>
   );
 }
 
-export default Login;
+export default Register;

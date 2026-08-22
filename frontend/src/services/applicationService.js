@@ -1,64 +1,27 @@
 import api from "./api";
 
-const applicationService = {
+const jobService = {
+  async getAll() {
+    const response = await api.get(
+      "/jobs"
+    );
 
-  async apply(jobId) {
-    const user =
-      localStorage.getItem("user");
+    return response.data;
+  },
 
-    let username = "";
-
-    try {
-      const parsedUser =
-        JSON.parse(user);
-
-      username =
-        parsedUser.username || "";
-    } catch {
-      username =
-        localStorage.getItem("username") ||
-        "";
-    }
-
+  async create(jobData) {
     const response = await api.post(
-      `/applications/apply/${jobId}`,
-      null,
-      {
-        params: {
-          username
-        }
-      }
+      "/jobs",
+      jobData
     );
 
     return response.data;
   },
 
-  async getAll(page = 0, size = 5) {
-    const response = await api.get(
-      "/applications",
-      {
-        params: {
-          page,
-          size
-        }
-      }
-    );
-
-    return response.data;
-  },
-
-  async getMyApplications() {
-    const response = await api.get(
-      "/applications/my-applications"
-    );
-
-    return response.data;
-  },
-
-  async updateStage(id, stage) {
+  async update(id, jobData) {
     const response = await api.put(
-      `/applications/${id}/stage`,
-      { stage }
+      `/jobs/${id}`,
+      jobData
     );
 
     return response.data;
@@ -66,12 +29,11 @@ const applicationService = {
 
   async delete(id) {
     const response = await api.delete(
-      `/applications/${id}`
+      `/jobs/${id}`
     );
 
     return response.data;
   }
-
 };
 
-export default applicationService;
+export default jobService;
