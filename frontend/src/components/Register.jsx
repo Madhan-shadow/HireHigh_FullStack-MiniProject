@@ -17,9 +17,11 @@ import {
 } from "../store/slices/authSlice";
 
 function Register() {
+
   const dispatch = useDispatch();
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
   const {
     loading,
@@ -44,12 +46,14 @@ function Register() {
 
     setForm({
       ...form,
+
       [e.target.name]:
         e.target.value
     });
 
     setErrors({
       ...errors,
+
       [e.target.name]: ""
     });
   };

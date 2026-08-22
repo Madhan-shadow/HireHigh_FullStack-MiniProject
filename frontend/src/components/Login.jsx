@@ -17,9 +17,11 @@ import {
 } from "../store/slices/authSlice";
 
 function Login() {
+
   const dispatch = useDispatch();
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
   const {
     loading,
@@ -35,27 +37,33 @@ function Login() {
     });
 
   const handleChange = (e) => {
+
     setForm({
       ...form,
+
       [e.target.name]:
         e.target.value
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit =
+    async (e) => {
 
-    const result =
-      await dispatch(
-        login(form)
-      );
+      e.preventDefault();
 
-    if (
-      login.fulfilled.match(result)
-    ) {
-      navigate("/jobs");
-    }
-  };
+      const result =
+        await dispatch(
+          login(form)
+        );
+
+      if (
+        login.fulfilled.match(
+          result
+        )
+      ) {
+        navigate("/jobs");
+      }
+    };
 
   return (
     <div>

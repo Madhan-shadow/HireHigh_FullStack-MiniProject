@@ -6,6 +6,9 @@ import {
 import authService
   from "../../services/authService";
 
+/*
+ * LOGIN
+ */
 export const login =
   createAsyncThunk(
     "auth/login",
@@ -21,6 +24,7 @@ export const login =
         return thunkAPI.rejectWithValue({
           status:
             error.response?.status,
+
           message:
             error.response?.data
               ?.message ||
@@ -30,6 +34,9 @@ export const login =
     }
   );
 
+/*
+ * REGISTER
+ */
 export const register =
   createAsyncThunk(
     "auth/register",
@@ -45,6 +52,7 @@ export const register =
         return thunkAPI.rejectWithValue({
           status:
             error.response?.status,
+
           message:
             error.response?.data
               ?.message ||
@@ -54,6 +62,9 @@ export const register =
     }
   );
 
+/*
+ * Read saved user safely.
+ */
 const savedUser =
   localStorage.getItem("user");
 
@@ -67,6 +78,9 @@ try {
   parsedUser = null;
 }
 
+/*
+ * Initial Redux state.
+ */
 const initialState = {
   token:
     localStorage.getItem(
@@ -92,12 +106,17 @@ const initialState = {
 
 const authSlice =
   createSlice({
+
     name: "auth",
 
     initialState,
 
     reducers: {
 
+      /*
+       * Restore authentication from
+       * localStorage.
+       */
       hydrate: (state) => {
 
         const token =
@@ -134,6 +153,12 @@ const authSlice =
           !!token;
       },
 
+      /*
+       * T27 + T28
+       *
+       * Logout clears both localStorage
+       * and Redux state.
+       */
       logout: (state) => {
 
         localStorage.removeItem(
@@ -172,6 +197,9 @@ const authSlice =
 
         builder
 
+          /*
+           * LOGIN PENDING
+           */
           .addCase(
             login.pending,
             (state) => {
@@ -180,6 +208,13 @@ const authSlice =
             }
           )
 
+          /*
+           * LOGIN SUCCESS
+           *
+           * T25 token persistence
+           * T26 role persistence
+           * T29 Redux state population
+           */
           .addCase(
             login.fulfilled,
             (state, action) => {
@@ -198,8 +233,10 @@ const authSlice =
                 data.user || {
                   username:
                     data.username,
+
                   email:
                     data.email,
+
                   role:
                     data.role
                 };
@@ -251,6 +288,9 @@ const authSlice =
             }
           )
 
+          /*
+           * LOGIN FAILED
+           */
           .addCase(
             login.rejected,
             (state, action) => {
@@ -264,6 +304,9 @@ const authSlice =
             }
           )
 
+          /*
+           * REGISTER PENDING
+           */
           .addCase(
             register.pending,
             (state) => {
@@ -273,6 +316,9 @@ const authSlice =
             }
           )
 
+          /*
+           * REGISTER SUCCESS
+           */
           .addCase(
             register.fulfilled,
             (state) => {
@@ -282,6 +328,9 @@ const authSlice =
             }
           )
 
+          /*
+           * REGISTER FAILED
+           */
           .addCase(
             register.rejected,
             (state, action) => {
@@ -300,7 +349,6 @@ const authSlice =
 export const {
   hydrate,
   logout
-} =
-  authSlice.actions;
+} = authSlice.actions;
 
 export default authSlice.reducer;

@@ -1,4 +1,7 @@
-import React, { useEffect } from "react";
+import React, {
+  useEffect
+} from "react";
+
 import {
   BrowserRouter,
   Routes,
@@ -15,17 +18,33 @@ import {
 
 import store from "./store";
 
-import Login from "./components/Login";
-import Register from "./components/Register";
-import JobList from "./components/jobs/JobList";
-import ApplicationList from "./components/applications/ApplicationList";
-import Navbar from "./components/layout/Navbar";
+import Login
+  from "./components/Login";
 
-import { hydrate } from "./store/slices/authSlice";
+import Register
+  from "./components/Register";
+
+import JobList
+  from "./components/jobs/JobList";
+
+import ApplicationList
+  from "./components/applications/ApplicationList";
+
+import Navbar
+  from "./components/layout/Navbar";
+
+import {
+  hydrate
+} from "./store/slices/authSlice";
+
 
 function ProtectedRoute() {
-  const { isAuthenticated } =
-    useSelector((state) => state.auth);
+
+  const {
+    isAuthenticated
+  } = useSelector(
+    (state) => state.auth
+  );
 
   return isAuthenticated ? (
     <Outlet />
@@ -37,18 +56,27 @@ function ProtectedRoute() {
   );
 }
 
+
 function AppContent() {
-  const dispatch = useDispatch();
+
+  const dispatch =
+    useDispatch();
 
   useEffect(() => {
+
     dispatch(hydrate());
+
   }, [dispatch]);
 
   return (
     <BrowserRouter>
+
       <Navbar />
 
       <Routes>
+
+        {/* Public routes */}
+
         <Route
           path="/login"
           element={<Login />}
@@ -59,19 +87,33 @@ function AppContent() {
           element={<Register />}
         />
 
+
+        {/* Protected routes */}
+
         <Route
-          element={<ProtectedRoute />}
+          element={
+            <ProtectedRoute />
+          }
         >
+
           <Route
             path="/jobs"
-            element={<JobList />}
+            element={
+              <JobList />
+            }
           />
 
           <Route
             path="/applications"
-            element={<ApplicationList />}
+            element={
+              <ApplicationList />
+            }
           />
+
         </Route>
+
+
+        {/* Default route */}
 
         <Route
           path="/"
@@ -83,6 +125,9 @@ function AppContent() {
           }
         />
 
+
+        {/* Unknown route */}
+
         <Route
           path="*"
           element={
@@ -92,12 +137,16 @@ function AppContent() {
             />
           }
         />
+
       </Routes>
+
     </BrowserRouter>
   );
 }
 
+
 function App() {
+
   return (
     <Provider store={store}>
       <AppContent />

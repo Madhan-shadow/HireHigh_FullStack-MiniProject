@@ -31,11 +31,9 @@ function ApplicationList() {
   /*
    * T10 + T11
    *
-   * First render:
-   * getAll() is called.
-   *
-   * When search or stageFilter changes:
-   * getAll() is called again.
+   * getAll() is called on first render.
+   * It is called again whenever search
+   * or stageFilter changes.
    */
   useEffect(() => {
     const loadApplications = async () => {
@@ -106,19 +104,17 @@ function ApplicationList() {
   /*
    * T12
    *
-   * Focus search input when component
-   * is mounted.
+   * Focus search input after mount.
    */
   useEffect(() => {
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
+    searchInputRef.current?.focus();
   }, []);
 
   /*
    * T8 + T9
    *
-   * Search and stage filtering.
+   * Local filtering using search and
+   * stageFilter state.
    */
   const filteredApplications =
     applications.filter(
@@ -244,7 +240,7 @@ function ApplicationList() {
         </section>
       )}
 
-      {/* Candidate */}
+      {/* Candidate view */}
       {role === "CANDIDATE" && (
         <section>
           <h2>
@@ -264,7 +260,6 @@ function ApplicationList() {
         </thead>
 
         <tbody>
-
           {filteredApplications.length ===
           0 ? (
             <tr>
@@ -302,7 +297,6 @@ function ApplicationList() {
               )
             )
           )}
-
         </tbody>
       </table>
 
