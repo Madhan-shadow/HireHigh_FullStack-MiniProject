@@ -1,28 +1,26 @@
 import api from "./api";
 
 const applicationService = {
+
+  async getAll() {
+    const response = await api.get(
+      "/applications"
+    );
+
+    return response.data;
+  },
+
+  async getMyApplications() {
+    const response = await api.get(
+      "/applications/my-applications"
+    );
+
+    return response.data;
+  },
+
   async apply(jobId) {
-    const user =
-      localStorage.getItem("user");
-
-    let username =
-      localStorage.getItem("username") ||
-      "";
-
-    try {
-      if (user) {
-        const parsed =
-          JSON.parse(user);
-
-        username =
-          parsed.username ||
-          username;
-      }
-    } catch {
-      username =
-        localStorage.getItem("username") ||
-        "";
-    }
+    const username =
+      localStorage.getItem("username");
 
     const response = await api.post(
       `/applications/apply/${jobId}`,
@@ -32,28 +30,6 @@ const applicationService = {
           username
         }
       }
-    );
-
-    return response.data;
-  },
-
-  async getAll(page = 0, size = 5) {
-    const response = await api.get(
-      "/applications",
-      {
-        params: {
-          page,
-          size
-        }
-      }
-    );
-
-    return response.data;
-  },
-
-  async getMyApplications() {
-    const response = await api.get(
-      "/applications/my-applications"
     );
 
     return response.data;
@@ -80,6 +56,7 @@ const applicationService = {
 
     return response.data;
   }
+
 };
 
 export default applicationService;

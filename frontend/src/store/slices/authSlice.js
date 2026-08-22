@@ -3,8 +3,7 @@ import {
   createSlice
 } from "@reduxjs/toolkit";
 
-import authService
-  from "../../services/authService";
+import authService from "../../services/authService";
 
 export const login = createAsyncThunk(
   "auth/login",
@@ -14,10 +13,12 @@ export const login = createAsyncThunk(
         credentials
       );
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message ||
-        "Login failed"
-      );
+      return thunkAPI.rejectWithValue({
+        status: error.response?.status,
+        message:
+          error.response?.data?.message ||
+          "Login failed"
+      });
     }
   }
 );
@@ -30,35 +31,29 @@ export const register = createAsyncThunk(
         userData
       );
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message ||
-        "Registration failed"
-      );
+      return thunkAPI.rejectWithValue({
+        status: error.response?.status,
+        message:
+          error.response?.data?.message ||
+          "Registration failed"
+      });
     }
   }
 );
 
-const getUser = () => {
-  const user =
-    localStorage.getItem("user");
-
-  if (!user) return null;
-
-  try {
-    return JSON.parse(user);
-  } catch {
-    return null;
-  }
-};
+const savedUser =
+  localStorage.getItem("user");
 
 const initialState = {
   token:
-    localStorage.getItem("token"),
+    localStorage.getItem("token") || null,
+
+  user: savedUser
+    ? JSON.parse(savedUser)
+    : null,
 
   role:
-    localStorage.getItem("role"),
-
-  user: getUser(),
+    localStorage.getItem("role") || null,
 
   isAuthenticated:
     !!localStorage.getItem("token"),
@@ -76,21 +71,31 @@ const authSlice = createSlice({
   reducers: {
 
     hydrate: (state) => {
-      state.token =
+      const token =
         localStorage.getItem("token");
 
-      state.role =
+      const role =
         localStorage.getItem("role");
 
-      state.user =
-        getUser();
+      const user =
+        localStorage.getItem("user");
+
+      state.token = token;
+      state.role = role;
+
+      state.user = user
+        ? JSON.parse(user)
+        : null;
 
       state.isAuthenticated =
-        !!state.token;
+        !!token;
     },
 
     logout: (state) => {
 
+      /*
+       * T28
+       */
       localStorage.removeItem(
         "token"
       );
@@ -103,10 +108,15 @@ const authSlice = createSlice({
         "user"
       );
 
+      localStorage.removeItem(
+        "username"
+      );
+
       state.token = null;
-      state.role = null;
       state.user = null;
+      state.role = null;
       state.isAuthenticated = false;
+      state.error = null;
     }
 
   },
@@ -132,33 +142,57 @@ const authSlice = createSlice({
           const data =
             action.payload;
 
-          state.token =
-            data.token;
+          /*
+           * Supports:
+           * { token, user }
+           *
+           * and:
+           * { accessToken, username, role }
+           */
+          const token =
+            data.token ||
+            data.accessToken;
 
-          state.user =
-            data.user;
+          const user =
+            data.user || {
+              username:
+                data.username,
+              email:
+                data.email,
+              role:
+                data.role
+            };
 
-          state.role =
-            data.user?.role;
+          const role =
+            user?.role ||
+            data.role;
 
-          state.isAuthenticated =
-            true;
+          state.token = token;
+          state.user = user;
+          state.role = role;
+          state.isAuthenticated = true;
 
+          /*
+           * T29
+           */
           localStorage.setItem(
             "token",
-            data.token
+            token
           );
 
           localStorage.setItem(
             "role",
-            data.user?.role || ""
+            role || ""
           );
 
           localStorage.setItem(
             "user",
-            JSON.stringify(
-              data.user
-            )
+            JSON.stringify(user)
+          );
+
+          localStorage.setItem(
+            "username",
+            user?.username || ""
           );
         }
       )
@@ -167,8 +201,10 @@ const authSlice = createSlice({
         login.rejected,
         (state, action) => {
           state.loading = false;
+
           state.error =
-            action.payload;
+            action.payload?.message ||
+            "Login failed";
         }
       )
 
@@ -192,8 +228,10 @@ const authSlice = createSlice({
         register.rejected,
         (state, action) => {
           state.loading = false;
+
           state.error =
-            action.payload;
+            action.payload?.message ||
+            "Registration failed";
         }
       );
   }
