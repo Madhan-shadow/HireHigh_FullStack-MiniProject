@@ -4,30 +4,17 @@ import React, {
   useState
 } from "react";
 
-import {
-  useDispatch,
-  useSelector
-} from "react-redux";
+import { useSelector } from "react-redux";
 
-import {
-  fetchApplications,
-  fetchMyApplications
-} from "../../store/slices/applicationSlice";
+import applicationService from "../../services/applicationService";
 
 function ApplicationList() {
-  const dispatch = useDispatch();
-
   const { role } = useSelector(
     (state) => state.auth
   );
 
-  const {
-    items,
-    loading,
-    error
-  } = useSelector(
-    (state) => state.applications
-  );
+  const [applications, setApplications] =
+    useState([]);
 
   const [search, setSearch] =
     useState("");
@@ -35,103 +22,162 @@ function ApplicationList() {
   const [stageFilter, setStageFilter] =
     useState("ALL");
 
+  const [error, setError] =
+    useState("");
+
   const searchInputRef =
     useRef(null);
 
   /*
-   * Load applications
+   * T10 + T11
+   *
+   * First render:
+   * getAll() is called.
+   *
+   * When search or stageFilter changes:
+   * getAll() is called again.
    */
   useEffect(() => {
-    if (role === "CANDIDATE") {
-      dispatch(fetchMyApplications());
-    } else {
-      dispatch(
-        fetchApplications({
-          page: 0,
-          size: 100,
-          search: ""
-        })
-      );
-    }
-  }, [dispatch, role]);
+    const loadApplications = async () => {
+      try {
+        setError("");
+
+        const response =
+          await applicationService.getAll();
+
+        if (Array.isArray(response)) {
+          setApplications(response);
+        } else {
+          setApplications(
+            response?.content || []
+          );
+        }
+      } catch (err) {
+
+        /*
+         * T19
+         */
+        if (
+          err.response?.status === 500
+        ) {
+          setError(
+            "Server error. Please try again later."
+          );
+        }
+
+        /*
+         * T20
+         */
+        else if (
+          err.response?.status === 401
+        ) {
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          localStorage.removeItem(
+            "user"
+          );
+
+          localStorage.removeItem(
+            "username"
+          );
+
+          window.location.href =
+            "/login";
+        }
+
+        else {
+          setError(
+            err.response?.data?.message ||
+            "Failed to load applications."
+          );
+        }
+      }
+    };
+
+    loadApplications();
+  }, [search, stageFilter]);
 
   /*
    * T12
-   * Focus search box when page loads
+   *
+   * Focus search input when component
+   * is mounted.
    */
   useEffect(() => {
-    searchInputRef.current?.focus();
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
   }, []);
 
   /*
-   * Search + stage filtering
+   * T8 + T9
+   *
+   * Search and stage filtering.
    */
   const filteredApplications =
-    items.filter((application) => {
+    applications.filter(
+      (application) => {
 
-      const username =
-        application.candidate
-          ?.user
-          ?.username || "";
+        const username =
+          application.candidate
+            ?.user
+            ?.username || "";
 
-      const email =
-        application.candidate
-          ?.user
-          ?.email || "";
+        const email =
+          application.candidate
+            ?.user
+            ?.email || "";
 
-      const jobTitle =
-        application.job
-          ?.title || "";
+        const jobTitle =
+          application.job
+            ?.title || "";
 
-      const searchValue =
-        `${username} ${email} ${jobTitle}`
-          .toLowerCase();
+        const searchValue =
+          `${username} ${email} ${jobTitle}`
+            .toLowerCase();
 
-      const matchesSearch =
-        searchValue.includes(
-          search.toLowerCase()
+        const matchesSearch =
+          searchValue.includes(
+            search.toLowerCase()
+          );
+
+        const matchesStage =
+          stageFilter === "ALL" ||
+          application.currentStage ===
+            stageFilter;
+
+        return (
+          matchesSearch &&
+          matchesStage
         );
-
-      const matchesStage =
-        stageFilter === "ALL" ||
-        application.currentStage ===
-          stageFilter;
-
-      return (
-        matchesSearch &&
-        matchesStage
-      );
-    });
-
-  const isCandidate =
-    role === "CANDIDATE";
-
-  const isRecruitmentRole =
-    role === "RECRUITER" ||
-    role === "TA_LEAD" ||
-    role === "ADMIN";
+      }
+    );
 
   return (
     <div>
 
-      <h1>
-        {isCandidate
-          ? "My Applications"
-          : "Applications"}
-      </h1>
+      {/* T5 */}
+      <h1>Applications</h1>
 
+      {/* T19 */}
       {error && (
         <div
           role="alert"
           style={{
-            color: "red",
-            marginBottom: "10px"
+            color: "red"
           }}
         >
           {error}
         </div>
       )}
 
+      {/* T8 + T12 */}
       <input
         ref={searchInputRef}
         type="text"
@@ -142,10 +188,13 @@ function ApplicationList() {
         }
       />
 
+      {/* T9 */}
       <select
         value={stageFilter}
         onChange={(e) =>
-          setStageFilter(e.target.value)
+          setStageFilter(
+            e.target.value
+          )
         }
       >
         <option value="ALL">
@@ -177,7 +226,10 @@ function ApplicationList() {
         </option>
       </select>
 
-      {isRecruitmentRole && (
+      {/* T6 */}
+      {(role === "RECRUITER" ||
+        role === "TA_LEAD" ||
+        role === "ADMIN") && (
         <section>
           <h2>
             Recruitment Pipeline
@@ -192,7 +244,8 @@ function ApplicationList() {
         </section>
       )}
 
-      {isCandidate && (
+      {/* Candidate */}
+      {role === "CANDIDATE" && (
         <section>
           <h2>
             My Applications
@@ -200,73 +253,58 @@ function ApplicationList() {
         </section>
       )}
 
-      {loading ? (
-        <p>
-          Loading applications...
-        </p>
-      ) : (
-        <table>
-          <thead>
+      {/* T17 */}
+      <table>
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th>Job</th>
+            <th>Stage</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {filteredApplications.length ===
+          0 ? (
             <tr>
-              <th>
-                Candidate
-              </th>
-
-              <th>
-                Job
-              </th>
-
-              <th>
-                Stage
-              </th>
+              <td colSpan="3">
+                No applications found.
+              </td>
             </tr>
-          </thead>
-
-          <tbody>
-
-            {filteredApplications.length ===
-            0 ? (
-              <tr>
-                <td colSpan="3">
-                  No applications found.
-                </td>
-              </tr>
-            ) : (
-              filteredApplications.map(
-                (application) => (
-                  <tr
-                    key={application.id}
-                  >
-
-                    <td>
-                      {application.candidate
+          ) : (
+            filteredApplications.map(
+              (application) => (
+                <tr
+                  key={application.id}
+                >
+                  <td>
+                    {application.candidate
+                      ?.user
+                      ?.username ||
+                      application.candidate
                         ?.user
-                        ?.username ||
-                        application.candidate
-                          ?.user
-                          ?.email ||
-                        "Candidate"}
-                    </td>
+                        ?.email ||
+                      "Candidate"}
+                  </td>
 
-                    <td>
-                      {application.job
-                        ?.title ||
-                        "Job"}
-                    </td>
+                  <td>
+                    {application.job
+                      ?.title ||
+                      "Job"}
+                  </td>
 
-                    <td>
-                      {application.currentStage ||
-                        "APPLIED"}
-                    </td>
-
-                  </tr>
-                )
+                  <td>
+                    {application.currentStage ||
+                      "APPLIED"}
+                  </td>
+                </tr>
               )
-            )}
+            )
+          )}
 
-          </tbody>
-        </table>
-      )}
+        </tbody>
+      </table>
 
     </div>
   );
