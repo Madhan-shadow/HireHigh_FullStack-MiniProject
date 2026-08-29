@@ -31,17 +31,23 @@ const initialState = {
   error: null,
 };
 
+// ======================================================
+// LOGIN
+// ======================================================
+
 export const login = createAsyncThunk(
   'auth/login',
-
   async (
     credentials,
     { rejectWithValue }
   ) => {
     try {
-      return await authService.login(
-        credentials
-      );
+      const response =
+        await authService.login(
+          credentials
+        );
+
+      return response;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message ||
@@ -52,17 +58,23 @@ export const login = createAsyncThunk(
   }
 );
 
+// ======================================================
+// REGISTER
+// ======================================================
+
 export const register = createAsyncThunk(
   'auth/register',
-
   async (
     userData,
     { rejectWithValue }
   ) => {
     try {
-      return await authService.register(
-        userData
-      );
+      const response =
+        await authService.register(
+          userData
+        );
+
+      return response;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message ||
@@ -72,6 +84,10 @@ export const register = createAsyncThunk(
     }
   }
 );
+
+// ======================================================
+// SLICE
+// ======================================================
 
 const authSlice = createSlice({
   name: 'auth',
@@ -99,15 +115,21 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
+      // ==================================================
       // LOGIN PENDING
-      .addCase(login.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // ==================================================
 
-      // =========================
+      .addCase(
+        login.pending,
+        (state) => {
+          state.loading = true;
+          state.error = null;
+        }
+      )
+
+      // ==================================================
       // T25 + T26
-      // =========================
+      // ==================================================
 
       .addCase(
         login.fulfilled,
@@ -124,8 +146,12 @@ const authSlice = createSlice({
           const role =
             response.role;
 
-          state.token = token || null;
-          state.role = role || null;
+          state.token =
+            token || null;
+
+          state.role =
+            role || null;
+
           state.isAuthenticated =
             !!token;
 
@@ -147,18 +173,25 @@ const authSlice = createSlice({
         }
       )
 
+      // ==================================================
       // LOGIN FAILED
+      // ==================================================
+
       .addCase(
         login.rejected,
         (state, action) => {
           state.loading = false;
+
           state.error =
             action.payload ||
             'Unable to login. Please check your credentials.';
         }
       )
 
+      // ==================================================
       // REGISTER
+      // ==================================================
+
       .addCase(
         register.pending,
         (state) => {
@@ -179,6 +212,7 @@ const authSlice = createSlice({
         register.rejected,
         (state, action) => {
           state.loading = false;
+
           state.error =
             action.payload ||
             'Unable to register. Please try again.';
