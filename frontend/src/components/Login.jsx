@@ -64,14 +64,15 @@ const Login = () => {
         {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
 
         <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          value={formData.password}
-          onChange={handleChange}
-          className={fieldErrors.password ? 'input-error' : ''}
-        />
+          <input
+    id="password"
+    name="password"
+    type="password"
+    placeholder="Password"
+    value={formData.password}
+    onChange={handleChange}
+    className={fieldErrors.password ? 'input-error' : ''}
+  />
         {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
 
         <button type="submit" className="btn btn-primary" disabled={loading}>

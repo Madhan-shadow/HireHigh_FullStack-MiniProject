@@ -15,12 +15,21 @@ const initialState = {
   warningMessage: null,
 };
 
+const clearSession = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  localStorage.removeItem('user');
+};
+
 export const fetchApplications = createAsyncThunk(
   'applications/fetchApplications',
-  async ({ page = 0, size = 5 } = {}, { rejectWithValue }) => {
+  async ({ page = 0, size = 5, stage } = {}, { rejectWithValue }) => {
     try {
-      return await applicationService.getAll(page, size);
+      return await applicationService.getAll(page, size, stage);
     } catch (err) {
+      if (err.response && err.response.status === 401) {
+        clearSession();
+      }
       return rejectWithValue(err.response?.data?.message || 'Failed to load applications.');
     }
   }
@@ -32,6 +41,9 @@ export const fetchMyApplications = createAsyncThunk(
     try {
       return await applicationService.getMyApplications();
     } catch (err) {
+      if (err.response && err.response.status === 401) {
+        clearSession();
+      }
       return rejectWithValue(err.response?.data?.message || 'Failed to load your applications.');
     }
   }
@@ -79,6 +91,24 @@ export const deleteApplication = createAsyncThunk(
   }
 );
 
+// Normalizes whatever shape a rejected payload arrives in (string, or
+// {conflict, message}) into either a warning or a plain error.
+const applyWarningOrError = (state, payload, fallback) => {
+  if (payload && typeof payload === 'object') {
+    if (payload.conflict) {
+      state.warningMessage = payload.message || 'Application capacity exceeded';
+    } else {
+      state.error = payload.message || fallback;
+    }
+    return;
+  }
+  if (typeof payload === 'string' && /duplicate|already applied|capacity/i.test(payload)) {
+    state.warningMessage = 'Application capacity exceeded';
+    return;
+  }
+  state.error = payload || fallback;
+};
+
 const applicationSlice = createSlice({
   name: 'applications',
   initialState,
@@ -94,7 +124,6 @@ const applicationSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // fetch pipeline (paginated)
       .addCase(fetchApplications.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -110,27 +139,20 @@ const applicationSlice = createSlice({
       })
       .addCase(fetchApplications.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload || 'Failed to load applications.';
       })
-      // my applications (candidate)
       .addCase(fetchMyApplications.fulfilled, (state, action) => {
         state.myApplications = action.payload;
       })
       .addCase(fetchMyApplications.rejected, (state, action) => {
         state.error = action.payload;
       })
-      // apply
       .addCase(applyToJob.fulfilled, (state, action) => {
         state.successMessage = action.payload?.message || 'Application submitted successfully.';
       })
       .addCase(applyToJob.rejected, (state, action) => {
-        if (action.payload?.conflict) {
-          state.warningMessage = action.payload.message;
-        } else {
-          state.error = action.payload?.message || 'Failed to submit application.';
-        }
+        applyWarningOrError(state, action.payload, 'Failed to submit application.');
       })
-      // update stage - optimistic update, finalized on fulfilled
       .addCase(updateStage.pending, (state, action) => {
         const { id, stage } = action.meta.arg;
         const item = state.items.find((a) => a.id === id);
@@ -142,7 +164,6 @@ const applicationSlice = createSlice({
       .addCase(updateStage.rejected, (state, action) => {
         state.error = action.payload?.message || 'Failed to update stage.';
       })
-      // delete
       .addCase(deleteApplication.fulfilled, (state, action) => {
         state.items = state.items.filter((a) => a.id !== action.payload.id);
         state.successMessage = action.payload.data?.message || 'Application deleted successfully.';

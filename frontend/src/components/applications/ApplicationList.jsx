@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchApplications,
-  fetchMyApplications,
   updateStage,
   deleteApplication,
   clearMessages,
@@ -35,8 +34,8 @@ const StageEditModal = ({ application, onClose, onSubmit }) => {
           </button>
         </div>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="stage">Current Stage</label>
-          <select id="stage" value={stage} onChange={(e) => setStage(e.target.value)}>
+          <label htmlFor="edit-stage">Current Stage</label>
+          <select id="edit-stage" value={stage} onChange={(e) => setStage(e.target.value)}>
             {STAGES.map((s) => (
               <option key={s} value={s}>
                 {s}
@@ -62,7 +61,6 @@ const ApplicationList = () => {
   const { role } = useSelector((state) => state.auth);
   const {
     items,
-    myApplications,
     currentPage,
     totalPages,
     loading,
@@ -72,23 +70,17 @@ const ApplicationList = () => {
   } = useSelector((state) => state.applications);
 
   const [page, setPage] = useState(0);
-  const [searchQuery, setSearchQueryLocal] = useState('');
+  const [stageFilter, setStageFilter] = useState('');
+  const [candidateFilter, setCandidateFilter] = useState('');
   const [editingApplication, setEditingApplication] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
-  const canManagePipeline =
-    role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
   const canEditStage = role === 'RECRUITER' || role === 'TA_LEAD';
-  const isCandidate = role === 'CANDIDATE';
 
+  // Fetch on mount, and whenever the page or stage filter changes.
   useEffect(() => {
-    if (canManagePipeline) {
-      dispatch(fetchApplications({ page, size: PAGE_SIZE }));
-    } else if (isCandidate) {
-      dispatch(fetchMyApplications());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, page, canManagePipeline, isCandidate]);
+    dispatch(fetchApplications({ page, size: PAGE_SIZE, stage: stageFilter || undefined }));
+  }, [dispatch, page, stageFilter]);
 
   useEffect(() => {
     if (successMessage || warningMessage || error) {
@@ -97,13 +89,16 @@ const ApplicationList = () => {
     }
   }, [successMessage, warningMessage, error, dispatch]);
 
-  const displayedItems = canManagePipeline ? items : myApplications;
-
-  const filteredItems = displayedItems.filter((app) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
+  const filteredItems = items.filter((app) => {
+    if (!candidateFilter) return true;
+    const q = candidateFilter.toLowerCase();
     return app.candidate?.user?.fullName?.toLowerCase().includes(q);
   });
+
+  const handleStageFilterChange = (e) => {
+    setStageFilter(e.target.value);
+    setPage(0);
+  };
 
   const handleStageSave = (id, stage) => {
     dispatch(updateStage({ id, stage }));
@@ -124,16 +119,24 @@ const ApplicationList = () => {
       {error && <div className="error-banner">{error}</div>}
 
       <div className="page-header">
-        <h1>{canManagePipeline ? 'Talent Pipeline' : 'My Applications'}</h1>
+        <h1>Application Pipeline</h1>
       </div>
 
-      {canManagePipeline && (
+      <div className="pipeline-filters">
         <SearchFilterBar
           placeholder="Filter by candidate"
-          onSearch={setSearchQueryLocal}
+          onSearch={setCandidateFilter}
           autoFocus
         />
-      )}
+        <select value={stageFilter} onChange={handleStageFilterChange} aria-label="Filter by stage">
+          <option value="">All Stages</option>
+          {STAGES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading ? (
         <p>Loading applications...</p>
@@ -150,7 +153,7 @@ const ApplicationList = () => {
               <th>Job Title</th>
               <th>Current Stage</th>
               <th>Applied At</th>
-              {(canEditStage || isCandidate) && <th>Actions</th>}
+              {canEditStage && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -166,16 +169,10 @@ const ApplicationList = () => {
                 <td>{app.appliedAt ? new Date(app.appliedAt).toLocaleString() : '—'}</td>
                 {canEditStage && (
                   <td>
-                    <button
-                      className="btn btn-link"
-                      onClick={() => setEditingApplication(app)}
-                    >
+                    <button className="btn btn-link" onClick={() => setEditingApplication(app)}>
                       Edit
                     </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => setConfirmDeleteId(app.id)}
-                    >
+                    <button className="btn btn-danger" onClick={() => setConfirmDeleteId(app.id)}>
                       Delete
                     </button>
                   </td>
@@ -186,7 +183,7 @@ const ApplicationList = () => {
         </table>
       )}
 
-      {canManagePipeline && totalPages > 1 && (
+      {totalPages > 1 && (
         <div className="pagination">
           <button
             className="btn btn-secondary"
