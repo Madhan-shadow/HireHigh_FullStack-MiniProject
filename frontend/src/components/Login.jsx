@@ -1,13 +1,8 @@
-import React, {
-  useState,
-  useEffect,
-} from 'react';
-
+import React, { useState, useEffect } from 'react';
 import {
   useDispatch,
   useSelector,
 } from 'react-redux';
-
 import {
   useNavigate,
   Link,
@@ -49,8 +44,9 @@ const Login = () => {
   ]);
 
   useEffect(() => {
-    return () =>
+    return () => {
       dispatch(clearAuthError());
+    };
   }, [dispatch]);
 
   const validate = (
@@ -66,7 +62,7 @@ const Login = () => {
 
     if (
       name === 'password' &&
-      value.length < 1
+      !value
     ) {
       return 'Password is required.';
     }
@@ -123,13 +119,11 @@ const Login = () => {
 
   return (
     <div className="auth-page">
-
       <form
         className="auth-card"
         onSubmit={handleSubmit}
         noValidate
       >
-
         <h1 className="auth-title">
           HireHigh Login
         </h1>
@@ -209,7 +203,6 @@ const Login = () => {
             Register here
           </Link>
         </p>
-
       </form>
     </div>
   );

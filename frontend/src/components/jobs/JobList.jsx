@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, {
+  useEffect,
+  useState,
+} from 'react';
+
+import {
+  useDispatch,
+  useSelector,
+} from 'react-redux';
+
 import {
   fetchJobs,
   createJob,
@@ -22,12 +30,18 @@ import EmptyState from '../common/EmptyState';
 const JobList = () => {
   const dispatch = useDispatch();
 
-  const jobs = useSelector(selectFilteredJobs);
-  const { loading } = useSelector((state) => state.jobs);
+  const jobs =
+    useSelector(selectFilteredJobs);
 
-  const { role } = useSelector(
-    (state) => state.auth
-  );
+  const { loading } =
+    useSelector(
+      (state) => state.jobs
+    );
+
+  const { role } =
+    useSelector(
+      (state) => state.auth
+    );
 
   const {
     successMessage,
@@ -57,6 +71,7 @@ const JobList = () => {
     dispatch(fetchJobs());
   }, [dispatch]);
 
+  // Keep messages visible long enough for UI tests/users
   useEffect(() => {
     if (
       successMessage ||
@@ -95,18 +110,22 @@ const JobList = () => {
         })
       );
     } else {
-      dispatch(createJob(formData));
+      dispatch(
+        createJob(formData)
+      );
     }
 
     setShowModal(false);
   };
 
-  // ============================
-  // APPLY TO JOB
-  // ============================
+  // ====================================================
+  // T21 + T23
+  // ====================================================
 
   const handleApply = (jobId) => {
-    dispatch(applyToJob(jobId));
+    dispatch(
+      applyToJob(jobId)
+    );
   };
 
   const handleDeleteRequest = (jobId) => {
@@ -126,7 +145,7 @@ const JobList = () => {
   return (
     <div className="page-container">
 
-      {/* T21 SUCCESS ALERT */}
+      {/* T21 - SUCCESS ALERT */}
       {successMessage && (
         <div
           role="alert"
@@ -137,7 +156,7 @@ const JobList = () => {
         </div>
       )}
 
-      {/* T23 CAPACITY WARNING */}
+      {/* T23 - CAPACITY WARNING */}
       {warningMessage && (
         <div
           role="alert"
@@ -158,7 +177,9 @@ const JobList = () => {
       )}
 
       <div className="page-header">
-        <h1>Open Roles</h1>
+        <h1>
+          Open Roles
+        </h1>
 
         {isRecruiter && (
           <button
@@ -173,12 +194,16 @@ const JobList = () => {
       <SearchFilterBar
         placeholder="Search by job title or department"
         onSearch={(q) =>
-          dispatch(setSearchQuery(q))
+          dispatch(
+            setSearchQuery(q)
+          )
         }
       />
 
       {loading ? (
-        <p>Loading jobs...</p>
+        <p>
+          Loading jobs...
+        </p>
       ) : jobs.length === 0 ? (
         <EmptyState
           title="No open roles"
@@ -189,11 +214,25 @@ const JobList = () => {
 
           <thead>
             <tr>
-              <th>Job Title</th>
-              <th>Department</th>
-              <th>Capacity</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>
+                Job Title
+              </th>
+
+              <th>
+                Department
+              </th>
+
+              <th>
+                Capacity
+              </th>
+
+              <th>
+                Status
+              </th>
+
+              <th>
+                Actions
+              </th>
             </tr>
           </thead>
 
@@ -201,9 +240,13 @@ const JobList = () => {
             {jobs.map((job) => (
               <tr key={job.id}>
 
-                <td>{job.title}</td>
+                <td>
+                  {job.title}
+                </td>
 
-                <td>{job.department}</td>
+                <td>
+                  {job.department}
+                </td>
 
                 <td>
                   <CapacityBar
@@ -233,7 +276,9 @@ const JobList = () => {
                       <button
                         className="btn btn-link"
                         onClick={() =>
-                          handleOpenEdit(job)
+                          handleOpenEdit(
+                            job
+                          )
                         }
                       >
                         Edit
@@ -259,7 +304,9 @@ const JobList = () => {
                         job.status !== 'OPEN'
                       }
                       onClick={() =>
-                        handleApply(job.id)
+                        handleApply(
+                          job.id
+                        )
                       }
                     >
                       Apply Now
@@ -281,7 +328,9 @@ const JobList = () => {
           onClose={() =>
             setShowModal(false)
           }
-          onSubmit={handleModalSubmit}
+          onSubmit={
+            handleModalSubmit
+          }
         />
       )}
 
@@ -304,8 +353,9 @@ const JobList = () => {
             </h3>
 
             <p>
-              This will permanently remove the
-              job and its associated applications.
+              This will permanently
+              remove the job and its
+              associated applications.
             </p>
 
             <div className="modal-actions">
@@ -321,12 +371,15 @@ const JobList = () => {
 
               <button
                 className="btn btn-danger"
-                onClick={handleConfirmDelete}
+                onClick={
+                  handleConfirmDelete
+                }
               >
                 Delete
               </button>
 
             </div>
+
           </div>
         </div>
       )}
