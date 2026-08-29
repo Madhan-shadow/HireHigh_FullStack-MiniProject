@@ -1,23 +1,48 @@
 import api from './api';
 
 const apply = async (jobId) => {
-  const response = await api.post(`/applications/apply/${jobId}`);
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  const username =
+    user?.email ||
+    user?.username ||
+    localStorage.getItem('username');
+
+  const response = await api.post(
+    `/applications/apply/${jobId}`,
+    null,
+    {
+      params: { username },
+    }
+  );
+
   return response.data;
 };
 
 const getAll = async (page = 0, size = 5, stage) => {
-  const params = { page, size };
+  const response = await api.get('/applications', {
+    params: {
+      page,
+      size,
+      ...(stage ? { stage } : {}),
+    },
+  });
 
-  if (stage) {
-    params.stage = stage;
-  }
-
-  const response = await api.get('/applications', { params });
   return response.data;
 };
 
 const getMyApplications = async () => {
-  const response = await api.get('/applications/my-applications');
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  const username =
+    user?.email ||
+    user?.username ||
+    localStorage.getItem('username');
+
+  const response = await api.get('/applications/my-applications', {
+    params: { username },
+  });
+
   return response.data;
 };
 
@@ -27,9 +52,10 @@ const getById = async (id) => {
 };
 
 const updateStage = async (id, stage) => {
-  const response = await api.put(`/applications/${id}/stage`, {
-    stage,
+  const response = await api.put(`/applications/${id}/stage`, null, {
+    params: { stage },
   });
+
   return response.data;
 };
 
