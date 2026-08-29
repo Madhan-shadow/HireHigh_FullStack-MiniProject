@@ -3,12 +3,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider, useSelector } from 'react-redux';
 import store from './store';
 import Navbar from './components/layout/Navbar';
-import Login from './components/layout/Login';
-import Register from './components/layout/Register';
+import Login from './components/Login';
+import Register from './components/Register';
 import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
 import './App.css';
 
+// Protects routes from unauthenticated access. Session is rehydrated from
+// localStorage into Redux state on load (see store/slices/authSlice.js),
+// so a page refresh does not lose the authenticated context.
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   if (!isAuthenticated) {
