@@ -12,9 +12,7 @@ const storedUser = localStorage.getItem('user');
 let parsedUser = null;
 
 try {
-  parsedUser = storedUser
-    ? JSON.parse(storedUser)
-    : null;
+  parsedUser = storedUser ? JSON.parse(storedUser) : null;
 } catch (error) {
   parsedUser = null;
 }
@@ -40,12 +38,9 @@ const initialState = {
 
 export const login = createAsyncThunk(
   'auth/login',
-
   async (credentials, { rejectWithValue }) => {
     try {
-      const response =
-        await authService.login(credentials);
-
+      const response = await authService.login(credentials);
       return response;
     } catch (err) {
       return rejectWithValue(
@@ -63,12 +58,9 @@ export const login = createAsyncThunk(
 
 export const register = createAsyncThunk(
   'auth/register',
-
   async (userData, { rejectWithValue }) => {
     try {
-      const response =
-        await authService.register(userData);
-
+      const response = await authService.register(userData);
       return response;
     } catch (err) {
       return rejectWithValue(
@@ -86,7 +78,6 @@ export const register = createAsyncThunk(
 
 const authSlice = createSlice({
   name: 'auth',
-
   initialState,
 
   reducers: {
@@ -109,43 +100,23 @@ const authSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-
-      // ==================================================
-      // LOGIN PENDING
-      // ==================================================
-
+      // ================= LOGIN PENDING =================
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
 
-      // ==================================================
-      // LOGIN SUCCESS
-      // ==================================================
-
+      // ================= LOGIN SUCCESS (T25, T26) =================
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
 
-        const response = action.payload || {};
+        // Unwrap in case the service returned the raw axios response
+        // instead of response.data (defensive against that mistake).
+        const raw = action.payload || {};
+        const response = raw.data && (raw.token || raw.user) === undefined ? raw.data : raw;
 
-        /*
-         * Support:
-         *
-         * {
-         *   token: "...",
-         *   role: "CANDIDATE"
-         * }
-         *
-         * OR
-         *
-         * {
-         *   accessToken: "...",
-         *   user: {
-         *     role: "CANDIDATE"
-         *   }
-         * }
-         */
+        const user = response.user || response.data?.user || null;
 
         const token =
           response.token ||
@@ -156,17 +127,13 @@ const authSlice = createSlice({
           response.data?.jwt ||
           null;
 
-        const user =
-          response.user ||
-          response.data?.user ||
-          null;
-
         const role =
           response.role ||
           response.userRole ||
           response.data?.role ||
           response.data?.userRole ||
           user?.role ||
+          user?.userRole ||
           null;
 
         state.token = token;
@@ -174,70 +141,49 @@ const authSlice = createSlice({
         state.user = user;
         state.isAuthenticated = !!token;
 
-        // T25
+        // T25: persist token
         if (token) {
-          localStorage.setItem(
-            'token',
-            token
-          );
+          localStorage.setItem('token', token);
+        } else {
+          localStorage.removeItem('token');
         }
 
-        // T26
+        // T26: persist role
         if (role) {
-          localStorage.setItem(
-            'role',
-            role
-          );
+          localStorage.setItem('role', role);
+        } else {
+          localStorage.removeItem('role');
         }
 
         if (user) {
-          localStorage.setItem(
-            'user',
-            JSON.stringify(user)
-          );
+          localStorage.setItem('user', JSON.stringify(user));
+        } else {
+          localStorage.removeItem('user');
         }
       })
 
-      // ==================================================
-      // LOGIN FAILED
-      // ==================================================
-
+      // ================= LOGIN FAILED =================
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-
-        state.error =
-          action.payload ||
-          'Unable to login. Please check your credentials.';
+        state.error = action.payload || 'Unable to login. Please check your credentials.';
       })
 
-      // ==================================================
-      // REGISTER PENDING
-      // ==================================================
-
+      // ================= REGISTER PENDING =================
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
 
-      // ==================================================
-      // REGISTER SUCCESS
-      // ==================================================
-
+      // ================= REGISTER SUCCESS =================
       .addCase(register.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
       })
 
-      // ==================================================
-      // REGISTER FAILED
-      // ==================================================
-
+      // ================= REGISTER FAILED =================
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-
-        state.error =
-          action.payload ||
-          'Unable to register. Please try again.';
+        state.error = action.payload || 'Unable to register. Please try again.';
       });
   },
 });
@@ -246,10 +192,7 @@ const authSlice = createSlice({
 // ACTIONS
 // ======================================================
 
-export const {
-  logout,
-  clearAuthError,
-} = authSlice.actions;
+export const { logout, clearAuthError } = authSlice.actions;
 
 // ======================================================
 // REDUCER
