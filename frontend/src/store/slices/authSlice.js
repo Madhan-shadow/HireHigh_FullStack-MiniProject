@@ -26,7 +26,8 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      return await authService.login(credentials);
+      const response = await authService.login(credentials);
+      return response;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message ||
@@ -40,7 +41,8 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      return await authService.register(userData);
+      const response = await authService.register(userData);
+      return response;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message ||
@@ -75,7 +77,7 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // LOGIN
+      // ---------------- LOGIN ----------------
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -87,26 +89,33 @@ const authSlice = createSlice({
 
         const response = action.payload || {};
 
-        // Support both token and accessToken
-        const token = response.token || response.accessToken || '';
+        // Backend normally returns token
+        const token = response.token || response.accessToken || null;
 
+        // Backend user object
         const user = response.user || {};
 
-        // Support role from either user.role or response.role
-        const role = user.role || response.role || '';
+        // Role can come from user.role or response.role
+        const role = user.role || response.role || null;
 
         state.token = token;
         state.user = user;
         state.role = role;
         state.isAuthenticated = !!token;
 
-        // T25 - Store authentication token
-        localStorage.setItem('token', token);
+        // T25
+        // Store authentication token
+        if (token) {
+          localStorage.setItem('token', token);
+        }
 
-        // T26 - Store user role
-        localStorage.setItem('role', role);
+        // T26
+        // Store user role
+        if (role) {
+          localStorage.setItem('role', role);
+        }
 
-        // Store user information
+        // Store complete user object
         localStorage.setItem('user', JSON.stringify(user));
       })
 
@@ -117,7 +126,7 @@ const authSlice = createSlice({
           'Unable to login. Please check your credentials.';
       })
 
-      // REGISTER
+      // ---------------- REGISTER ----------------
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
