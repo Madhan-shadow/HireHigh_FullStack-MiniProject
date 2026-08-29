@@ -4,13 +4,17 @@ import applicationService from '../../services/applicationService';
 const initialState = {
   items: [],
   myApplications: [],
+
   currentPage: 0,
   totalPages: 0,
   totalElements: 0,
   size: 5,
+
   searchQuery: '',
+
   loading: false,
   error: null,
+
   successMessage: null,
   warningMessage: null,
 };
@@ -21,10 +25,13 @@ const clearSession = () => {
   localStorage.removeItem('user');
 };
 
-// ---------------- FETCH ALL APPLICATIONS ----------------
+// ----------------------------------------------------
+// GET ALL APPLICATIONS
+// ----------------------------------------------------
 
 export const fetchApplications = createAsyncThunk(
   'applications/fetchApplications',
+
   async (
     { page = 0, size = 5, stage } = {},
     { rejectWithValue }
@@ -48,10 +55,13 @@ export const fetchApplications = createAsyncThunk(
   }
 );
 
-// ---------------- FETCH MY APPLICATIONS ----------------
+// ----------------------------------------------------
+// GET MY APPLICATIONS
+// ----------------------------------------------------
 
 export const fetchMyApplications = createAsyncThunk(
   'applications/fetchMyApplications',
+
   async (_, { rejectWithValue }) => {
     try {
       return await applicationService.getMyApplications();
@@ -68,7 +78,9 @@ export const fetchMyApplications = createAsyncThunk(
   }
 );
 
-// ---------------- APPLY TO JOB ----------------
+// ----------------------------------------------------
+// CREATE APPLICATION
+// ----------------------------------------------------
 
 export const applyToJob = createAsyncThunk(
   'applications/applyToJob',
@@ -84,20 +96,20 @@ export const applyToJob = createAsyncThunk(
       const serverMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||
+        err.response?.data ||
         '';
-
-      const message = String(serverMessage);
 
       /*
        * T23
-       * Application capacity exceeded should be
-       * displayed as a warning.
+       *
+       * Backend may return HTTP 409 for capacity/domain conflict.
        */
+
       if (
         status === 409 ||
-        /capacity|exceeded|full|maximum|limit|already applied/i.test(
-          message
-        )
+        /capacity/i.test(String(serverMessage)) ||
+        /exceed/i.test(String(serverMessage)) ||
+        /full/i.test(String(serverMessage))
       ) {
         return rejectWithValue({
           conflict: true,
@@ -108,14 +120,16 @@ export const applyToJob = createAsyncThunk(
       return rejectWithValue({
         conflict: false,
         message:
-          message ||
+          serverMessage ||
           'Failed to submit application.',
       });
     }
   }
 );
 
-// ---------------- UPDATE STAGE ----------------
+// ----------------------------------------------------
+// UPDATE APPLICATION STAGE
+// ----------------------------------------------------
 
 export const updateStage = createAsyncThunk(
   'applications/updateStage',
@@ -123,10 +137,7 @@ export const updateStage = createAsyncThunk(
   async ({ id, stage }, { rejectWithValue }) => {
     try {
       const data =
-        await applicationService.updateStage(
-          id,
-          stage
-        );
+        await applicationService.updateStage(id, stage);
 
       return {
         id,
@@ -144,7 +155,9 @@ export const updateStage = createAsyncThunk(
   }
 );
 
-// ---------------- DELETE APPLICATION ----------------
+// ----------------------------------------------------
+// DELETE APPLICATION
+// ----------------------------------------------------
 
 export const deleteApplication = createAsyncThunk(
   'applications/deleteApplication',
@@ -167,7 +180,63 @@ export const deleteApplication = createAsyncThunk(
   }
 );
 
-// ---------------- SLICE ----------------
+// ----------------------------------------------------
+// HELPER FOR APPLICATION ERROR
+// ----------------------------------------------------
+
+const applyWarningOrError = (
+  state,
+  payload,
+  fallback
+) => {
+  state.warningMessage = null;
+
+  if (payload && typeof payload === 'object') {
+    if (payload.conflict) {
+      state.warningMessage =
+        payload.message ||
+        'Application capacity exceeded';
+
+      state.error = null;
+      return;
+    }
+
+    state.error =
+      payload.message ||
+      fallback;
+
+    return;
+  }
+
+  const message = String(payload || '');
+
+  /*
+   * Capacity/domain related errors should appear
+   * as warnings instead of normal errors.
+   */
+
+  if (
+    /capacity/i.test(message) ||
+    /exceed/i.test(message) ||
+    /full/i.test(message) ||
+    /already applied/i.test(message) ||
+    /duplicate/i.test(message)
+  ) {
+    state.warningMessage =
+      'Application capacity exceeded';
+
+    state.error = null;
+    return;
+  }
+
+  state.error =
+    message ||
+    fallback;
+};
+
+// ----------------------------------------------------
+// SLICE
+// ----------------------------------------------------
 
 const applicationSlice = createSlice({
   name: 'applications',
@@ -189,33 +258,49 @@ const applicationSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // ==================================================
+      // ============================================
       // FETCH APPLICATIONS
-      // ==================================================
+      // ============================================
 
-      .addCase(fetchApplications.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(
+        fetchApplications.pending,
+        (state) => {
+          state.loading = true;
+          state.error = null;
+        }
+      )
 
       .addCase(
         fetchApplications.fulfilled,
         (state, action) => {
           state.loading = false;
 
-          const {
-            content,
-            totalPages,
-            totalElements,
-            number,
-            size,
-          } = action.payload || {};
+          const payload = action.payload || {};
 
-          state.items = content || [];
-          state.totalPages = totalPages ?? 0;
-          state.totalElements = totalElements ?? 0;
-          state.currentPage = number ?? 0;
-          state.size = size ?? state.size;
+          /*
+           * Spring Boot Page response
+           */
+
+          state.items =
+            payload.content ||
+            payload.items ||
+            [];
+
+          state.totalPages =
+            payload.totalPages ??
+            0;
+
+          state.totalElements =
+            payload.totalElements ??
+            0;
+
+          state.currentPage =
+            payload.number ??
+            0;
+
+          state.size =
+            payload.size ??
+            state.size;
         }
       )
 
@@ -230,9 +315,9 @@ const applicationSlice = createSlice({
         }
       )
 
-      // ==================================================
-      // FETCH MY APPLICATIONS
-      // ==================================================
+      // ============================================
+      // MY APPLICATIONS
+      // ============================================
 
       .addCase(
         fetchMyApplications.fulfilled,
@@ -251,9 +336,9 @@ const applicationSlice = createSlice({
         }
       )
 
-      // ==================================================
-      // T21 - APPLICATION CREATED SUCCESSFULLY
-      // ==================================================
+      // ============================================
+      // T21 - APPLICATION CREATED SUCCESS
+      // ============================================
 
       .addCase(
         applyToJob.fulfilled,
@@ -261,43 +346,39 @@ const applicationSlice = createSlice({
           state.error = null;
           state.warningMessage = null;
 
+          const response =
+            action.payload || {};
+
+          /*
+           * Use backend message if available.
+           * Otherwise use the standard success message.
+           */
+
           state.successMessage =
-            action.payload?.message ||
+            response.message ||
+            response.successMessage ||
             'Application submitted successfully.';
         }
       )
 
-      // ==================================================
-      // T23 - APPLICATION CAPACITY EXCEEDED
-      // ==================================================
+      // ============================================
+      // T23 - CAPACITY EXCEEDED WARNING
+      // ============================================
 
       .addCase(
         applyToJob.rejected,
         (state, action) => {
-          const payload = action.payload;
-
-          state.successMessage = null;
-
-          if (payload?.conflict) {
-            state.warningMessage =
-              payload.message ||
-              'Application capacity exceeded';
-
-            state.error = null;
-          } else {
-            state.warningMessage = null;
-
-            state.error =
-              payload?.message ||
-              payload ||
-              'Failed to submit application.';
-          }
+          applyWarningOrError(
+            state,
+            action.payload,
+            'Failed to submit application.'
+          );
         }
       )
 
-      // ==================================================
+      // ============================================
       // UPDATE STAGE
-      // ==================================================
+      // ============================================
 
       .addCase(
         updateStage.pending,
@@ -305,10 +386,11 @@ const applicationSlice = createSlice({
           const { id, stage } =
             action.meta.arg;
 
-          const item = state.items.find(
-            (application) =>
-              application.id === id
-          );
+          const item =
+            state.items.find(
+              (application) =>
+                application.id === id
+            );
 
           if (item) {
             item.currentStage = stage;
@@ -333,9 +415,9 @@ const applicationSlice = createSlice({
         }
       )
 
-      // ==================================================
-      // DELETE APPLICATION
-      // ==================================================
+      // ============================================
+      // DELETE
+      // ============================================
 
       .addCase(
         deleteApplication.fulfilled,
@@ -369,4 +451,5 @@ export const {
   clearMessages,
 } = applicationSlice.actions;
 
-export default applicationSlice.reducer;  
+export default applicationSlice.reducer;
+

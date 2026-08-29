@@ -9,7 +9,7 @@ let parsedUser = null;
 
 try {
   parsedUser = storedUser ? JSON.parse(storedUser) : null;
-} catch {
+} catch (e) {
   parsedUser = null;
 }
 
@@ -26,8 +26,7 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await authService.login(credentials);
-      return response;
+      return await authService.login(credentials);
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message ||
@@ -41,8 +40,7 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await authService.register(userData);
-      return response;
+      return await authService.register(userData);
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message ||
@@ -78,6 +76,7 @@ const authSlice = createSlice({
     builder
 
       // ---------------- LOGIN ----------------
+
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -89,34 +88,53 @@ const authSlice = createSlice({
 
         const response = action.payload || {};
 
-        // Backend normally returns token
+        /*
+         * Support both possible backend/test response formats:
+         *
+         * Format 1:
+         * {
+         *   token: "...",
+         *   user: {
+         *     role: "CANDIDATE"
+         *   }
+         * }
+         *
+         * Format 2:
+         * {
+         *   token: "...",
+         *   role: "CANDIDATE"
+         * }
+         */
+
         const token = response.token || response.accessToken || null;
 
-        // Backend user object
-        const user = response.user || {};
+        const user = response.user || null;
 
-        // Role can come from user.role or response.role
-        const role = user.role || response.role || null;
+        const role =
+          response.role ||
+          user?.role ||
+          response.userRole ||
+          null;
 
         state.token = token;
         state.user = user;
         state.role = role;
         state.isAuthenticated = !!token;
 
-        // T25
-        // Store authentication token
+        // T25 - Store authentication token
         if (token) {
           localStorage.setItem('token', token);
         }
 
-        // T26
-        // Store user role
+        // T26 - Store user role
         if (role) {
           localStorage.setItem('role', role);
         }
 
-        // Store complete user object
-        localStorage.setItem('user', JSON.stringify(user));
+        // Store user when available
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
       })
 
       .addCase(login.rejected, (state, action) => {
@@ -127,6 +145,7 @@ const authSlice = createSlice({
       })
 
       // ---------------- REGISTER ----------------
+
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -152,3 +171,4 @@ export const {
 } = authSlice.actions;
 
 export default authSlice.reducer;
+
