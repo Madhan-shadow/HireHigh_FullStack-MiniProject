@@ -38,12 +38,7 @@ public class AuthServiceImpl implements AuthService {
         user.setUsername(dto.getEmail());
         user.setFullname(dto.getFullName());
         user.setEmail(dto.getEmail());
-
-        // If you are using PasswordEncoder, encode here
-        // user.setPassword(passwordEncoder.encode(dto.getPassword()));
-
         user.setPassword(dto.getPassword());
-
         user.setRole(dto.getRole());
 
         user = userRepository.save(user);
@@ -60,7 +55,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponseDto login(AuthRequestDto dto) {
 
-        Optional<SystemUser> optional = userRepository.findByEmail(dto.getEmail());
+        Optional<SystemUser> optional =
+                userRepository.findByEmail(dto.getEmail());
 
         if (optional.isEmpty()) {
             throw new RuntimeException("Invalid Email");
@@ -75,8 +71,12 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtService.generateToken(user.getEmail());
 
         AuthResponseDto response = new AuthResponseDto();
+
         response.setMessage("Login Successful");
         response.setToken(token);
+
+        // IMPORTANT FOR T26
+        response.setRole(user.getRole().name());
 
         return response;
     }
