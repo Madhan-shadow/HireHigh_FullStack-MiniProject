@@ -10,6 +10,13 @@ const register = async (userData) => {
   return response.data;
 };
 
-const authService = { login, register };
+const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  localStorage.removeItem('user');
+  return Promise.resolve();
+};
+
+const authService = { login, register, logout };
 
 export default authService;

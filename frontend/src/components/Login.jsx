@@ -53,13 +53,14 @@ const Login = () => {
 
         <label htmlFor="username">Username</label>
         <input
-          id="username"
-          name="username"
-          type="text"
-          value={formData.username}
-          onChange={handleChange}
-          className={fieldErrors.username ? 'input-error' : ''}
-        />
+  id="username"
+  name="username"
+  type="text"
+  placeholder="Username"
+  value={formData.username}
+  onChange={handleChange}
+  className={fieldErrors.username ? 'input-error' : ''}
+/>
         {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
 
         <label htmlFor="password">Password</label>

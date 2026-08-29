@@ -6,9 +6,9 @@ const apply = async (jobId) => {
 };
 
 // getAll MUST pass pagination parameters to ensure server-side paging is enforced
-const getAll = async (page = 0, size = 5) => {
+const getAll = async (page = 0, size = 5, stage) => {
   const response = await api.get('/applications', {
-    params: { page, size },
+    params: { page, size, ...(stage ? { stage } : {}) },
   });
   return response.data;
 };
