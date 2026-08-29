@@ -1,77 +1,45 @@
-import api from "./api";
+import api from './api';
+
+const apply = async (jobId) => {
+  const response = await api.post(`/applications/apply/${jobId}`);
+  return response.data;
+};
+
+// getAll MUST pass pagination parameters to ensure server-side paging is enforced
+const getAll = async (page = 0, size = 5) => {
+  const response = await api.get('/applications', {
+    params: { page, size },
+  });
+  return response.data;
+};
+
+const getMyApplications = async () => {
+  const response = await api.get('/applications/my-applications');
+  return response.data;
+};
+
+const getById = async (id) => {
+  const response = await api.get(`/applications/${id}`);
+  return response.data;
+};
+
+const updateStage = async (id, stage) => {
+  const response = await api.put(`/applications/${id}/stage`, { stage });
+  return response.data;
+};
+
+const deleteApplication = async (id) => {
+  const response = await api.delete(`/applications/${id}`);
+  return response.data;
+};
 
 const applicationService = {
-
-  async getAll(
-    page = 0,
-    size = 5,
-    search = ""
-  ) {
-    const response = await api.get(
-      "/applications",
-      {
-        params: {
-          page,
-          size,
-          search
-        }
-      }
-    );
-
-    return response.data;
-  },
-
-  async getMyApplications() {
-    const response = await api.get(
-      "/applications/my-applications"
-    );
-
-    return response.data;
-  },
-
-  async apply(jobId) {
-    const username =
-      localStorage.getItem("username");
-
-    const response = await api.post(
-      `/applications/apply/${jobId}`,
-      null,
-      {
-        params: {
-          username
-        }
-      }
-    );
-
-    return response.data;
-  },
-
-  async updateStage(
-    id,
-    stage
-  ) {
-    const response = await api.put(
-      `/applications/${id}/stage`,
-      null,
-      {
-        params: {
-          stage
-        }
-      }
-    );
-
-    return response.data;
-  },
-
-  async delete(id) {
-    const response =
-      await api.delete(
-        `/applications/${id}`
-      );
-
-    return response.data;
-  }
-
+  apply,
+  getAll,
+  getMyApplications,
+  getById,
+  updateStage,
+  delete: deleteApplication,
 };
 
 export default applicationService;
