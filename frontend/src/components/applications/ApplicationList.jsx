@@ -1,307 +1,239 @@
-import React, {
-  useEffect,
-  useRef,
-  useState
-} from "react";
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchApplications,
+  fetchMyApplications,
+  updateStage,
+  deleteApplication,
+  clearMessages,
+} from '../../store/slices/applicationSlice';
+import SearchFilterBar from '../common/SearchFilterBar';
+import EmptyState from '../common/EmptyState';
 
-import { useSelector } from "react-redux";
+const STAGES = ['APPLIED', 'SCREENING', 'INTERVIEW', 'OFFER', 'HIRED', 'REJECTED'];
+const PAGE_SIZE = 5;
 
-import applicationService from "../../services/applicationService";
+const StageEditModal = ({ application, onClose, onSubmit }) => {
+  const [stage, setStage] = useState(application.currentStage);
 
-function ApplicationList() {
-  const { role } = useSelector(
-    (state) => state.auth
-  );
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
 
-  const [applications, setApplications] =
-    useState([]);
-
-  const [search, setSearch] =
-    useState("");
-
-  const [stageFilter, setStageFilter] =
-    useState("ALL");
-
-  const [error, setError] =
-    useState("");
-
-  const searchInputRef =
-    useRef(null);
-
-  /*
-   * T10 + T11
-   *
-   * getAll() is called on first render.
-   * It is called again whenever search
-   * or stageFilter changes.
-   */
-  useEffect(() => {
-    const loadApplications = async () => {
-      try {
-        setError("");
-
-        const response =
-          await applicationService.getAll();
-
-        if (Array.isArray(response)) {
-          setApplications(response);
-        } else {
-          setApplications(
-            response?.content || []
-          );
-        }
-      } catch (err) {
-
-        /*
-         * T19
-         */
-        if (
-          err.response?.status === 500
-        ) {
-          setError(
-            "Server error. Please try again later."
-          );
-        }
-
-        /*
-         * T20
-         */
-        else if (
-          err.response?.status === 401
-        ) {
-          localStorage.removeItem(
-            "token"
-          );
-
-          localStorage.removeItem(
-            "role"
-          );
-
-          localStorage.removeItem(
-            "user"
-          );
-
-          localStorage.removeItem(
-            "username"
-          );
-
-          window.location.href =
-            "/login";
-        }
-
-        else {
-          setError(
-            err.response?.data?.message ||
-            "Failed to load applications."
-          );
-        }
-      }
-    };
-
-    loadApplications();
-  }, [search, stageFilter]);
-
-  /*
-   * T12
-   *
-   * Focus search input after mount.
-   */
-  useEffect(() => {
-    searchInputRef.current?.focus();
-  }, []);
-
-  /*
-   * T8 + T9
-   *
-   * Local filtering using search and
-   * stageFilter state.
-   */
-  const filteredApplications =
-    applications.filter(
-      (application) => {
-
-        const username =
-          application.candidate
-            ?.user
-            ?.username || "";
-
-        const email =
-          application.candidate
-            ?.user
-            ?.email || "";
-
-        const jobTitle =
-          application.job
-            ?.title || "";
-
-        const searchValue =
-          `${username} ${email} ${jobTitle}`
-            .toLowerCase();
-
-        const matchesSearch =
-          searchValue.includes(
-            search.toLowerCase()
-          );
-
-        const matchesStage =
-          stageFilter === "ALL" ||
-          application.currentStage ===
-            stageFilter;
-
-        return (
-          matchesSearch &&
-          matchesStage
-        );
-      }
-    );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(application.id, stage);
+  };
 
   return (
-    <div>
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal">
+        <div className="modal-header">
+          <h2>Update Application Stage</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="stage">Current Stage</label>
+          <select id="stage" value={stage} onChange={(e) => setStage(e.target.value)}>
+            {STAGES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
-      {/* T5 */}
-      <h1>Applications</h1>
+const ApplicationList = () => {
+  const dispatch = useDispatch();
+  const { role } = useSelector((state) => state.auth);
+  const {
+    items,
+    myApplications,
+    currentPage,
+    totalPages,
+    loading,
+    successMessage,
+    warningMessage,
+    error,
+  } = useSelector((state) => state.applications);
 
-      {/* T19 */}
-      {error && (
-        <div
-          role="alert"
-          style={{
-            color: "red"
-          }}
-        >
-          {error}
+  const [page, setPage] = useState(0);
+  const [searchQuery, setSearchQueryLocal] = useState('');
+  const [editingApplication, setEditingApplication] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  const canManagePipeline =
+    role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
+  const canEditStage = role === 'RECRUITER' || role === 'TA_LEAD';
+  const isCandidate = role === 'CANDIDATE';
+
+  useEffect(() => {
+    if (canManagePipeline) {
+      dispatch(fetchApplications({ page, size: PAGE_SIZE }));
+    } else if (isCandidate) {
+      dispatch(fetchMyApplications());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, page, canManagePipeline, isCandidate]);
+
+  useEffect(() => {
+    if (successMessage || warningMessage || error) {
+      const timer = setTimeout(() => dispatch(clearMessages()), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, warningMessage, error, dispatch]);
+
+  const displayedItems = canManagePipeline ? items : myApplications;
+
+  const filteredItems = displayedItems.filter((app) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return app.candidate?.user?.fullName?.toLowerCase().includes(q);
+  });
+
+  const handleStageSave = (id, stage) => {
+    dispatch(updateStage({ id, stage }));
+    setEditingApplication(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (confirmDeleteId != null) {
+      dispatch(deleteApplication(confirmDeleteId));
+      setConfirmDeleteId(null);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      {successMessage && <div className="success-banner">{successMessage}</div>}
+      {warningMessage && <div className="warning-banner">{warningMessage}</div>}
+      {error && <div className="error-banner">{error}</div>}
+
+      <div className="page-header">
+        <h1>{canManagePipeline ? 'Talent Pipeline' : 'My Applications'}</h1>
+      </div>
+
+      {canManagePipeline && (
+        <SearchFilterBar
+          placeholder="Filter by candidate"
+          onSearch={setSearchQueryLocal}
+          autoFocus
+        />
+      )}
+
+      {loading ? (
+        <p>Loading applications...</p>
+      ) : filteredItems.length === 0 ? (
+        <EmptyState
+          title="No applications found"
+          message="There are no applications matching this view."
+        />
+      ) : (
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Candidate</th>
+              <th>Job Title</th>
+              <th>Current Stage</th>
+              <th>Applied At</th>
+              {(canEditStage || isCandidate) && <th>Actions</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredItems.map((app) => (
+              <tr key={app.id}>
+                <td>{app.candidate?.user?.fullName || '—'}</td>
+                <td>{app.job?.title || '—'}</td>
+                <td>
+                  <span className={`stage-badge stage-${(app.currentStage || '').toLowerCase()}`}>
+                    {app.currentStage}
+                  </span>
+                </td>
+                <td>{app.appliedAt ? new Date(app.appliedAt).toLocaleString() : '—'}</td>
+                {canEditStage && (
+                  <td>
+                    <button
+                      className="btn btn-link"
+                      onClick={() => setEditingApplication(app)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => setConfirmDeleteId(app.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {canManagePipeline && totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage <= 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage >= totalPages - 1}
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+          >
+            Next
+          </button>
         </div>
       )}
 
-      {/* T8 + T12 */}
-      <input
-        ref={searchInputRef}
-        type="text"
-        placeholder="Search applications"
-        value={search}
-        onChange={(e) =>
-          setSearch(e.target.value)
-        }
-      />
+      {editingApplication && (
+        <StageEditModal
+          application={editingApplication}
+          onClose={() => setEditingApplication(null)}
+          onSubmit={handleStageSave}
+        />
+      )}
 
-      {/* T9 */}
-      <select
-        value={stageFilter}
-        onChange={(e) =>
-          setStageFilter(
-            e.target.value
-          )
-        }
-      >
-        <option value="ALL">
-          All Stages
-        </option>
-
-        <option value="APPLIED">
-          Applied
-        </option>
-
-        <option value="SCREENING">
-          Screening
-        </option>
-
-        <option value="INTERVIEW">
-          Interview
-        </option>
-
-        <option value="OFFERED">
-          Offered
-        </option>
-
-        <option value="HIRED">
-          Hired
-        </option>
-
-        <option value="REJECTED">
-          Rejected
-        </option>
-      </select>
-
-      {/* T6 */}
-      {(role === "RECRUITER" ||
-        role === "TA_LEAD" ||
-        role === "ADMIN") && (
-        <section>
-          <h2>
-            Recruitment Pipeline
-          </h2>
-
-          <div>
-            <strong>
-              Total Applications:
-            </strong>{" "}
-            {filteredApplications.length}
+      {confirmDeleteId != null && (
+        <div className="modal-overlay" onClick={() => setConfirmDeleteId(null)}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete this application?</h3>
+            <p>This action cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>
+                Cancel
+              </button>
+              <button className="btn btn-danger" onClick={handleDeleteConfirm}>
+                Delete
+              </button>
+            </div>
           </div>
-        </section>
+        </div>
       )}
-
-      {/* Candidate view */}
-      {role === "CANDIDATE" && (
-        <section>
-          <h2>
-            My Applications
-          </h2>
-        </section>
-      )}
-
-      {/* T17 */}
-      <table>
-        <thead>
-          <tr>
-            <th>Candidate</th>
-            <th>Job</th>
-            <th>Stage</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredApplications.length ===
-          0 ? (
-            <tr>
-              <td colSpan="3">
-                No applications found.
-              </td>
-            </tr>
-          ) : (
-            filteredApplications.map(
-              (application) => (
-                <tr
-                  key={application.id}
-                >
-                  <td>
-                    {application.candidate
-                      ?.user
-                      ?.username ||
-                      application.candidate
-                        ?.user
-                        ?.email ||
-                      "Candidate"}
-                  </td>
-
-                  <td>
-                    {application.job
-                      ?.title ||
-                      "Job"}
-                  </td>
-
-                  <td>
-                    {application.currentStage ||
-                      "APPLIED"}
-                  </td>
-                </tr>
-              )
-            )
-          )}
-        </tbody>
-      </table>
-
     </div>
   );
-}
+};
 
 export default ApplicationList;
