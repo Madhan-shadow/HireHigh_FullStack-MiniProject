@@ -1,269 +1,148 @@
-import React, {
-  useState
-} from "react";
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, Link } from 'react-router-dom';
+import { register, clearAuthError } from '../../store/slices/authSlice';
 
-import {
-  Link,
-  useNavigate
-} from "react-router-dom";
+const ROLES = ['CANDIDATE', 'RECRUITER', 'HIRING_MANAGER', 'TA_LEAD'];
 
-import {
-  useDispatch,
-  useSelector
-} from "react-redux";
-
-import {
-  register
-} from "../store/slices/authSlice";
-
-function Register() {
-
+const Register = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.auth);
 
-  const navigate =
-    useNavigate();
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    username: '',
+    role: 'CANDIDATE',
+    password: '',
+  });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  const {
-    loading,
-    error
-  } = useSelector(
-    (state) => state.auth
-  );
-
-  const [form, setForm] =
-    useState({
-      username: "",
-      password: "",
-      email: "",
-      fullName: "",
-      role: "CANDIDATE"
-    });
-
-  const [errors, setErrors] =
-    useState({});
+  const validate = (name, value) => {
+    switch (name) {
+      case 'fullName':
+        return value.trim() ? '' : 'Full name is required.';
+      case 'email':
+        return /\S+@\S+\.\S+/.test(value) ? '' : 'Enter a valid email address.';
+      case 'username':
+        return value.trim().length >= 3 ? '' : 'Username must be at least 3 characters.';
+      case 'password':
+        return value.length >= 8 ? '' : 'Password must be at least 8 characters.';
+      default:
+        return '';
+    }
+  };
 
   const handleChange = (e) => {
-
-    setForm({
-      ...form,
-
-      [e.target.name]:
-        e.target.value
-    });
-
-    setErrors({
-      ...errors,
-
-      [e.target.name]: ""
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name !== 'role') {
+      setFieldErrors((prev) => ({ ...prev, [name]: validate(name, value) }));
+    }
   };
 
-  const validate = () => {
-
-    const newErrors = {};
-
-    if (!form.fullName.trim()) {
-      newErrors.fullName =
-        "Full Name is required";
-    }
-
-    if (!form.email.trim()) {
-      newErrors.email =
-        "Email Address is required";
-    }
-
-    if (!form.username.trim()) {
-      newErrors.username =
-        "Username is required";
-    }
-
-    if (!form.password.trim()) {
-      newErrors.password =
-        "Password is required";
-    }
-
-    setErrors(newErrors);
-
-    return (
-      Object.keys(newErrors)
-        .length === 0
-    );
-  };
-
-  const handleSubmit =
-    async (e) => {
-
-      e.preventDefault();
-
-      if (!validate()) {
-        return;
-      }
-
-      const result =
-        await dispatch(
-          register(form)
-        );
-
-      if (
-        register.fulfilled.match(
-          result
-        )
-      ) {
-        navigate("/login");
-      }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    dispatch(clearAuthError());
+    const errors = {
+      fullName: validate('fullName', formData.fullName),
+      email: validate('email', formData.email),
+      username: validate('username', formData.username),
+      password: validate('password', formData.password),
     };
+    setFieldErrors(errors);
+    if (Object.values(errors).some(Boolean)) return;
+
+    const result = await dispatch(register(formData));
+    if (register.fulfilled.match(result)) {
+      setSuccessMessage('Account created successfully. Please login.');
+      setTimeout(() => navigate('/login'), 1500);
+    }
+  };
 
   return (
-    <div className="register-container">
+    <div className="auth-page">
+      <form className="auth-card" onSubmit={handleSubmit} noValidate>
+        <h1 className="auth-title">Create Account</h1>
+        <p className="auth-subtitle">Join HireHigh Talent Acquisition</p>
 
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-      >
+        {error && <div className="error-banner">{error}</div>}
+        {successMessage && <div className="success-banner">{successMessage}</div>}
 
-        <h1>
-          Create Account
-        </h1>
-
-        <p>
-          Join HireHigh Talent Acquisition
-        </p>
-
-        <label htmlFor="fullName">
-          Full Name
-        </label>
-
+        <label htmlFor="fullName">Full Name</label>
         <input
           id="fullName"
           name="fullName"
           type="text"
           placeholder="John Doe"
-          value={form.fullName}
+          value={formData.fullName}
           onChange={handleChange}
+          className={fieldErrors.fullName ? 'input-error' : ''}
         />
+        {fieldErrors.fullName && <span className="field-error">{fieldErrors.fullName}</span>}
 
-        {errors.fullName && (
-          <span>
-            {errors.fullName}
-          </span>
-        )}
-
-        <label htmlFor="email">
-          Email Address
-        </label>
-
+        <label htmlFor="email">Email Address</label>
         <input
           id="email"
           name="email"
           type="email"
-          placeholder="name@hirehigh.com"
-          value={form.email}
+          placeholder="john@example.com"
+          value={formData.email}
           onChange={handleChange}
+          className={fieldErrors.email ? 'input-error' : ''}
         />
+        {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
 
-        {errors.email && (
-          <span>
-            {errors.email}
-          </span>
-        )}
+        <div className="form-row">
+          <div className="form-col">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              value={formData.username}
+              onChange={handleChange}
+              className={fieldErrors.username ? 'input-error' : ''}
+            />
+            {fieldErrors.username && (
+              <span className="field-error">{fieldErrors.username}</span>
+            )}
+          </div>
+          <div className="form-col">
+            <label htmlFor="role">Role</label>
+            <select id="role" name="role" value={formData.role} onChange={handleChange}>
+              {ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {r.charAt(0) + r.slice(1).toLowerCase().replace('_', ' ')}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-        <label htmlFor="username">
-          Username
-        </label>
-
-        <input
-          id="username"
-          name="username"
-          type="text"
-          placeholder="Enter username"
-          value={form.username}
-          onChange={handleChange}
-        />
-
-        {errors.username && (
-          <span>
-            {errors.username}
-          </span>
-        )}
-
-        <label htmlFor="role">
-          Role
-        </label>
-
-        <select
-          id="role"
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-        >
-
-          <option value="CANDIDATE">
-            Candidate
-          </option>
-
-          <option value="RECRUITER">
-            Recruiter
-          </option>
-
-          <option value="HIRING_MANAGER">
-            Hiring Manager
-          </option>
-
-          <option value="TA_LEAD">
-            TA Lead
-          </option>
-
-        </select>
-
-        <label htmlFor="password">
-          Password
-        </label>
-
+        <label htmlFor="password">Password</label>
         <input
           id="password"
           name="password"
           type="password"
-          placeholder="Enter password"
-          value={form.password}
+          value={formData.password}
           onChange={handleChange}
+          className={fieldErrors.password ? 'input-error' : ''}
         />
+        {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
 
-        {errors.password && (
-          <span>
-            {errors.password}
-          </span>
-        )}
-
-        {error && (
-          <div
-            className="error-banner"
-            role="alert"
-          >
-            {error}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-        >
-          {loading
-            ? "Registering..."
-            : "Register"}
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? 'Creating account...' : 'Register'}
         </button>
 
-        <p>
-          Already have an account?{" "}
-
-          <Link to="/login">
-            Login here
-          </Link>
+        <p className="auth-switch">
+          Already have an account? <Link to="/login">Login here</Link>
         </p>
-
       </form>
-
     </div>
   );
-}
+};
 
 export default Register;
