@@ -1,14 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../../services/authService';
 
-const storedToken =
-  localStorage.getItem('token');
-
-const storedRole =
-  localStorage.getItem('role');
-
-const storedUser =
-  localStorage.getItem('user');
+const storedToken = localStorage.getItem('token');
+const storedRole = localStorage.getItem('role');
+const storedUser = localStorage.getItem('user');
 
 let parsedUser = null;
 
@@ -24,70 +19,42 @@ const initialState = {
   token: storedToken || null,
   role: storedRole || null,
   user: parsedUser,
-
   isAuthenticated: !!storedToken,
-
   loading: false,
   error: null,
 };
 
-// ======================================================
-// LOGIN
-// ======================================================
-
 export const login = createAsyncThunk(
   'auth/login',
-  async (
-    credentials,
-    { rejectWithValue }
-  ) => {
+  async (credentials, { rejectWithValue }) => {
     try {
-      const response =
-        await authService.login(
-          credentials
-        );
+      const response = await authService.login(credentials);
 
       return response;
-    } catch (err) {
+    } catch (error) {
       return rejectWithValue(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          'Unable to login. Please check your credentials.'
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Unable to login. Please check your credentials.'
       );
     }
   }
 );
-
-// ======================================================
-// REGISTER
-// ======================================================
 
 export const register = createAsyncThunk(
   'auth/register',
-  async (
-    userData,
-    { rejectWithValue }
-  ) => {
+  async (userData, { rejectWithValue }) => {
     try {
-      const response =
-        await authService.register(
-          userData
-        );
-
-      return response;
-    } catch (err) {
+      return await authService.register(userData);
+    } catch (error) {
       return rejectWithValue(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          'Unable to register. Please try again.'
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Unable to register. Please try again.'
       );
     }
   }
 );
-
-// ======================================================
-// SLICE
-// ======================================================
 
 const authSlice = createSlice({
   name: 'auth',
@@ -115,109 +82,92 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // ==================================================
-      // LOGIN PENDING
-      // ==================================================
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-      .addCase(
-        login.pending,
-        (state) => {
-          state.loading = true;
-          state.error = null;
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+
+        const response = action.payload || {};
+
+        const token =
+          response.token ||
+          response.accessToken ||
+          response.jwt ||
+          response.data?.token ||
+          response.data?.accessToken ||
+          response.data?.jwt ||
+          null;
+
+        const role =
+          response.role ||
+          response.userRole ||
+          response.data?.role ||
+          response.data?.userRole ||
+          response.user?.role ||
+          response.user?.userRole ||
+          null;
+
+        const user = response.user || null;
+
+        state.token = token;
+        state.role = role;
+        state.user = user;
+        state.isAuthenticated = !!token;
+
+        /*
+         * T25
+         * Store authentication token
+         */
+        if (token) {
+          localStorage.setItem('token', token);
         }
-      )
 
-      // ==================================================
-      // T25 + T26
-      // ==================================================
-
-      .addCase(
-        login.fulfilled,
-        (state, action) => {
-          state.loading = false;
-          state.error = null;
-
-          const response =
-            action.payload || {};
-
-          const token =
-            response.token;
-
-          const role =
-            response.role;
-
-          state.token =
-            token || null;
-
-          state.role =
-            role || null;
-
-          state.isAuthenticated =
-            !!token;
-
-          // T25
-          if (token) {
-            localStorage.setItem(
-              'token',
-              token
-            );
-          }
-
-          // T26
-          if (role) {
-            localStorage.setItem(
-              'role',
-              role
-            );
-          }
+        /*
+         * T26
+         * Store user role
+         */
+        if (role) {
+          localStorage.setItem('role', role);
         }
-      )
 
-      // ==================================================
-      // LOGIN FAILED
-      // ==================================================
-
-      .addCase(
-        login.rejected,
-        (state, action) => {
-          state.loading = false;
-
-          state.error =
-            action.payload ||
-            'Unable to login. Please check your credentials.';
+        /*
+         * Store user if available
+         */
+        if (user) {
+          localStorage.setItem(
+            'user',
+            JSON.stringify(user)
+          );
         }
-      )
+      })
 
-      // ==================================================
-      // REGISTER
-      // ==================================================
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload ||
+          'Unable to login. Please check your credentials.';
+      })
 
-      .addCase(
-        register.pending,
-        (state) => {
-          state.loading = true;
-          state.error = null;
-        }
-      )
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-      .addCase(
-        register.fulfilled,
-        (state) => {
-          state.loading = false;
-          state.error = null;
-        }
-      )
+      .addCase(register.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
 
-      .addCase(
-        register.rejected,
-        (state, action) => {
-          state.loading = false;
-
-          state.error =
-            action.payload ||
-            'Unable to register. Please try again.';
-        }
-      );
+      .addCase(register.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload ||
+          'Unable to register. Please try again.';
+      });
   },
 });
 

@@ -14,9 +14,14 @@ const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('role');
   localStorage.removeItem('user');
+
   return Promise.resolve();
 };
 
-const authService = { login, register, logout };
+const authService = {
+  login,
+  register,
+  logout,
+};
 
 export default authService;
