@@ -1,70 +1,59 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider, useSelector } from 'react-redux';
-import store from './store';
+import { useSelector } from 'react-redux';
+
 import Navbar from './components/layout/Navbar';
-import Login from './components/Login';
-import Register from './components/Register';
+import Login from './components/layout/Login';
+import Register from './components/layout/Register';
 import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
-import './App.css';
 
-// Protects routes from unauthenticated access. Session is rehydrated from
-// localStorage into Redux state on load (see store/slices/authSlice.js),
-// so a page refresh does not lose the authenticated context.
-const ProtectedRoute = ({ children }) => {
+function ProtectedRoute({ children }) {
   const { isAuthenticated } = useSelector((state) => state.auth);
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-};
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
 
-const Home = () => (
-  <div className="page-container">
-    <h1>Welcome to HireHigh</h1>
-    <p>Talent acquisition pipeline management, end to end.</p>
-  </div>
-);
-
-function AppRoutes() {
+function AppLayout({ children }) {
   return (
     <>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/jobs"
-          element={
-            <ProtectedRoute>
-              <JobList />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/applications"
-          element={
-            <ProtectedRoute>
-              <ApplicationList />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      {children}
     </>
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <Provider store={store}>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </Provider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        <Route
+          path="/jobs"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <JobList />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/applications"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ApplicationList />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/" element={<Navigate to="/jobs" replace />} />
+        <Route path="*" element={<Navigate to="/jobs" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;
