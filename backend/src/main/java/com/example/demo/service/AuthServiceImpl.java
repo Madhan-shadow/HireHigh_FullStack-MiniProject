@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.AuthRequestDto;
@@ -26,19 +27,26 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public void register(RegisterDto dto) {
 
+        if (userRepository.existsByUsername(dto.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("User already exists");
+            throw new RuntimeException("Email already exists");
         }
 
         SystemUser user = new SystemUser();
 
-        user.setUsername(dto.getEmail());
+        user.setUsername(dto.getUsername());
         user.setFullname(dto.getFullName());
         user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());
 
         user = userRepository.save(user);
@@ -56,19 +64,19 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDto login(AuthRequestDto dto) {
 
         Optional<SystemUser> optional =
-                userRepository.findByEmail(dto.getEmail());
+                userRepository.findByUsername(dto.getUsername());
 
         if (optional.isEmpty()) {
-            throw new RuntimeException("Invalid Email");
+            throw new RuntimeException("Invalid Username");
         }
 
         SystemUser user = optional.get();
 
-        if (!user.getPassword().equals(dto.getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid Password");
         }
 
-        String token = jwtService.generateToken(user.getEmail());
+        String token = jwtService.generateToken(user.getUsername());
 
         AuthResponseDto response = new AuthResponseDto();
 
