@@ -22,23 +22,28 @@ export default function ApplicationList() {
   } = useSelector((state) => state.applications);
 
   const [search, setSearch] = useState('');
-  const [editingApp, setEditingApp] = useState(null);
+  const [stageFilter, setStageFilter] = useState('ALL');
   const searchInputRef = useRef(null);
   const debounceRef = useRef(null);
 
-  // Auto-focus search input on mount
+  // Auto-focus search input on mount (T12)
   useEffect(() => {
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, []);
 
-  // Initial load
+  // Initial load (T10)
   useEffect(() => {
     dispatch(fetchApplications({ page: 0, size: 5 }));
   }, [dispatch]);
 
-  // Auto-dismiss success/warning/error banners after 3000ms
+  // Refresh the list whenever the stage filter changes (T9, T11)
+  useEffect(() => {
+    dispatch(fetchApplications({ page: 0, size: 5 }));
+  }, [stageFilter, dispatch]);
+
+  // Auto-dismiss banners after 3000ms (T22)
   useEffect(() => {
     if (successMessage || warningMessage || errorMessage) {
       const timer = setTimeout(() => {
@@ -55,8 +60,11 @@ export default function ApplicationList() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       dispatch(fetchApplications({ page: 0, size: 5 }));
-      // If your backend supports server-side search, pass `value` as a param here.
     }, 300);
+  };
+
+  const handleStageFilterChange = (e) => {
+    setStageFilter(e.target.value); // triggers the useEffect above
   };
 
   const handlePageChange = (newPage) => {
@@ -73,11 +81,13 @@ export default function ApplicationList() {
     }
   };
 
-  const filteredItems = items.filter((app) =>
-    (app.candidate?.user?.fullName || '')
+  const filteredItems = items.filter((app) => {
+    const matchesSearch = (app.candidate?.user?.fullName || '')
       .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+      .includes(search.toLowerCase());
+    const matchesStage = stageFilter === 'ALL' || app.currentStage === stageFilter;
+    return matchesSearch && matchesStage;
+  });
 
   return (
     <div className="application-list">
@@ -87,13 +97,28 @@ export default function ApplicationList() {
       {warningMessage && <div className="warning-banner">{warningMessage}</div>}
       {errorMessage && <div className="error-banner">{errorMessage}</div>}
 
-      <input
-        ref={searchInputRef}
-        type="text"
-        placeholder="Filter by candidate"
-        value={search}
-        onChange={handleSearchChange}
-      />
+      <div className="application-filters">
+        <input
+          ref={searchInputRef}
+          type="text"
+          placeholder="Filter by candidate"
+          value={search}
+          onChange={handleSearchChange}
+        />
+
+        <select
+          value={stageFilter}
+          onChange={handleStageFilterChange}
+          aria-label="Filter by stage"
+        >
+          <option value="ALL">All Stages</option>
+          {STAGES.map((stage) => (
+            <option key={stage} value={stage}>
+              {stage}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {status === 'loading' && <p>Loading...</p>}
 
