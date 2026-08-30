@@ -106,7 +106,7 @@ const applicationSlice = createSlice({
       })
       .addCase(applyToJob.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.successMessage = action.payload.message; // "Application submitted successfully."
+        state.successMessage = action.payload?.message || 'Application submitted successfully.';
         state.warningMessage = null;
         state.errorMessage = null;
       })
@@ -129,11 +129,12 @@ const applicationSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(fetchApplications.fulfilled, (state, action) => {
+        const payload = action.payload || {};
         state.status = 'succeeded';
-        state.items = action.payload.content;
-        state.totalPages = action.payload.totalPages;
-        state.totalElements = action.payload.totalElements;
-        state.currentPage = action.payload.number;
+        state.items = payload.content || [];
+        state.totalPages = payload.totalPages ?? 0;
+        state.totalElements = payload.totalElements ?? 0;
+        state.currentPage = payload.number ?? 0;
       })
       .addCase(fetchApplications.rejected, (state, action) => {
         state.status = 'failed';
@@ -141,18 +142,18 @@ const applicationSlice = createSlice({
       })
 
       .addCase(fetchApplicationById.fulfilled, (state, action) => {
-        state.selectedApplication = action.payload;
+        state.selectedApplication = action.payload || null;
       })
       .addCase(fetchApplicationById.rejected, (state, action) => {
         state.errorMessage = action.payload?.message || 'Application not found';
       })
 
       .addCase(fetchMyApplications.fulfilled, (state, action) => {
-        state.myApplications = action.payload;
+        state.myApplications = action.payload || [];
       })
 
       .addCase(updateApplicationStage.fulfilled, (state, action) => {
-        const { id, stage, data } = action.payload;
+        const { id, stage, data } = action.payload || {};
         const app = state.items.find((a) => a.id === id);
         if (app) app.currentStage = stage;
         state.successMessage = data?.message || 'Application updated successfully.';
@@ -164,8 +165,9 @@ const applicationSlice = createSlice({
       })
 
       .addCase(deleteApplication.fulfilled, (state, action) => {
-        state.items = state.items.filter((a) => a.id !== action.payload.id);
-        state.successMessage = action.payload.data.message; // "Application deleted successfully."
+        const { id, data } = action.payload || {};
+        state.items = state.items.filter((a) => a.id !== id);
+        state.successMessage = data?.message || 'Application deleted successfully.';
         state.warningMessage = null;
         state.errorMessage = null;
       })
