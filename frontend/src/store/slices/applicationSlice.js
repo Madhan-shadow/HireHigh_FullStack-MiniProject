@@ -6,7 +6,7 @@ export const applyToJob = createAsyncThunk(
   async (jobId, { rejectWithValue }) => {
     try {
       const data = await applicationService.apply(jobId);
-      return data; // { message: "Application submitted successfully." }
+      return data;
     } catch (err) {
       return rejectWithValue({
         status: err.response?.status,
@@ -21,6 +21,18 @@ export const fetchApplications = createAsyncThunk(
   async ({ page = 0, size = 5 } = {}, { rejectWithValue }) => {
     try {
       const data = await applicationService.getAll(page, size);
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data);
+    }
+  }
+);
+
+export const fetchApplicationById = createAsyncThunk(
+  'applications/fetchById',
+  async (id, { rejectWithValue }) => {
+    try {
+      const data = await applicationService.getById(id);
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data);
@@ -67,6 +79,7 @@ export const deleteApplication = createAsyncThunk(
 const initialState = {
   items: [],
   myApplications: [],
+  selectedApplication: null,
   currentPage: 0,
   totalPages: 0,
   totalElements: 0,
@@ -88,7 +101,6 @@ const applicationSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // APPLY
       .addCase(applyToJob.pending, (state) => {
         state.status = 'loading';
       })
@@ -113,7 +125,6 @@ const applicationSlice = createSlice({
         }
       })
 
-      // FETCH ALL (paginated)
       .addCase(fetchApplications.pending, (state) => {
         state.status = 'loading';
       })
@@ -129,12 +140,17 @@ const applicationSlice = createSlice({
         state.errorMessage = action.payload?.message || 'Internal server error';
       })
 
-      // FETCH MINE
+      .addCase(fetchApplicationById.fulfilled, (state, action) => {
+        state.selectedApplication = action.payload;
+      })
+      .addCase(fetchApplicationById.rejected, (state, action) => {
+        state.errorMessage = action.payload?.message || 'Application not found';
+      })
+
       .addCase(fetchMyApplications.fulfilled, (state, action) => {
         state.myApplications = action.payload;
       })
 
-      // UPDATE STAGE
       .addCase(updateApplicationStage.fulfilled, (state, action) => {
         const { id, stage, data } = action.payload;
         const app = state.items.find((a) => a.id === id);
@@ -147,7 +163,6 @@ const applicationSlice = createSlice({
         state.errorMessage = action.payload?.message || 'Internal server error';
       })
 
-      // DELETE
       .addCase(deleteApplication.fulfilled, (state, action) => {
         state.items = state.items.filter((a) => a.id !== action.payload.id);
         state.successMessage = action.payload.data.message; // "Application deleted successfully."

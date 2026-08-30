@@ -28,6 +28,7 @@ export const register = createAsyncThunk(
 const initialState = {
   token: localStorage.getItem('token') || null,
   role: localStorage.getItem('role') || null,
+  user: JSON.parse(localStorage.getItem('user') || 'null'),
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   status: 'idle',
@@ -41,12 +42,11 @@ const authSlice = createSlice({
     logout(state) {
       state.token = null;
       state.role = null;
+      state.user = null;
       state.isAuthenticated = false;
       state.status = 'idle';
       state.error = null;
-      localStorage.removeItem('token');
-      localStorage.removeItem('role');
-      localStorage.removeItem('user');
+      authService.logout(); // T27 — clears token/role/user from localStorage
     },
     clearAuthError(state) {
       state.error = null;
@@ -61,16 +61,22 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         const { token, role } = action.payload;
+        // backend AuthResponseDto has no nested user object,
+        // so build a minimal one from what we know: the
+        // credentials that were submitted + the role returned.
+        const username = action.meta.arg?.username;
+        const user = { username, role };
 
         state.status = 'succeeded';
         state.loading = false;
         state.token = token;
         state.role = role;
+        state.user = user; // T29 — auth state has a user property
         state.isAuthenticated = true;
 
-        // T25 & T26
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
+        localStorage.setItem('token', token);   // T25
+        localStorage.setItem('role', role);     // T26
+        localStorage.setItem('user', JSON.stringify(user));
       })
       .addCase(login.rejected, (state, action) => {
         state.status = 'failed';
