@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import Navbar from './components/layout/Navbar';
-import Login from './components/layout/Login';
-import Register from './components/layout/Register';
+import Login from './components/Login';
+import Register from './components/Register';
 import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
 
