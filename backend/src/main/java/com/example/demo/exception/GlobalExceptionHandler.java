@@ -11,6 +11,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ApplicationCapacityExceededException.class)
+    public ResponseEntity<Map<String, String>> handleCapacityExceeded(ApplicationCapacityExceededException ex) {
+
+        Map<String, String> errorResponse = new HashMap<>();
+
+        errorResponse.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleException(Exception ex) {
 
