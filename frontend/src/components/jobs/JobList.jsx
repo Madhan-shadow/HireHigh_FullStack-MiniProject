@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchJobs, deleteJob } from '../../store/slices/jobSlice';
+import { applyToJob, clearMessages } from '../../store/slices/applicationSlice';
 import CapacityBar from '../common/CapacityBar';
 import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
@@ -11,6 +12,9 @@ export default function JobList() {
   const dispatch = useDispatch();
   const { items = [], status } = useSelector((state) => state.jobs);
   const { role } = useSelector((state) => state.auth);
+  const { successMessage, warningMessage, errorMessage } = useSelector(
+    (state) => state.applications
+  );
 
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
@@ -19,6 +23,16 @@ export default function JobList() {
   useEffect(() => {
     dispatch(fetchJobs());
   }, [dispatch]);
+
+  // Auto-dismiss banners after 3000ms
+  useEffect(() => {
+    if (successMessage || warningMessage || errorMessage) {
+      const timer = setTimeout(() => {
+        dispatch(clearMessages());
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, warningMessage, errorMessage, dispatch]);
 
   const filtered = items.filter((job) => {
     const q = search.toLowerCase();
@@ -29,7 +43,7 @@ export default function JobList() {
   const canApply = role === 'CANDIDATE';
 
   const handleApply = (jobId) => {
-    // dispatch(applyToJob(jobId))
+    dispatch(applyToJob(jobId));
   };
 
   const handleDelete = (id) => {
@@ -51,6 +65,10 @@ export default function JobList() {
           </button>
         )}
       </div>
+
+      {successMessage && <div className="success-banner">{successMessage}</div>}
+      {warningMessage && <div className="warning-banner">{warningMessage}</div>}
+      {errorMessage && <div className="error-banner">{errorMessage}</div>}
 
       <SearchFilterBar
         value={search}

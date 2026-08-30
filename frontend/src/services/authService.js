@@ -15,3 +15,6 @@ export const logout = () => {
   localStorage.removeItem('role');
   localStorage.removeItem('user');
 };
+
+const authService = { login, register, logout };
+export default authService;
