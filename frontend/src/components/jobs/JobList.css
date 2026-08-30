@@ -1,0 +1,54 @@
+.job-list-page { max-width: 1040px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+.job-list-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.5rem; }
+.job-list-header h2 { font-size: 1.8rem; margin-bottom: 0.15rem; }
+.job-list-sub { font-family: var(--font-ui); color: var(--hh-ink-soft); font-size: 0.9rem; margin: 0; }
+
+.job-list-status { color: var(--hh-ink-soft); font-size: 0.9rem; }
+
+.job-table-wrap {
+  background: var(--hh-white);
+  border: 1px solid var(--hh-line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.job-table { width: 100%; border-collapse: collapse; }
+.job-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--hh-ink-soft);
+  padding: 0.9rem 1.1rem;
+  background: var(--hh-teal-100);
+  border-bottom: 1px solid var(--hh-line);
+}
+.job-table td { padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--hh-line); vertical-align: middle; }
+.job-table tr:last-child td { border-bottom: none; }
+.job-table tr:hover td { background: rgba(20,107,94,0.03); }
+
+.job-title-cell { font-weight: 600; color: var(--hh-teal-900); }
+
+.status-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.status-chip--open { background: var(--hh-teal-100); color: var(--hh-teal-700); }
+.status-chip--closed { background: #EFEFEF; color: var(--hh-ink-soft); }
+.status-chip--on_hold { background: var(--hh-amber-100); color: var(--hh-amber-600); }
+
+.job-actions { display: flex; gap: 0.5rem; }
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.78rem; }
+
+@media (max-width: 720px) {
+  .job-table thead { display: none; }
+  .job-table, .job-table tbody, .job-table tr, .job-table td { display: block; width: 100%; }
+  .job-table tr { padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--hh-line); }
+  .job-table td { border: none; padding: 0.25rem 0; }
+}
