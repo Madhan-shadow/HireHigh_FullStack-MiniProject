@@ -1,0 +1,50 @@
+.hh-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.75rem;
+  background: var(--hh-teal-900);
+}
+
+.hh-navbar-brand { display: flex; align-items: center; gap: 0.5rem; }
+
+.hh-navbar-mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--hh-amber-500);
+  box-shadow: 0 0 0 3px rgba(226, 154, 51, 0.25);
+}
+
+.hh-navbar-name { font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; color: var(--hh-white); }
+
+.hh-navbar-links { display: flex; gap: 0.4rem; background: rgba(255,255,255,0.06); padding: 0.3rem; border-radius: 999px; }
+
+.hh-pill {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.hh-pill:hover { color: var(--hh-white); }
+.hh-pill.is-active { background: var(--hh-amber-500); color: var(--hh-teal-900); font-weight: 600; }
+
+.hh-navbar-user { display: flex; align-items: center; gap: 0.85rem; }
+
+.hh-navbar-role {
+  font-size: 0.7rem;
+  color: var(--hh-teal-200);
+  border: 1px solid rgba(191,224,214,0.35);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+
+.hh-navbar-user .btn-ghost { border-color: rgba(255,255,255,0.3); color: var(--hh-white); }
+.hh-navbar-user .btn-ghost:hover { border-color: var(--hh-white); }
+
+@media (max-width: 640px) {
+  .hh-navbar { flex-wrap: wrap; gap: 0.6rem; padding: 0.75rem 1rem; }
+}

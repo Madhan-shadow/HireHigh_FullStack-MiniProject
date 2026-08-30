@@ -1,0 +1,22 @@
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: var(--hh-white);
+  border: 1px solid var(--hh-line);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.85rem;
+  max-width: 320px;
+  margin-bottom: 1.25rem;
+}
+.search-bar:focus-within { border-color: var(--hh-teal-600); }
+.search-bar-icon { color: var(--hh-ink-soft); flex-shrink: 0; }
+.search-bar-input {
+  border: none;
+  outline: none;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  width: 100%;
+  background: transparent;
+  color: var(--hh-ink);
+}

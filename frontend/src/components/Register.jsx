@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { register, clearAuthError } from '../store/slices/authSlice';
+import { register } from '../../store/slices/authSlice';
+import StageRail from '../common/StageRail';
+import './Auth.css';
 
-const ROLES = ['CANDIDATE', 'RECRUITER', 'HIRING_MANAGER', 'TA_LEAD'];
+const ROLES = [
+  { value: 'CANDIDATE', label: 'Candidate' },
+  { value: 'RECRUITER', label: 'Recruiter' },
+  { value: 'HIRING_MANAGER', label: 'Hiring Manager' },
+  { value: 'TA_LEAD', label: 'TA Lead' },
+];
 
 const Register = () => {
   const dispatch = useDispatch();
@@ -17,132 +24,78 @@ const Register = () => {
     role: 'CANDIDATE',
     password: '',
   });
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState(null);
-
-  const validate = (name, value) => {
-    switch (name) {
-      case 'fullName':
-        return value.trim() ? '' : 'Full name is required.';
-      case 'email':
-        return /\S+@\S+\.\S+/.test(value) ? '' : 'Enter a valid email address.';
-      case 'username':
-        return value.trim().length >= 3 ? '' : 'Username must be at least 3 characters.';
-      case 'password':
-        return value.length >= 8 ? '' : 'Password must be at least 8 characters.';
-      default:
-        return '';
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (name !== 'role') {
-      setFieldErrors((prev) => ({ ...prev, [name]: validate(name, value) }));
-    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(clearAuthError());
-    const errors = {
-      fullName: validate('fullName', formData.fullName),
-      email: validate('email', formData.email),
-      username: validate('username', formData.username),
-      password: validate('password', formData.password),
-    };
-    setFieldErrors(errors);
-    if (Object.values(errors).some(Boolean)) return;
-
     const result = await dispatch(register(formData));
-    if (register.fulfilled.match(result)) {
-      setSuccessMessage('Account created successfully. Please login.');
-      setTimeout(() => navigate('/login'), 1500);
-    }
+    if (!result.error) navigate('/login');
   };
 
   return (
-    <div className="auth-page">
-      <form className="auth-card" onSubmit={handleSubmit} noValidate>
-        <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">Join HireHigh Talent Acquisition</p>
-
-        {error && <div className="error-banner">{error}</div>}
-        {successMessage && <div className="success-banner">{successMessage}</div>}
-
-        <label htmlFor="fullName">Full Name</label>
-        <input
-          id="fullName"
-          name="fullName"
-          type="text"
-          placeholder="John Doe"
-          value={formData.fullName}
-          onChange={handleChange}
-          className={fieldErrors.fullName ? 'input-error' : ''}
-        />
-        {fieldErrors.fullName && <span className="field-error">{fieldErrors.fullName}</span>}
-
-        <label htmlFor="email">Email Address</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="john@example.com"
-          value={formData.email}
-          onChange={handleChange}
-          className={fieldErrors.email ? 'input-error' : ''}
-        />
-        {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
-
-        <div className="form-row">
-          <div className="form-col">
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              className={fieldErrors.username ? 'input-error' : ''}
-            />
-            {fieldErrors.username && (
-              <span className="field-error">{fieldErrors.username}</span>
-            )}
-          </div>
-          <div className="form-col">
-            <label htmlFor="role">Role</label>
-            <select id="role" name="role" value={formData.role} onChange={handleChange}>
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r.charAt(0) + r.slice(1).toLowerCase().replace('_', ' ')}
-                </option>
-              ))}
-            </select>
+    <div className="auth-shell">
+      <aside className="auth-brand">
+        <div className="auth-brand-inner">
+          <span className="auth-brand-mark" aria-hidden="true" />
+          <h1 className="auth-brand-title">HireHigh</h1>
+          <p className="auth-brand-tag">Join the pipeline. Every seat filled is a name, not a percentage.</p>
+          <div className="auth-brand-rail">
+            <StageRail stage="APPLIED" size="sm" />
           </div>
         </div>
+      </aside>
 
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          className={fieldErrors.password ? 'input-error' : ''}
-        />
-        {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+      <main className="auth-panel">
+        <form className="auth-card" onSubmit={handleSubmit} noValidate>
+          <h2 className="auth-title">Create account</h2>
+          <p className="auth-subtitle">Join HireHigh Talent Acquisition.</p>
 
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? 'Creating account...' : 'Register'}
-        </button>
+          {error && <div className="error-banner">{error}</div>}
 
-        <p className="auth-switch">
-          Already have an account? <Link to="/login">Login here</Link>
-        </p>
-      </form>
+          <div className="field">
+            <label htmlFor="fullName">Full Name</label>
+            <input id="fullName" name="fullName" type="text" placeholder="John Doe" value={formData.fullName} onChange={handleChange} />
+          </div>
+
+          <div className="field">
+            <label htmlFor="email">Email Address</label>
+            <input id="email" name="email" type="email" placeholder="john@example.com" value={formData.email} onChange={handleChange} />
+          </div>
+
+          <div className="auth-row">
+            <div className="field">
+              <label htmlFor="username">Username</label>
+              <input id="username" name="username" type="text" placeholder="Username" value={formData.username} onChange={handleChange} />
+            </div>
+
+            <div className="field">
+              <label htmlFor="role">Role</label>
+              <select id="role" name="role" value={formData.role} onChange={handleChange}>
+                {ROLES.map((r) => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="field">
+            <label htmlFor="password">Password</label>
+            <input id="password" name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} />
+          </div>
+
+          <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
+            {loading ? 'Creating account…' : 'Register'}
+          </button>
+
+          <p className="auth-switch">
+            Already have an account? <Link to="/login">Login here</Link>
+          </p>
+        </form>
+      </main>
     </div>
   );
 };
