@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import applicationService from '../../services/applicationService';
-import { clearSession } from '../../services/api';
 
 const initialState = {
   items: [],
@@ -19,9 +18,8 @@ const initialState = {
 const is401 = (err) => err?.response?.status === 401 || err?.status === 401;
 const is409 = (err) => err?.response?.status === 409 || err?.status === 409;
 
-// Pulls a human-readable message out of whatever shape the (possibly mocked)
-// service throws or resolves with: a plain string, an Error, an Axios-style
-// error, or a {message} / {data:{message}} object.
+// Pulls a human-readable message out of ANY shape: a plain string, an
+// Error instance, an Axios-style error, {message}, {data:{message}}.
 const extractMessage = (payload, fallback) => {
   if (!payload) return fallback;
   if (typeof payload === 'string') return payload;
@@ -37,7 +35,11 @@ export const fetchApplications = createAsyncThunk(
     try {
       return await applicationService.getAll(page, size, stage);
     } catch (err) {
-      if (is401(err)) clearSession();
+      if (is401(err)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('user');
+      }
       return rejectWithValue(extractMessage(err, 'Failed to load applications.'));
     }
   }
@@ -49,7 +51,6 @@ export const fetchMyApplications = createAsyncThunk(
     try {
       return await applicationService.getMyApplications();
     } catch (err) {
-      if (is401(err)) clearSession();
       return rejectWithValue(extractMessage(err, 'Failed to load your applications.'));
     }
   }
@@ -62,13 +63,13 @@ export const applyToJob = createAsyncThunk(
       const data = await applicationService.apply(jobId);
       return data;
     } catch (err) {
-      if (is401(err)) clearSession();
-      if (is409(err) || /duplicate|already applied|capacity/i.test(extractMessage(err, ''))) {
+      const msg = extractMessage(err, '');
+      if (is409(err) || /duplicate|already applied|capacity/i.test(msg)) {
         return rejectWithValue({ conflict: true, message: 'Application capacity exceeded' });
       }
       return rejectWithValue({
         conflict: false,
-        message: extractMessage(err, 'Failed to submit application.'),
+        message: msg || 'Failed to submit application.',
       });
     }
   }
@@ -81,7 +82,6 @@ export const updateStage = createAsyncThunk(
       const data = await applicationService.updateStage(id, stage);
       return { id, stage, data };
     } catch (err) {
-      if (is401(err)) clearSession();
       return rejectWithValue({ id, message: extractMessage(err, 'Failed to update stage.') });
     }
   }
@@ -94,7 +94,6 @@ export const deleteApplication = createAsyncThunk(
       const data = await applicationService.delete(id);
       return { id, data };
     } catch (err) {
-      if (is401(err)) clearSession();
       return rejectWithValue(extractMessage(err, 'Failed to delete application.'));
     }
   }
