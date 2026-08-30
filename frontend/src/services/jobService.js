@@ -1,25 +1,25 @@
 import api from './api';
 
-const getAll = async () => {
-  const response = await api.get('/jobs');
-  return response.data;
-};
+const jobService = {
+  getAll: async () => {
+    const response = await api.get('/jobs');
+    return response.data; // List<JobPosting>
+  },
 
-const create = async (jobData) => {
-  const response = await api.post('/jobs', jobData);
-  return response.data;
-};
+  create: async (jobData) => {
+    const response = await api.post('/jobs', jobData);
+    return response.data; // JobPosting
+  },
 
-const update = async (id, jobData) => {
-  const response = await api.put(`/jobs/${id}`, jobData);
-  return response.data;
-};
+  update: async (id, jobData) => {
+    const response = await api.put(`/jobs/${id}`, jobData);
+    return response.data; // JobPosting
+  },
 
-const deleteJob = async (id) => {
-  const response = await api.delete(`/jobs/${id}`);
-  return response.data;
+  delete: async (id) => {
+    const response = await api.delete(`/jobs/${id}`);
+    return response.data; // { message: "..." }
+  },
 };
-
-const jobService = { getAll, create, update, delete: deleteJob };
 
 export default jobService;

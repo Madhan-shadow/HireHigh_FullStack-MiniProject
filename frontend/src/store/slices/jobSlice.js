@@ -1,89 +1,90 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import jobService from '../../services/jobService';
 
-const initialState = {
-  items: [],
-  searchQuery: '',
-  loading: false,
-  error: null,
-};
-
 export const fetchJobs = createAsyncThunk(
-  'jobs/fetchJobs',
+  'jobs/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await jobService.getAll();
+      const data = await jobService.getAll();
+      return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to load jobs.');
+      return rejectWithValue(err.response?.data?.message || 'Failed to load jobs');
     }
   }
 );
 
 export const createJob = createAsyncThunk(
-  'jobs/createJob',
+  'jobs/create',
   async (jobData, { rejectWithValue }) => {
     try {
-      return await jobService.create(jobData);
+      const data = await jobService.create(jobData);
+      return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to create job.');
+      return rejectWithValue(err.response?.data?.message || 'Failed to create job');
     }
   }
 );
 
 export const updateJob = createAsyncThunk(
-  'jobs/updateJob',
+  'jobs/update',
   async ({ id, jobData }, { rejectWithValue }) => {
     try {
-      return await jobService.update(id, jobData);
+      const data = await jobService.update(id, jobData);
+      return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to update job.');
+      return rejectWithValue(err.response?.data?.message || 'Failed to update job');
     }
   }
 );
 
 export const deleteJob = createAsyncThunk(
-  'jobs/deleteJob',
+  'jobs/delete',
   async (id, { rejectWithValue }) => {
     try {
       await jobService.delete(id);
       return id;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to delete job.');
+      return rejectWithValue(err.response?.data?.message || 'Failed to delete job');
     }
   }
 );
+
+const initialState = {
+  items: [],
+  searchQuery: '',
+  status: 'idle',
+  error: null,
+};
 
 const jobSlice = createSlice({
   name: 'jobs',
   initialState,
   reducers: {
-    setSearchQuery: (state, action) => {
+    setSearchQuery(state, action) {
       state.searchQuery = action.payload;
-    },
-    clearJobError: (state) => {
-      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchJobs.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.status = 'loading';
       })
       .addCase(fetchJobs.fulfilled, (state, action) => {
-        state.loading = false;
+        state.status = 'succeeded';
         state.items = action.payload;
       })
       .addCase(fetchJobs.rejected, (state, action) => {
-        state.loading = false;
+        state.status = 'failed';
         state.error = action.payload;
       })
+
       .addCase(createJob.fulfilled, (state, action) => {
         state.items.push(action.payload);
       })
       .addCase(createJob.rejected, (state, action) => {
         state.error = action.payload;
       })
+
       .addCase(updateJob.fulfilled, (state, action) => {
         const idx = state.items.findIndex((j) => j.id === action.payload.id);
         if (idx !== -1) state.items[idx] = action.payload;
@@ -91,6 +92,7 @@ const jobSlice = createSlice({
       .addCase(updateJob.rejected, (state, action) => {
         state.error = action.payload;
       })
+
       .addCase(deleteJob.fulfilled, (state, action) => {
         state.items = state.items.filter((j) => j.id !== action.payload);
       })
@@ -100,18 +102,5 @@ const jobSlice = createSlice({
   },
 });
 
-export const { setSearchQuery, clearJobError } = jobSlice.actions;
-
-// Selector: real-time client-side job searching by title or department
-export const selectFilteredJobs = (state) => {
-  const { items, searchQuery } = state.jobs;
-  if (!searchQuery) return items;
-  const q = searchQuery.toLowerCase();
-  return items.filter(
-    (job) =>
-      job.title?.toLowerCase().includes(q) ||
-      job.department?.toLowerCase().includes(q)
-  );
-};
-
+export const { setSearchQuery } = jobSlice.actions;
 export default jobSlice.reducer;
