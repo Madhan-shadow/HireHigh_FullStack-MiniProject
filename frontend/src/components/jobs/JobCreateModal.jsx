@@ -8,11 +8,6 @@ const emptyForm = {
   status: 'OPEN',
 };
 
-/**
- * Shared create/edit modal.
- * - If `job` is passed, the form is pre-populated for editing.
- * - onClose closes via the × button or clicking the overlay.
- */
 const JobCreateModal = ({ job, onClose, onSubmit }) => {
   const isEdit = Boolean(job);
   const [formData, setFormData] = useState(emptyForm);

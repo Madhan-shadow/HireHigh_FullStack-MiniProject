@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-/**
- * Reusable search/filter input.
- * - autoFocus: focuses the input on mount (used by pipeline search).
- * - debounceMs: delay before calling onSearch with the latest value.
- */
 const SearchFilterBar = ({
   placeholder = 'Search...',
   onSearch,

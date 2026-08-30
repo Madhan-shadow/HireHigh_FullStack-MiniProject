@@ -77,7 +77,6 @@ const ApplicationList = () => {
 
   const canEditStage = role === 'RECRUITER' || role === 'TA_LEAD';
 
-  // Fetch on mount, and whenever the page or stage filter changes.
   useEffect(() => {
     dispatch(fetchApplications({ page, size: PAGE_SIZE, stage: stageFilter || undefined }));
   }, [dispatch, page, stageFilter]);
