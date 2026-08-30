@@ -1,173 +1,164 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import applicationService from '../../services/applicationService';
 
-const initialState = {
-  items: [],
-  myApplications: [],
-  currentPage: 0,
-  totalPages: 0,
-  totalElements: 0,
-  size: 5,
-  searchQuery: '',
-  loading: false,
-  error: null,
-  successMessage: null,
-  warningMessage: null,
-};
-
-const is401 = (err) => err?.response?.status === 401 || err?.status === 401;
-const is409 = (err) => err?.response?.status === 409 || err?.status === 409;
-
-// Pulls a human-readable message out of ANY shape: a plain string, an
-// Error instance, an Axios-style error, {message}, {data:{message}}.
-const extractMessage = (payload, fallback) => {
-  if (!payload) return fallback;
-  if (typeof payload === 'string') return payload;
-  if (payload.message) return payload.message;
-  if (payload.response?.data?.message) return payload.response.data.message;
-  if (payload.data?.message) return payload.data.message;
-  return fallback;
-};
-
-export const fetchApplications = createAsyncThunk(
-  'applications/fetchApplications',
-  async ({ page = 0, size = 5, stage } = {}, { rejectWithValue }) => {
-    try {
-      return await applicationService.getAll(page, size, stage);
-    } catch (err) {
-      if (is401(err)) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        localStorage.removeItem('user');
-      }
-      return rejectWithValue(extractMessage(err, 'Failed to load applications.'));
-    }
-  }
-);
-
-export const fetchMyApplications = createAsyncThunk(
-  'applications/fetchMyApplications',
-  async (_, { rejectWithValue }) => {
-    try {
-      return await applicationService.getMyApplications();
-    } catch (err) {
-      return rejectWithValue(extractMessage(err, 'Failed to load your applications.'));
-    }
-  }
-);
-
 export const applyToJob = createAsyncThunk(
-  'applications/applyToJob',
+  'applications/apply',
   async (jobId, { rejectWithValue }) => {
     try {
       const data = await applicationService.apply(jobId);
-      return data;
+      return data; // { message: "Application submitted successfully." }
     } catch (err) {
-      const msg = extractMessage(err, '');
-      if (is409(err) || /duplicate|already applied|capacity/i.test(msg)) {
-        return rejectWithValue({ conflict: true, message: 'Application capacity exceeded' });
-      }
       return rejectWithValue({
-        conflict: false,
-        message: msg || 'Failed to submit application.',
+        status: err.response?.status,
+        message: err.response?.data?.message,
       });
     }
   }
 );
 
-export const updateStage = createAsyncThunk(
+export const fetchApplications = createAsyncThunk(
+  'applications/fetchAll',
+  async ({ page = 0, size = 5 } = {}, { rejectWithValue }) => {
+    try {
+      const data = await applicationService.getAll(page, size);
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data);
+    }
+  }
+);
+
+export const fetchMyApplications = createAsyncThunk(
+  'applications/fetchMine',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await applicationService.getMyApplications();
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data);
+    }
+  }
+);
+
+export const updateApplicationStage = createAsyncThunk(
   'applications/updateStage',
   async ({ id, stage }, { rejectWithValue }) => {
     try {
       const data = await applicationService.updateStage(id, stage);
       return { id, stage, data };
     } catch (err) {
-      return rejectWithValue({ id, message: extractMessage(err, 'Failed to update stage.') });
+      return rejectWithValue(err.response?.data);
     }
   }
 );
 
 export const deleteApplication = createAsyncThunk(
-  'applications/deleteApplication',
+  'applications/delete',
   async (id, { rejectWithValue }) => {
     try {
-      const data = await applicationService.delete(id);
+      const data = await applicationService.deleteApplication(id);
       return { id, data };
     } catch (err) {
-      return rejectWithValue(extractMessage(err, 'Failed to delete application.'));
+      return rejectWithValue(err.response?.data);
     }
   }
 );
+
+const initialState = {
+  items: [],
+  myApplications: [],
+  currentPage: 0,
+  totalPages: 0,
+  totalElements: 0,
+  status: 'idle',
+  successMessage: null,
+  warningMessage: null,
+  errorMessage: null,
+};
 
 const applicationSlice = createSlice({
   name: 'applications',
   initialState,
   reducers: {
-    setSearchQuery: (state, action) => {
-      state.searchQuery = action.payload;
-    },
-    clearMessages: (state) => {
+    clearMessages(state) {
       state.successMessage = null;
-      state.error = null;
       state.warningMessage = null;
+      state.errorMessage = null;
     },
   },
   extraReducers: (builder) => {
     builder
+      // APPLY
+      .addCase(applyToJob.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(applyToJob.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.successMessage = action.payload.message; // "Application submitted successfully."
+        state.warningMessage = null;
+        state.errorMessage = null;
+      })
+      .addCase(applyToJob.rejected, (state, action) => {
+        state.status = 'failed';
+        const status = action.payload?.status;
+        if (status === 409) {
+          state.warningMessage = 'Application capacity exceeded';
+          state.errorMessage = null;
+        } else if (status === 401) {
+          // handled globally by api.js interceptor
+        } else if (status >= 500) {
+          state.errorMessage = 'Internal server error';
+        } else {
+          state.errorMessage = action.payload?.message || 'Something went wrong';
+        }
+      })
+
+      // FETCH ALL (paginated)
       .addCase(fetchApplications.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.status = 'loading';
       })
       .addCase(fetchApplications.fulfilled, (state, action) => {
-        state.loading = false;
-        const { content, totalPages, totalElements, number, size } = action.payload || {};
-        state.items = content || [];
-        state.totalPages = totalPages ?? 0;
-        state.totalElements = totalElements ?? 0;
-        state.currentPage = number ?? 0;
-        state.size = size ?? state.size;
+        state.status = 'succeeded';
+        state.items = action.payload.content;
+        state.totalPages = action.payload.totalPages;
+        state.totalElements = action.payload.totalElements;
+        state.currentPage = action.payload.number;
       })
       .addCase(fetchApplications.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to load applications.';
+        state.status = 'failed';
+        state.errorMessage = action.payload?.message || 'Internal server error';
       })
+
+      // FETCH MINE
       .addCase(fetchMyApplications.fulfilled, (state, action) => {
         state.myApplications = action.payload;
       })
-      .addCase(fetchMyApplications.rejected, (state, action) => {
-        state.error = action.payload;
+
+      // UPDATE STAGE
+      .addCase(updateApplicationStage.fulfilled, (state, action) => {
+        const { id, stage, data } = action.payload;
+        const app = state.items.find((a) => a.id === id);
+        if (app) app.currentStage = stage;
+        state.successMessage = data?.message || 'Application updated successfully.';
+        state.warningMessage = null;
+        state.errorMessage = null;
       })
-      .addCase(applyToJob.fulfilled, (state, action) => {
-        state.successMessage = extractMessage(action.payload, 'Application submitted successfully.');
+      .addCase(updateApplicationStage.rejected, (state, action) => {
+        state.errorMessage = action.payload?.message || 'Internal server error';
       })
-      .addCase(applyToJob.rejected, (state, action) => {
-        const payload = action.payload;
-        if (payload && typeof payload === 'object' && payload.conflict) {
-          state.warningMessage = payload.message || 'Application capacity exceeded';
-        } else {
-          state.error = extractMessage(payload, 'Failed to submit application.');
-        }
-      })
-      .addCase(updateStage.pending, (state, action) => {
-        const { id, stage } = action.meta.arg;
-        const item = state.items.find((a) => a.id === id);
-        if (item) item.currentStage = stage;
-      })
-      .addCase(updateStage.fulfilled, (state, action) => {
-        state.successMessage = extractMessage(action.payload?.data, 'Application updated successfully.');
-      })
-      .addCase(updateStage.rejected, (state, action) => {
-        state.error = extractMessage(action.payload, 'Failed to update stage.');
-      })
+
+      // DELETE
       .addCase(deleteApplication.fulfilled, (state, action) => {
         state.items = state.items.filter((a) => a.id !== action.payload.id);
-        state.successMessage = extractMessage(action.payload.data, 'Application deleted successfully.');
+        state.successMessage = action.payload.data.message; // "Application deleted successfully."
+        state.warningMessage = null;
+        state.errorMessage = null;
       })
       .addCase(deleteApplication.rejected, (state, action) => {
-        state.error = action.payload;
+        state.errorMessage = action.payload?.message || 'Internal server error';
       });
   },
 });
 
-export const { setSearchQuery, clearMessages } = applicationSlice.actions;
+export const { clearMessages } = applicationSlice.actions;
 export default applicationSlice.reducer;
