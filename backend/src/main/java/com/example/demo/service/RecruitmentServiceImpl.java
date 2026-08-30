@@ -34,14 +34,14 @@ public class RecruitmentServiceImpl implements RecruitmentService {
     @Override
     public List<JobApplication> getApplicationsByUsername(String username) {
 
-        return applicationRepository.findByCandidateUserEmail(username);
+        return applicationRepository.findByCandidateUserUsername(username);
 
     }
 
     @Override
     public JobApplication apply(Long jobId, String username) {
 
-        SystemUser user = userRepository.findByEmail(username)
+        SystemUser user = userRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new RuntimeException("User Not Found"));
 
