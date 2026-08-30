@@ -10,6 +10,7 @@ import com.example.demo.entity.CandidateProfile;
 import com.example.demo.entity.JobApplication;
 import com.example.demo.entity.JobPosting;
 import com.example.demo.entity.SystemUser;
+import com.example.demo.exception.ApplicationCapacityExceededException;
 import com.example.demo.repository.CandidateProfileRepository;
 import com.example.demo.repository.JobApplicationRepository;
 import com.example.demo.repository.JobPostingRepository;
@@ -57,7 +58,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
                 && job.getCurrentFills() != null
                 && job.getCurrentFills() >= job.getHiringGoal()) {
 
-            throw new RuntimeException(
+            throw new ApplicationCapacityExceededException(
                     "Application capacity exceeded for this job");
         }
 

@@ -18,22 +18,22 @@ import com.example.demo.service.RecruitmentService;
 @RequestMapping("/api/applications")
 @CrossOrigin("*")
 public class ApplicationController {
-    
-    
+
+
     @Autowired
     private RecruitmentService recruitmentService;
-    
+
     @Autowired
     private JobApplicationRepository applicationRepository;
-    
+
     @GetMapping
     @PreAuthorize("hasAnyRole('RECRUITER','TA_LEAD')")
     public ResponseEntity<List<JobApplication>> getAllApplications() {
-        
+
         return ResponseEntity.ok(applicationRepository.findAll());
-        
+
     }
-    
+
     @GetMapping("/my-applications")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<List<JobApplication>> getMyApplications(@RequestParam String username){
@@ -61,7 +61,7 @@ public class ApplicationController {
 
         Map<String,String> response = new HashMap<>();
 
-        response.put("message","Application Submitted Successfully");
+        response.put("message","Application submitted successfully.");
 
         return ResponseEntity.ok(response);
 
