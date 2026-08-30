@@ -18,9 +18,9 @@ export const applyToJob = createAsyncThunk(
 
 export const fetchApplications = createAsyncThunk(
   'applications/fetchAll',
-  async ({ page = 0, size = 5 } = {}, { rejectWithValue }) => {
+  async ({ page = 0, size = 5, stage } = {}, { rejectWithValue }) => {
     try {
-      const data = await applicationService.getAll(page, size);
+      const data = await applicationService.getAll(page, size, stage);
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data);
@@ -106,7 +106,8 @@ const applicationSlice = createSlice({
       })
       .addCase(applyToJob.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.successMessage = action.payload?.message || 'Application submitted successfully.';
+        state.successMessage =
+          action.payload?.message || 'Application submitted successfully.';
         state.warningMessage = null;
         state.errorMessage = null;
       })

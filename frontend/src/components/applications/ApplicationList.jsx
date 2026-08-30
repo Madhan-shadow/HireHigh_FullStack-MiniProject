@@ -26,24 +26,19 @@ export default function ApplicationList() {
   const searchInputRef = useRef(null);
   const debounceRef = useRef(null);
 
-  // Auto-focus search input on mount (T12)
+  // Auto-focus search input on mount
   useEffect(() => {
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, []);
 
-  // Initial load (T10)
+  // Refetch whenever the stage filter changes (T11)
   useEffect(() => {
-    dispatch(fetchApplications({ page: 0, size: 5 }));
-  }, [dispatch]);
-
-  // Refresh the list whenever the stage filter changes (T9, T11)
-  useEffect(() => {
-    dispatch(fetchApplications({ page: 0, size: 5 }));
+    dispatch(fetchApplications({ page: 0, size: 5, stage: stageFilter }));
   }, [stageFilter, dispatch]);
 
-  // Auto-dismiss banners after 3000ms (T22)
+  // Auto-dismiss banners after 3000ms
   useEffect(() => {
     if (successMessage || warningMessage || errorMessage) {
       const timer = setTimeout(() => {
@@ -59,7 +54,7 @@ export default function ApplicationList() {
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      dispatch(fetchApplications({ page: 0, size: 5 }));
+      dispatch(fetchApplications({ page: 0, size: 5, stage: stageFilter }));
     }, 300);
   };
 
@@ -68,7 +63,7 @@ export default function ApplicationList() {
   };
 
   const handlePageChange = (newPage) => {
-    dispatch(fetchApplications({ page: newPage, size: 5 }));
+    dispatch(fetchApplications({ page: newPage, size: 5, stage: stageFilter }));
   };
 
   const handleStageChange = (id, newStage) => {
@@ -85,8 +80,7 @@ export default function ApplicationList() {
     const matchesSearch = (app.candidate?.user?.fullName || '')
       .toLowerCase()
       .includes(search.toLowerCase());
-    const matchesStage = stageFilter === 'ALL' || app.currentStage === stageFilter;
-    return matchesSearch && matchesStage;
+    return matchesSearch;
   });
 
   return (

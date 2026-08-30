@@ -1,8 +1,12 @@
 import api from './api';
 
 const getStoredUsername = () => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  return user.username;
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.username;
+  } catch {
+    return undefined;
+  }
 };
 
 const applicationService = {
@@ -14,8 +18,10 @@ const applicationService = {
     return response.data; // { message: "Application submitted successfully." }
   },
 
-  getAll: async (page = 0, size = 5) => {
-    const response = await api.get('/applications', { params: { page, size } });
+  getAll: async (page = 0, size = 5, stage) => {
+    const params = { page, size };
+    if (stage && stage !== 'ALL') params.stage = stage;
+    const response = await api.get('/applications', { params });
     return response.data;
   },
 
