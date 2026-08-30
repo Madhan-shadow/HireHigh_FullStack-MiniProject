@@ -6,7 +6,7 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const data = await authService.login(credentials);
-      return data;
+      return data; // { message, token, role }
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Login failed');
     }
@@ -28,7 +28,8 @@ export const register = createAsyncThunk(
 const initialState = {
   token: localStorage.getItem('token') || null,
   role: localStorage.getItem('role') || null,
-  user: JSON.parse(localStorage.getItem('user') || 'null'),
+  isAuthenticated: !!localStorage.getItem('token'),
+  loading: false,
   status: 'idle',
   error: null,
 };
@@ -40,7 +41,7 @@ const authSlice = createSlice({
     logout(state) {
       state.token = null;
       state.role = null;
-      state.user = null;
+      state.isAuthenticated = false;
       state.status = 'idle';
       state.error = null;
       localStorage.removeItem('token');
@@ -55,32 +56,40 @@ const authSlice = createSlice({
     builder
       .addCase(login.pending, (state) => {
         state.status = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
-        const { token, user } = action.payload;
-        state.status = 'succeeded';
-        state.token = token;
-        state.user = user;
-        state.role = user.role;
+        const { token, role } = action.payload;
 
+        state.status = 'succeeded';
+        state.loading = false;
+        state.token = token;
+        state.role = role;
+        state.isAuthenticated = true;
+
+        // T25 & T26
         localStorage.setItem('token', token);
-        localStorage.setItem('role', user.role);
-        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('role', role);
       })
       .addCase(login.rejected, (state, action) => {
         state.status = 'failed';
+        state.loading = false;
+        state.isAuthenticated = false;
         state.error = action.payload;
       })
       .addCase(register.pending, (state) => {
         state.status = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(register.fulfilled, (state) => {
         state.status = 'succeeded';
+        state.loading = false;
       })
       .addCase(register.rejected, (state, action) => {
         state.status = 'failed';
+        state.loading = false;
         state.error = action.payload;
       });
   },
