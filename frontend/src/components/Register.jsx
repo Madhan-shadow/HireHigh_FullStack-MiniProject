@@ -102,6 +102,7 @@ const Register = () => {
               id="username"
               name="username"
               type="text"
+              placeholder="Username"
               value={formData.username}
               onChange={handleChange}
               className={fieldErrors.username ? 'input-error' : ''}
@@ -127,6 +128,7 @@ const Register = () => {
           id="password"
           name="password"
           type="password"
+          placeholder="Password"
           value={formData.password}
           onChange={handleChange}
           className={fieldErrors.password ? 'input-error' : ''}
