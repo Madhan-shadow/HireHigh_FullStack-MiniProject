@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { login, clearAuthError } from '../../store/slices/authSlice';
-import StageRail from '../common/StageRail';
-import './Auth.css';
+import { login, clearAuthError } from '../store/slices/authSlice';
+import StageRail from './common/StageRail';
+import './layout/Auth.css';
 
 const Login = () => {
   const dispatch = useDispatch();

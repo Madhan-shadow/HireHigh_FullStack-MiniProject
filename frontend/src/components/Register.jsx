@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { register } from '../../store/slices/authSlice';
-import StageRail from '../common/StageRail';
-import './Auth.css';
+import { register } from '../store/slices/authSlice';
+import StageRail from './common/StageRail';
+import './layout/Auth.css';
 
 const ROLES = [
   { value: 'CANDIDATE', label: 'Candidate' },
