@@ -1,23 +1,17 @@
 import React from 'react';
+import './CapacityBar.css';
 
-const CapacityBar = ({ currentFills = 0, hiringGoal = 1 }) => {
-  const safeGoal = hiringGoal > 0 ? hiringGoal : 1;
-  const percent = Math.min(100, Math.round((currentFills / safeGoal) * 100));
+export default function CapacityBar({ currentFills = 0, hiringGoal = 1 }) {
+  const seats = Array.from({ length: hiringGoal }, (_, i) => i < currentFills);
 
   return (
-    <div className="capacity-bar-wrapper">
-      <span className="capacity-label">
-        {currentFills} / {hiringGoal} filled
-      </span>
-      <div className="capacity-bar-track">
-        <div
-          className="capacity-bar-fill"
-          style={{ width: `${percent}%` }}
-          data-testid="capacity-bar-fill"
-        />
+    <div className="capacity-bar" aria-label={`${currentFills} of ${hiringGoal} seats filled`}>
+      <div className="capacity-seats">
+        {seats.map((filled, i) => (
+          <span key={i} className={`seat ${filled ? 'seat--filled' : 'seat--open'}`} />
+        ))}
       </div>
+      <span className="capacity-count mono">{currentFills}/{hiringGoal}</span>
     </div>
   );
-};
-
-export default CapacityBar;
+}

@@ -1,48 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { forwardRef } from 'react';
+import './SearchFilterBar.css';
 
-const SearchFilterBar = ({
-  placeholder = 'Search...',
-  onSearch,
-  debounceMs = 300,
-  autoFocus = false,
-}) => {
-  const [value, setValue] = useState('');
-  const inputRef = useRef(null);
-  const debounceRef = useRef(null);
-
-  useEffect(() => {
-    if (autoFocus && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [autoFocus]);
-
-  const handleChange = (e) => {
-    const next = e.target.value;
-    setValue(next);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      onSearch && onSearch(next);
-    }, debounceMs);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
+const SearchFilterBar = forwardRef(function SearchFilterBar(
+  { value, onChange, placeholder = 'Filter by candidate' },
+  ref
+) {
   return (
-    <div className="search-filter-bar">
+    <div className="search-bar">
+      <svg className="search-bar-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5.25" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M11 11L14.5 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
       <input
-        ref={inputRef}
+        ref={ref}
         type="text"
+        className="search-bar-input"
         placeholder={placeholder}
         value={value}
-        onChange={handleChange}
-        className="search-input"
+        onChange={onChange}
       />
     </div>
   );
-};
+});
 
 export default SearchFilterBar;
