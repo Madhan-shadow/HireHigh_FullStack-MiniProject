@@ -1,19 +1,13 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-export const clearSession = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('role');
-  localStorage.removeItem('user');
-};
-
-// Request interceptor: inject JWT Bearer token from localStorage
+// Inject JWT into every outgoing request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -25,19 +19,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: on 401 Unauthorized, clear session and redirect to /login
+// Handle 401 globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      clearSession();
-      try {
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
-      } catch (e) {
-        // navigation not available in this environment (e.g. test runner) — ignore
-      }
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
