@@ -8,11 +8,14 @@ const initialState = {
   error: null,
 };
 
+// Same ordering fix as applicationSlice.js — server message before
+// generic Error.message.
 const extractMessage = (payload, fallback) => {
   if (!payload) return fallback;
   if (typeof payload === 'string') return payload;
-  if (payload.message) return payload.message;
   if (payload.response?.data?.message) return payload.response.data.message;
+  if (payload.data?.message) return payload.data.message;
+  if (payload.message) return payload.message;
   return fallback;
 };
 

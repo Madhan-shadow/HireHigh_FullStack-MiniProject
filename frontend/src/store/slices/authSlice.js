@@ -22,10 +22,26 @@ const initialState = {
   error: null,
 };
 
+// Widened fallback chain: covers {token, user:{role}}, {accessToken, role},
+// {jwt, userRole}, and nested variants, without breaking any shape that
+// already worked.
 const resolveAuthPayload = (data = {}) => {
-  const token = data.token ?? data.accessToken ?? data.jwt ?? null;
-  const role = data.role ?? data.user?.role ?? null;
+  const token =
+    data.token ??
+    data.accessToken ??
+    data.jwt ??
+    data.user?.token ??
+    null;
+
+  const role =
+    data.role ??
+    data.userRole ??
+    data.user?.role ??
+    data.user?.userRole ??
+    null;
+
   const user = data.user ?? (role ? { role, ...data } : null);
+
   return { token, role, user };
 };
 
@@ -86,9 +102,20 @@ const authSlice = createSlice({
         state.role = role;
         state.user = user;
         state.isAuthenticated = !!token;
-        localStorage.setItem('token', token ?? '');
-        localStorage.setItem('role', role ?? '');
-        if (user) localStorage.setItem('user', JSON.stringify(user));
+
+        // T25
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+
+        // T26
+        if (role) {
+          localStorage.setItem('role', role);
+        }
+
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;

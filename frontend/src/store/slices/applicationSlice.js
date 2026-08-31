@@ -30,12 +30,18 @@ const is401 = (err) => {
 
 const is409 = (err) => err?.response?.status === 409 || err?.status === 409;
 
+// FIX: server-provided messages must be checked BEFORE the generic
+// Axios Error.message ("Request failed with status code 409"), which
+// is always truthy on a real Axios error and was shadowing the real
+// backend message every time. This was the actual cause of T23 failing
+// whenever the capacity check relied on message content rather than
+// status code alone.
 const extractMessage = (payload, fallback) => {
   if (!payload) return fallback;
   if (typeof payload === 'string') return payload;
-  if (payload.message) return payload.message;
   if (payload.response?.data?.message) return payload.response.data.message;
   if (payload.data?.message) return payload.data.message;
+  if (payload.message) return payload.message;
   return fallback;
 };
 
@@ -60,8 +66,8 @@ export const applyToJob = createAsyncThunk(
     } catch (err) {
       if (is401(err)) clearSession();
       const rawMessage = extractMessage(err, '');
-      if (is409(err) || /duplicate|already applied|capacity/i.test(rawMessage)) {
-        return rejectWithValue({ conflict: true, message: 'Application capacity exceeded' });
+      if (is409(err) || /duplicate|already applied|capacity|exceed|full/i.test(rawMessage)) {
+        return rejectWithValue({ conflict: true, message: rawMessage || 'Application capacity exceeded' });
       }
       return rejectWithValue({ conflict: false, message: rawMessage || 'Failed to submit application.' });
     }
@@ -123,15 +129,22 @@ const applicationSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Failed to load applications. Please try again.';
       })
+      // T21
       .addCase(applyToJob.fulfilled, (state, action) => {
+        state.error = null;
+        state.warningMessage = null;
         state.successMessage = extractMessage(action.payload, 'Application submitted successfully.');
       })
+      // T23
       .addCase(applyToJob.rejected, (state, action) => {
+        state.successMessage = null;
         const payload = action.payload;
         if (payload && typeof payload === 'object' && payload.conflict) {
           state.warningMessage = payload.message || 'Application capacity exceeded';
+          state.error = null;
         } else {
           state.error = extractMessage(payload, 'Failed to submit application.');
+          state.warningMessage = null;
         }
       })
       .addCase(updateStage.pending, (state, action) => {
