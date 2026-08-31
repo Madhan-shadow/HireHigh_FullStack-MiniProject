@@ -1,54 +1,175 @@
-.job-list-page { max-width: 1040px; margin: 0 auto; padding: 2rem 1.5rem; }
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchJobs,
+  createJob,
+  updateJob,
+  deleteJob,
+  setSearchQuery,
+  selectFilteredJobs,
+} from '../../store/slices/jobSlice';
+import { applyToJob, clearMessages } from '../../store/slices/applicationSlice';
+import JobCreateModal from './JobCreateModal';
+import SearchFilterBar from '../common/SearchFilterBar';
+import CapacityBar from '../common/CapacityBar';
+import EmptyState from '../common/EmptyState';
 
-.job-list-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.5rem; }
-.job-list-header h2 { font-size: 1.8rem; margin-bottom: 0.15rem; }
-.job-list-sub { font-family: var(--font-ui); color: var(--hh-ink-soft); font-size: 0.9rem; margin: 0; }
+const JobList = () => {
+  const dispatch = useDispatch();
+  const jobs = useSelector(selectFilteredJobs);
+  const { loading, error: jobError } = useSelector((state) => state.jobs);
+  const { role } = useSelector((state) => state.auth);
+  const { successMessage, warningMessage, error: appError } = useSelector(
+    (state) => state.applications
+  );
 
-.job-list-status { color: var(--hh-ink-soft); font-size: 0.9rem; }
+  const [showModal, setShowModal] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
-.job-table-wrap {
-  background: var(--hh-white);
-  border: 1px solid var(--hh-line);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-}
+  const isRecruiter = role === 'RECRUITER' || role === 'TA_LEAD';
+  const isCandidate = role === 'CANDIDATE';
 
-.job-table { width: 100%; border-collapse: collapse; }
-.job-table th {
-  text-align: left;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--hh-ink-soft);
-  padding: 0.9rem 1.1rem;
-  background: var(--hh-teal-100);
-  border-bottom: 1px solid var(--hh-line);
-}
-.job-table td { padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--hh-line); vertical-align: middle; }
-.job-table tr:last-child td { border-bottom: none; }
-.job-table tr:hover td { background: rgba(20,107,94,0.03); }
+  useEffect(() => {
+    dispatch(fetchJobs());
+  }, [dispatch]);
 
-.job-title-cell { font-weight: 600; color: var(--hh-teal-900); }
+  useEffect(() => {
+    if (successMessage || warningMessage || appError) {
+      const timer = setTimeout(() => dispatch(clearMessages()), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, warningMessage, appError, dispatch]);
 
-.status-chip {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.2rem 0.65rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-.status-chip--open { background: var(--hh-teal-100); color: var(--hh-teal-700); }
-.status-chip--closed { background: #EFEFEF; color: var(--hh-ink-soft); }
-.status-chip--on_hold { background: var(--hh-amber-100); color: var(--hh-amber-600); }
+  const handleOpenCreate = () => {
+    setEditingJob(null);
+    setShowModal(true);
+  };
 
-.job-actions { display: flex; gap: 0.5rem; }
-.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.78rem; }
+  const handleOpenEdit = (job) => {
+    setEditingJob(job);
+    setShowModal(true);
+  };
 
-@media (max-width: 720px) {
-  .job-table thead { display: none; }
-  .job-table, .job-table tbody, .job-table tr, .job-table td { display: block; width: 100%; }
-  .job-table tr { padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--hh-line); }
-  .job-table td { border: none; padding: 0.25rem 0; }
-}
+  const handleModalSubmit = (formData) => {
+    if (editingJob) {
+      dispatch(updateJob({ id: editingJob.id, jobData: formData }));
+    } else {
+      dispatch(createJob(formData));
+    }
+    setShowModal(false);
+  };
+
+  const handleApply = (jobId) => {
+    dispatch(applyToJob(jobId));
+  };
+
+  const handleDeleteRequest = (jobId) => {
+    setConfirmDeleteId(jobId);
+  };
+
+  const handleConfirmDelete = () => {
+    if (confirmDeleteId != null) {
+      dispatch(deleteJob(confirmDeleteId));
+      setConfirmDeleteId(null);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      {successMessage && <div className="success-banner">{successMessage}</div>}
+      {warningMessage && <div className="warning-banner">{warningMessage}</div>}
+      {(appError || jobError) && <div className="error-banner">{appError || jobError}</div>}
+
+      <div className="page-header">
+        <h1>Open Roles</h1>
+        {isRecruiter && (
+          <button className="btn btn-primary" onClick={handleOpenCreate}>
+            Post New Job
+          </button>
+        )}
+      </div>
+
+      <SearchFilterBar
+        placeholder="Search by job title or department"
+        onSearch={(q) => dispatch(setSearchQuery(q))}
+      />
+
+      {loading ? (
+        <p>Loading jobs...</p>
+      ) : jobs.length === 0 ? (
+        <EmptyState
+          title="No open roles"
+          message="There are no job postings matching your search."
+        />
+      ) : (
+        <div className="row-list">
+          <div className="row-list-head jobs-grid">
+            <span>Job Title</span>
+            <span>Department</span>
+            <span>Capacity</span>
+            <span>Status</span>
+            <span></span>
+          </div>
+          {jobs.map((job) => (
+            <div className="row-list-row jobs-grid" key={job.id}>
+              <span className="cell-title">{job.title}</span>
+              <span className="cell-muted">{job.department}</span>
+              <CapacityBar currentFills={job.currentFills} hiringGoal={job.hiringGoal} />
+              <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
+                {job.status}
+              </span>
+              <div className="cell-actions">
+                {isRecruiter && (
+                  <>
+                    <button className="btn btn-link" onClick={() => handleOpenEdit(job)}>
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleDeleteRequest(job.id)}
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+                {isCandidate && (
+                  <button className="btn btn-success" onClick={() => handleApply(job.id)}>
+                    Apply Now
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showModal && (
+        <JobCreateModal
+          job={editingJob}
+          onClose={() => setShowModal(false)}
+          onSubmit={handleModalSubmit}
+        />
+      )}
+
+      {confirmDeleteId != null && (
+        <div className="modal-overlay" onClick={() => setConfirmDeleteId(null)}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete this job posting?</h3>
+            <p>This will permanently remove the job and its associated applications.</p>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>
+                Cancel
+              </button>
+              <button className="btn btn-danger" onClick={handleConfirmDelete}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default JobList;
