@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import jobService from '../../services/jobService';
-import { addAlert } from './alertSlice';
 
 const initialState = {
   items: [],
@@ -27,45 +26,34 @@ export const fetchJobs = createAsyncThunk('jobs/fetchJobs', async (_, { rejectWi
 
 export const createJob = createAsyncThunk(
   'jobs/createJob',
-  async (jobData, { dispatch, rejectWithValue }) => {
+  async (jobData, { rejectWithValue }) => {
     try {
-      const data = await jobService.create(jobData);
-      dispatch(addAlert('Job posted successfully.', 'success'));
-      return data;
+      return await jobService.create(jobData);
     } catch (err) {
-      const message = extractMessage(err, 'Failed to create job.');
-      dispatch(addAlert(message, 'error'));
-      return rejectWithValue(message);
+      return rejectWithValue(extractMessage(err, 'Failed to create job.'));
     }
   }
 );
 
 export const updateJob = createAsyncThunk(
   'jobs/updateJob',
-  async ({ id, jobData }, { dispatch, rejectWithValue }) => {
+  async ({ id, jobData }, { rejectWithValue }) => {
     try {
-      const data = await jobService.update(id, jobData);
-      dispatch(addAlert('Job updated successfully.', 'success'));
-      return data;
+      return await jobService.update(id, jobData);
     } catch (err) {
-      const message = extractMessage(err, 'Failed to update job.');
-      dispatch(addAlert(message, 'error'));
-      return rejectWithValue(message);
+      return rejectWithValue(extractMessage(err, 'Failed to update job.'));
     }
   }
 );
 
 export const deleteJob = createAsyncThunk(
   'jobs/deleteJob',
-  async (id, { dispatch, rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       await jobService.delete(id);
-      dispatch(addAlert('Job deleted successfully.', 'success'));
       return id;
     } catch (err) {
-      const message = extractMessage(err, 'Failed to delete job.');
-      dispatch(addAlert(message, 'error'));
-      return rejectWithValue(message);
+      return rejectWithValue(extractMessage(err, 'Failed to delete job.'));
     }
   }
 );

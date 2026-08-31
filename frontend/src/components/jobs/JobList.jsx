@@ -8,7 +8,7 @@ import {
   setSearchQuery,
   selectFilteredJobs,
 } from '../../store/slices/jobSlice';
-import { applyToJob } from '../../store/slices/applicationSlice';
+import { applyToJob, clearMessages } from '../../store/slices/applicationSlice';
 import JobCreateModal from './JobCreateModal';
 import SearchFilterBar from '../common/SearchFilterBar';
 import CapacityBar from '../common/CapacityBar';
@@ -17,8 +17,11 @@ import EmptyState from '../common/EmptyState';
 const JobList = () => {
   const dispatch = useDispatch();
   const jobs = useSelector(selectFilteredJobs);
-  const { loading } = useSelector((state) => state.jobs);
+  const { loading, error: jobError } = useSelector((state) => state.jobs);
   const { role } = useSelector((state) => state.auth);
+  const { successMessage, warningMessage, error: appError } = useSelector(
+    (state) => state.applications
+  );
 
   const [showModal, setShowModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
@@ -30,6 +33,13 @@ const JobList = () => {
   useEffect(() => {
     dispatch(fetchJobs());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (successMessage || warningMessage || appError) {
+      const timer = setTimeout(() => dispatch(clearMessages()), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, warningMessage, appError, dispatch]);
 
   const handleOpenCreate = () => {
     setEditingJob(null);
@@ -67,6 +77,10 @@ const JobList = () => {
 
   return (
     <div className="page-container">
+      {successMessage && <div className="success-banner">{successMessage}</div>}
+      {warningMessage && <div className="warning-banner">{warningMessage}</div>}
+      {(appError || jobError) && <div className="error-banner">{appError || jobError}</div>}
+
       <div className="page-header">
         <h1>Open Roles</h1>
         {isRecruiter && (

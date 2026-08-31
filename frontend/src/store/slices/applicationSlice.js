@@ -141,3 +141,19 @@ const applicationSlice = createSlice({
       })
       .addCase(updateStage.fulfilled, (state, action) => {
         state.successMessage = extractMessage(action.payload?.data, 'Application updated successfully.');
+      })
+      .addCase(updateStage.rejected, (state, action) => {
+        state.error = extractMessage(action.payload, 'Failed to update stage.');
+      })
+      .addCase(deleteApplication.fulfilled, (state, action) => {
+        state.items = state.items.filter((a) => a.id !== action.payload.id);
+        state.successMessage = extractMessage(action.payload.data, 'Application deleted successfully.');
+      })
+      .addCase(deleteApplication.rejected, (state, action) => {
+        state.error = action.payload;
+      });
+  },
+});
+
+export const { clearMessages } = applicationSlice.actions;
+export default applicationSlice.reducer;

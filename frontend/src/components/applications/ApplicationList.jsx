@@ -4,6 +4,7 @@ import {
   fetchApplications,
   updateStage,
   deleteApplication,
+  clearMessages,
 } from '../../store/slices/applicationSlice';
 import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
@@ -59,9 +60,15 @@ const StageEditModal = ({ application, onClose, onSubmit }) => {
 const ApplicationList = () => {
   const dispatch = useDispatch();
   const { role } = useSelector((state) => state.auth);
-  const { items, currentPage, totalPages, loading } = useSelector(
-    (state) => state.applications
-  );
+  const {
+    items,
+    currentPage,
+    totalPages,
+    loading,
+    successMessage,
+    warningMessage,
+    error,
+  } = useSelector((state) => state.applications);
 
   const [page, setPage] = useState(0);
   const [stageFilter, setStageFilter] = useState('');
@@ -74,6 +81,13 @@ const ApplicationList = () => {
   useEffect(() => {
     dispatch(fetchApplications({ page, size: PAGE_SIZE, stage: stageFilter || undefined }));
   }, [dispatch, page, stageFilter]);
+
+  useEffect(() => {
+    if (successMessage || warningMessage || error) {
+      const timer = setTimeout(() => dispatch(clearMessages()), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, warningMessage, error, dispatch]);
 
   const filteredItems = items.filter((app) => {
     if (!candidateFilter) return true;
@@ -100,6 +114,10 @@ const ApplicationList = () => {
 
   return (
     <div className="page-container">
+      {successMessage && <div className="success-banner">{successMessage}</div>}
+      {warningMessage && <div className="warning-banner">{warningMessage}</div>}
+      {error && <div className="error-banner">{error}</div>}
+
       <div className="page-header">
         <h1>Application Pipeline</h1>
       </div>

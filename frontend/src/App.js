@@ -7,7 +7,6 @@ import Login from './components/Login';
 import Register from './components/Register';
 import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
-import AlertStack from './components/common/AlertStack';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -29,7 +28,6 @@ function AppRoutes() {
   return (
     <>
       <Navbar />
-      <AlertStack />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

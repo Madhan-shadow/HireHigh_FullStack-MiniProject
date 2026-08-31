@@ -3,7 +3,6 @@ import authReducer from './slices/authSlice';
 import jobReducer from './slices/jobSlice';
 import applicationReducer from './slices/applicationSlice';
 import interviewReducer from './slices/interviewSlice';
-import alertReducer from './slices/alertSlice';
 
 export const store = configureStore({
   reducer: {
@@ -11,7 +10,6 @@ export const store = configureStore({
     jobs: jobReducer,
     applications: applicationReducer,
     interviews: interviewReducer,
-    alerts: alertReducer,
   },
 });
 
