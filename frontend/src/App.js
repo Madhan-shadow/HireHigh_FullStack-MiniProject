@@ -1,8 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
-import Login from './components/layout/Login';
-import Register from './components/layout/Register';
+import Login from './components/Login';
+import Register from './components/Register';
 import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
 import ProtectedRoute from './components/common/ProtectedRoute';

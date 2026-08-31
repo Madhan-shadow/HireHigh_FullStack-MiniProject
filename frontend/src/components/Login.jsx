@@ -58,7 +58,7 @@ const Login = () => {
 
       <div className="auth-form-panel">
         <form className="auth-card" onSubmit={handleSubmit} noValidate data-testid="login-form">
-          <h1 className="auth-title">Welcome back</h1>
+          <h1 className="auth-title">HireHigh Login</h1>
           <p className="auth-subtitle">Log in to HireHigh</p>
 
           {error && (
