@@ -22,13 +22,6 @@ const initialState = {
   error: null,
 };
 
-// Never assumes one exact shape. Accepts:
-//   { token, user: { role, ... } }   <- SRS's AuthResponseDto shape
-//   { token, role, ... }             <- flat shape
-//   { accessToken | jwt, ... }       <- alternate token key names
-// and always writes to localStorage rather than throwing if a field
-// is missing, so a shape mismatch degrades gracefully instead of
-// silently failing the whole login.
 const resolveAuthPayload = (data = {}) => {
   const token = data.token ?? data.accessToken ?? data.jwt ?? null;
   const role = data.role ?? data.user?.role ?? null;
@@ -93,9 +86,6 @@ const authSlice = createSlice({
         state.role = role;
         state.user = user;
         state.isAuthenticated = !!token;
-        // Always write — even an empty string — so localStorage keys
-        // exist as soon as login resolves, matching what the SRS
-        // describes as persisting the JWT on login success.
         localStorage.setItem('token', token ?? '');
         localStorage.setItem('role', role ?? '');
         if (user) localStorage.setItem('user', JSON.stringify(user));

@@ -1,39 +1,55 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
-import './Navbar.css';
 
-export default function Navbar() {
+const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { role } = useSelector((state) => state.auth);
+  const { isAuthenticated, role, user } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
   };
 
+  const canSeePipeline =
+    role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
+
   return (
-    <header className="hh-navbar">
-      <div className="hh-navbar-brand">
-        <span className="hh-navbar-mark" aria-hidden="true" />
-        <span className="hh-navbar-name">HireHigh</span>
+    <nav className="navbar">
+      <div className="navbar-brand">
+        <Link to="/">
+          <span className="navbar-brand-mark">H</span>
+          <span className="navbar-brand-word">HireHigh</span>
+        </Link>
       </div>
-
-      <nav className="hh-navbar-links">
-        <NavLink to="/jobs" className={({ isActive }) => `hh-pill ${isActive ? 'is-active' : ''}`}>
-          Jobs
-        </NavLink>
-        <NavLink to="/applications" className={({ isActive }) => `hh-pill ${isActive ? 'is-active' : ''}`}>
-          Applications
-        </NavLink>
-      </nav>
-
-      <div className="hh-navbar-user">
-        {role && <span className="hh-navbar-role mono">{role}</span>}
-        <button className="btn btn-ghost" onClick={handleLogout}>Log out</button>
+      <div className="navbar-links">
+        <Link to="/">Home</Link>
+        <Link to="/jobs">Jobs</Link>
+        {isAuthenticated && canSeePipeline && <Link to="/applications">Applications</Link>}
+        {isAuthenticated && role === 'CANDIDATE' && (
+          <Link to="/applications">My Applications</Link>
+        )}
       </div>
-    </header>
+      <div className="navbar-user">
+        {isAuthenticated ? (
+          <>
+            <span className="welcome-text">
+              Welcome back, {(user?.fullName || role || 'user').toLowerCase()}
+            </span>
+            <button className="btn btn-logout" onClick={handleLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link to="/login" className="btn btn-login">
+            Login
+          </Link>
+        )}
+      </div>
+    </nav>
   );
-}
+};
+
+export default Navbar;

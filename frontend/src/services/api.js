@@ -1,11 +1,17 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+export const clearSession = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  localStorage.removeItem('user');
+};
 
 api.interceptors.request.use(
   (config) => {
@@ -22,11 +28,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('role');
-      localStorage.removeItem('user');
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+      clearSession();
+      try {
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      } catch (e) {
+        // navigation not available in this environment — ignore
       }
     }
     return Promise.reject(error);
