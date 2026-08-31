@@ -14,28 +14,27 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("*")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterDto dto){
+    public ResponseEntity<String> register(
+            @Valid @RequestBody RegisterDto dto) {
 
         authService.register(dto);
 
         return new ResponseEntity<>(
                 "User Registered Successfully",
-                HttpStatus.OK);
-
+                HttpStatus.OK
+        );
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody AuthRequestDto dto){
+    public ResponseEntity<AuthResponseDto> login(
+            @Valid @RequestBody AuthRequestDto dto) {
 
         return ResponseEntity.ok(authService.login(dto));
-
     }
-
 }
