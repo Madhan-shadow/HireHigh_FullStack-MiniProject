@@ -47,28 +47,39 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
 
             .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                session.sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS
+                )
+            )
 
             .authorizeHttpRequests(auth -> auth
 
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**")
+                .permitAll()
 
-                    .requestMatchers(
-                            "/api/auth/**",
-                            "/v3/api-docs/**",
-                            "/swagger-ui/**",
-                            "/swagger-ui.html"
-                    ).permitAll()
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                )
+                .permitAll()
 
-                    .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/**")
-                    .permitAll()
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/jobs",
+                    "/api/jobs/**"
+                )
+                .permitAll()
 
-                    .anyRequest()
-                    .authenticated()
+                .anyRequest()
+                .authenticated()
             )
 
-            .addFilterBefore(jwtAuthenticationFilter,
-                    UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }
@@ -76,25 +87,37 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+            new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of("http://localhost:3000"));
+            List.of("http://localhost:3000")
+        );
 
         configuration.setAllowedMethods(
-                List.of("GET","POST","PUT","DELETE","OPTIONS"));
+            List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
+            )
+        );
 
         configuration.setAllowedHeaders(
-                List.of("*"));
+            List.of("*")
+        );
 
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+            new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration(
+            "/**",
+            configuration
+        );
 
         return source;
     }
-
 }
