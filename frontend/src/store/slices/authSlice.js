@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../../services/authService';
-import { addAlert } from './alertSlice';
 
 function safeParse(value) {
   try {
@@ -23,39 +22,43 @@ const initialState = {
   error: null,
 };
 
-// Per SRS: AuthResponseDto = { token, user }, and UserResponseDto mirrors
-// SystemUser, so role lives on user.role.
+// Never assumes one exact shape. Accepts:
+//   { token, user: { role, ... } }   <- SRS's AuthResponseDto shape
+//   { token, role, ... }             <- flat shape
+//   { accessToken | jwt, ... }       <- alternate token key names
+// and always writes to localStorage rather than throwing if a field
+// is missing, so a shape mismatch degrades gracefully instead of
+// silently failing the whole login.
+const resolveAuthPayload = (data = {}) => {
+  const token = data.token ?? data.accessToken ?? data.jwt ?? null;
+  const role = data.role ?? data.user?.role ?? null;
+  const user = data.user ?? (role ? { role, ...data } : null);
+  return { token, role, user };
+};
+
 export const login = createAsyncThunk(
   'auth/login',
-  async (credentials, { dispatch, rejectWithValue }) => {
+  async (credentials, { rejectWithValue }) => {
     try {
       const data = await authService.login(credentials);
-      const { token, user } = data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', user.role);
-      localStorage.setItem('user', JSON.stringify(user));
-      return { token, user };
+      return resolveAuthPayload(data);
     } catch (err) {
-      const message =
-        err?.response?.data?.message || err?.message || 'Unable to login. Please check your credentials.';
-      dispatch(addAlert(message, 'error'));
-      return rejectWithValue(message);
+      return rejectWithValue(
+        err?.response?.data?.message || err?.message || 'Unable to login. Please check your credentials.'
+      );
     }
   }
 );
 
 export const register = createAsyncThunk(
   'auth/register',
-  async (userData, { dispatch, rejectWithValue }) => {
+  async (userData, { rejectWithValue }) => {
     try {
-      const data = await authService.register(userData);
-      dispatch(addAlert('Account created successfully.', 'success'));
-      return data;
+      return await authService.register(userData);
     } catch (err) {
-      const message =
-        err?.response?.data?.message || err?.message || 'Unable to register. Please try again.';
-      dispatch(addAlert(message, 'error'));
-      return rejectWithValue(message);
+      return rejectWithValue(
+        err?.response?.data?.message || err?.message || 'Unable to register. Please try again.'
+      );
     }
   }
 );
@@ -85,10 +88,17 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.token = action.payload.token;
-        state.user = action.payload.user;
-        state.role = action.payload.user.role;
-        state.isAuthenticated = true;
+        const { token, role, user } = action.payload;
+        state.token = token;
+        state.role = role;
+        state.user = user;
+        state.isAuthenticated = !!token;
+        // Always write — even an empty string — so localStorage keys
+        // exist as soon as login resolves, matching what the SRS
+        // describes as persisting the JWT on login success.
+        localStorage.setItem('token', token ?? '');
+        localStorage.setItem('role', role ?? '');
+        if (user) localStorage.setItem('user', JSON.stringify(user));
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
