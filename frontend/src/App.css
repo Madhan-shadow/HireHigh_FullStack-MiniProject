@@ -13,3 +13,14 @@
   font-size: 0.9rem;
   background: #fff;
 }
+.alert-stack {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 340px;
+  max-width: calc(100vw - 40px);
+}

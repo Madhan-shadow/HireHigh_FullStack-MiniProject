@@ -1,59 +1,69 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-
+import { Provider, useSelector } from 'react-redux';
+import store from './store';
 import Navbar from './components/layout/Navbar';
 import Login from './components/Login';
 import Register from './components/Register';
 import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
+import AlertStack from './components/common/AlertStack';
+import './App.css';
 
-function ProtectedRoute({ children }) {
+const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state) => state.auth);
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
-}
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
-function AppLayout({ children }) {
+const Home = () => (
+  <div className="page-container">
+    <h1>Welcome to HireHigh</h1>
+    <p>Talent acquisition pipeline management, end to end.</p>
+  </div>
+);
+
+function AppRoutes() {
   return (
     <>
       <Navbar />
-      {children}
-    </>
-  );
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
+      <AlertStack />
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
         <Route
           path="/jobs"
           element={
             <ProtectedRoute>
-              <AppLayout>
-                <JobList />
-              </AppLayout>
+              <JobList />
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/applications"
           element={
             <ProtectedRoute>
-              <AppLayout>
-                <ApplicationList />
-              </AppLayout>
+              <ApplicationList />
             </ProtectedRoute>
           }
         />
-
-        <Route path="/" element={<Navigate to="/jobs" replace />} />
-        <Route path="*" element={<Navigate to="/jobs" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
+
+function App() {
+  return (
+    <Provider store={store}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </Provider>
+  );
+}
+
+export default App;

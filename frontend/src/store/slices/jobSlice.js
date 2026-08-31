@@ -1,106 +1,119 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import jobService from '../../services/jobService';
+import { addAlert } from './alertSlice';
 
-export const fetchJobs = createAsyncThunk(
-  'jobs/fetchAll',
-  async (_, { rejectWithValue }) => {
-    try {
-      const data = await jobService.getAll();
-      return data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to load jobs');
-    }
+const initialState = {
+  items: [],
+  searchQuery: '',
+  loading: false,
+  error: null,
+};
+
+const extractMessage = (payload, fallback) => {
+  if (!payload) return fallback;
+  if (typeof payload === 'string') return payload;
+  if (payload.message) return payload.message;
+  if (payload.response?.data?.message) return payload.response.data.message;
+  return fallback;
+};
+
+export const fetchJobs = createAsyncThunk('jobs/fetchJobs', async (_, { rejectWithValue }) => {
+  try {
+    return await jobService.getAll();
+  } catch (err) {
+    return rejectWithValue(extractMessage(err, 'Failed to load jobs.'));
   }
-);
+});
 
 export const createJob = createAsyncThunk(
-  'jobs/create',
-  async (jobData, { rejectWithValue }) => {
+  'jobs/createJob',
+  async (jobData, { dispatch, rejectWithValue }) => {
     try {
       const data = await jobService.create(jobData);
+      dispatch(addAlert('Job posted successfully.', 'success'));
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to create job');
+      const message = extractMessage(err, 'Failed to create job.');
+      dispatch(addAlert(message, 'error'));
+      return rejectWithValue(message);
     }
   }
 );
 
 export const updateJob = createAsyncThunk(
-  'jobs/update',
-  async ({ id, jobData }, { rejectWithValue }) => {
+  'jobs/updateJob',
+  async ({ id, jobData }, { dispatch, rejectWithValue }) => {
     try {
       const data = await jobService.update(id, jobData);
+      dispatch(addAlert('Job updated successfully.', 'success'));
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to update job');
+      const message = extractMessage(err, 'Failed to update job.');
+      dispatch(addAlert(message, 'error'));
+      return rejectWithValue(message);
     }
   }
 );
 
 export const deleteJob = createAsyncThunk(
-  'jobs/delete',
-  async (id, { rejectWithValue }) => {
+  'jobs/deleteJob',
+  async (id, { dispatch, rejectWithValue }) => {
     try {
       await jobService.delete(id);
+      dispatch(addAlert('Job deleted successfully.', 'success'));
       return id;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to delete job');
+      const message = extractMessage(err, 'Failed to delete job.');
+      dispatch(addAlert(message, 'error'));
+      return rejectWithValue(message);
     }
   }
 );
-
-const initialState = {
-  items: [],
-  searchQuery: '',
-  status: 'idle',
-  error: null,
-};
 
 const jobSlice = createSlice({
   name: 'jobs',
   initialState,
   reducers: {
-    setSearchQuery(state, action) {
+    setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchJobs.pending, (state) => {
-        state.status = 'loading';
+        state.loading = true;
+        state.error = null;
       })
       .addCase(fetchJobs.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.loading = false;
         state.items = action.payload;
       })
       .addCase(fetchJobs.rejected, (state, action) => {
-        state.status = 'failed';
+        state.loading = false;
         state.error = action.payload;
       })
-
       .addCase(createJob.fulfilled, (state, action) => {
         state.items.push(action.payload);
       })
-      .addCase(createJob.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-
       .addCase(updateJob.fulfilled, (state, action) => {
         const idx = state.items.findIndex((j) => j.id === action.payload.id);
         if (idx !== -1) state.items[idx] = action.payload;
       })
-      .addCase(updateJob.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-
       .addCase(deleteJob.fulfilled, (state, action) => {
         state.items = state.items.filter((j) => j.id !== action.payload);
-      })
-      .addCase(deleteJob.rejected, (state, action) => {
-        state.error = action.payload;
       });
   },
 });
 
 export const { setSearchQuery } = jobSlice.actions;
+
+export const selectFilteredJobs = (state) => {
+  const { items, searchQuery } = state.jobs;
+  if (!searchQuery) return items;
+  const q = searchQuery.toLowerCase();
+  return items.filter(
+    (job) => job.title?.toLowerCase().includes(q) || job.department?.toLowerCase().includes(q)
+  );
+};
+
 export default jobSlice.reducer;
