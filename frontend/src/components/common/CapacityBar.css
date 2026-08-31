@@ -1,6 +1,0 @@
-.capacity-bar { display: flex; align-items: center; gap: 0.5rem; }
-.capacity-seats { display: flex; gap: 4px; }
-.seat { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.seat--open { background: transparent; border: 1.5px solid var(--hh-line); }
-.seat--filled { background: var(--hh-amber-500); border: 1.5px solid var(--hh-amber-500); }
-.capacity-count { font-size: 0.72rem; color: var(--hh-ink-soft); }
