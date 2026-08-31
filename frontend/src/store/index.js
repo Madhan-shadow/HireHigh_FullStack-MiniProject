@@ -4,7 +4,7 @@ import jobReducer from './slices/jobSlice';
 import applicationReducer from './slices/applicationSlice';
 import interviewReducer from './slices/interviewSlice';
 
-export const store = configureStore({
+const store = configureStore({
   reducer: {
     auth: authReducer,
     jobs: jobReducer,
