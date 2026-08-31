@@ -10,6 +10,7 @@ import {
 } from '../../store/slices/jobSlice';
 import { applyToJob, clearMessages } from '../../store/slices/applicationSlice';
 import JobCreateModal from './JobCreateModal';
+import ConfirmModal from '../common/ConfirmModal';
 import SearchFilterBar from '../common/SearchFilterBar';
 import CapacityBar from '../common/CapacityBar';
 import EmptyState from '../common/EmptyState';
@@ -17,7 +18,7 @@ import EmptyState from '../common/EmptyState';
 const JobList = () => {
   const dispatch = useDispatch();
   const jobs = useSelector(selectFilteredJobs);
-  const { loading, error: jobError } = useSelector((state) => state.jobs);
+  const { loading, error: jobError, searchQuery } = useSelector((state) => state.jobs);
   const { role } = useSelector((state) => state.auth);
   const { successMessage, warningMessage, error: appError } = useSelector(
     (state) => state.applications
@@ -77,37 +78,18 @@ const JobList = () => {
 
   return (
     <div className="page-container">
-      {/* NOTE: role="alert" + role="status" + data-testid added so
-          testing-library queries (getByRole, getByTestId, getByText)
-          can all independently find these banners. This does not
-          change the visible text or styling at all. */}
       {successMessage && (
-        <div
-          className="success-banner"
-          role="status"
-          data-testid="success-alert"
-          aria-live="polite"
-        >
+        <div className="success-banner" role="status" data-testid="success-alert">
           {successMessage}
         </div>
       )}
       {warningMessage && (
-        <div
-          className="warning-banner"
-          role="alert"
-          data-testid="warning-alert"
-          aria-live="assertive"
-        >
+        <div className="warning-banner" role="alert" data-testid="warning-alert">
           {warningMessage}
         </div>
       )}
       {(appError || jobError) && (
-        <div
-          className="error-banner"
-          role="alert"
-          data-testid="error-alert"
-          aria-live="assertive"
-        >
+        <div className="error-banner" role="alert" data-testid="error-alert">
           {appError || jobError}
         </div>
       )}
@@ -123,7 +105,8 @@ const JobList = () => {
 
       <SearchFilterBar
         placeholder="Search by job title or department"
-        onSearch={(q) => dispatch(setSearchQuery(q))}
+        value={searchQuery}
+        onChange={(v) => dispatch(setSearchQuery(v))}
       />
 
       {loading ? (
@@ -188,20 +171,12 @@ const JobList = () => {
       )}
 
       {confirmDeleteId != null && (
-        <div className="modal-overlay" onClick={() => setConfirmDeleteId(null)}>
-          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Delete this job posting?</h3>
-            <p>This will permanently remove the job and its associated applications.</p>
-            <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>
-                Cancel
-              </button>
-              <button className="btn btn-danger" onClick={handleConfirmDelete}>
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          title="Delete this job posting?"
+          message="This will permanently remove the job and its associated applications."
+          onCancel={() => setConfirmDeleteId(null)}
+          onConfirm={handleConfirmDelete}
+        />
       )}
     </div>
   );
