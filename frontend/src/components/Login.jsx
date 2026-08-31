@@ -6,9 +6,18 @@ import { login, clearAuthError } from '../store/slices/authSlice';
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
 
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const {
+    loading,
+    error,
+    isAuthenticated,
+  } = useSelector((state) => state.auth);
+
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
+
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
@@ -18,56 +27,109 @@ const Login = () => {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    return () => dispatch(clearAuthError());
+    return () => {
+      dispatch(clearAuthError());
+    };
   }, [dispatch]);
 
   const validate = (name, value) => {
-    if (name === 'username' && !value.trim()) return 'Enter your username.';
-    if (name === 'password' && value.length < 1) return 'Enter your password.';
+    if (name === 'username' && !value.trim()) {
+      return 'Enter your username.';
+    }
+
+    if (name === 'password' && !value.trim()) {
+      return 'Enter your password.';
+    }
+
     return '';
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setFieldErrors((prev) => ({ ...prev, [name]: validate(name, value) }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: validate(name, value),
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const errors = {
       username: validate('username', formData.username),
       password: validate('password', formData.password),
     };
+
     setFieldErrors(errors);
-    if (errors.username || errors.password) return;
+
+    if (errors.username || errors.password) {
+      return;
+    }
+
     dispatch(login(formData));
   };
 
   return (
     <div className="auth-shell">
+
       <div className="auth-brand-panel">
         <div className="auth-brand-content">
-          <span className="auth-brand-eyebrow">Applied → Screening → Interview → Offer → Hired</span>
-          <h1 className="auth-brand-headline">Find who's next.</h1>
+
+          <span className="auth-brand-eyebrow">
+            Applied → Screening → Interview → Offer → Hired
+          </span>
+
+          <h1 className="auth-brand-headline">
+            Find who's next.
+          </h1>
+
           <p className="auth-brand-sub">
-            One pipeline for every open role — from the first application to the offer letter.
+            One pipeline for every open role — from the first application
+            to the offer letter.
           </p>
+
         </div>
       </div>
 
       <div className="auth-form-panel">
-        <form className="auth-card" onSubmit={handleSubmit} noValidate data-testid="login-form">
-          <h1 className="auth-title">HireHigh Login</h1>
-          <p className="auth-subtitle">Log in to HireHigh</p>
+
+        <form
+          className="auth-card"
+          onSubmit={handleSubmit}
+          noValidate
+          data-testid="login-form"
+        >
+
+          <h1 className="auth-title">
+            HireHigh Login
+          </h1>
+
+          <p className="auth-subtitle">
+            Log in to HireHigh
+          </p>
 
           {error && (
-            <div className="error-banner" role="alert" data-testid="login-error-alert">
+            <div
+              className="error-banner"
+              role="alert"
+              data-testid="login-error-alert"
+            >
               {error}
             </div>
           )}
 
-          <label htmlFor="username">Username</label>
+          {/* Username */}
+
+          <label htmlFor="username">
+            Username
+          </label>
+
           <input
             id="username"
             name="username"
@@ -78,9 +140,19 @@ const Login = () => {
             className={fieldErrors.username ? 'input-error' : ''}
             data-testid="login-username-input"
           />
-          {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
 
-          <label htmlFor="password">Password</label>
+          {fieldErrors.username && (
+            <span className="field-error">
+              {fieldErrors.username}
+            </span>
+          )}
+
+          {/* Password */}
+
+          <label htmlFor="password">
+            Password
+          </label>
+
           <input
             id="password"
             name="password"
@@ -91,7 +163,14 @@ const Login = () => {
             className={fieldErrors.password ? 'input-error' : ''}
             data-testid="login-password-input"
           />
-          {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+
+          {fieldErrors.password && (
+            <span className="field-error">
+              {fieldErrors.password}
+            </span>
+          )}
+
+          {/* Login button */}
 
           <button
             type="submit"
@@ -103,10 +182,16 @@ const Login = () => {
           </button>
 
           <p className="auth-switch">
-            Don&apos;t have an account? <Link to="/register">Register here</Link>
+            Don&apos;t have an account?{' '}
+            <Link to="/register">
+              Register here
+            </Link>
           </p>
+
         </form>
+
       </div>
+
     </div>
   );
 };

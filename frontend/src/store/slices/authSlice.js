@@ -6,17 +6,37 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await authService.login(credentials);
+
       const token = response?.token;
-      const role = response?.user?.role;
+      const role = response?.role;
 
-      if (token) localStorage.setItem('token', token);
-      if (role) localStorage.setItem('role', role);
-      if (response?.user) localStorage.setItem('user', JSON.stringify(response.user));
+      if (token) {
+        localStorage.setItem('token', token);
+      }
 
-      return response;
+      if (role) {
+        localStorage.setItem('role', role);
+      }
+
+      // Store user information
+      const user = {
+        username: credentials.username,
+        role: role,
+      };
+
+      localStorage.setItem('user', JSON.stringify(user));
+
+      return {
+        ...response,
+        user,
+      };
     } catch (err) {
       const message =
-        err?.response?.data?.message || err?.message || 'Login failed';
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Login failed';
+
       return rejectWithValue(message);
     }
   }
@@ -26,11 +46,14 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await authService.register(userData);
-      return response;
+      return await authService.register(userData);
     } catch (err) {
       const message =
-        err?.response?.data?.message || err?.message || 'Registration failed';
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Registration failed';
+
       return rejectWithValue(message);
     }
   }
@@ -56,52 +79,85 @@ const initialState = {
 
 const authSlice = createSlice({
   name: 'auth',
+
   initialState,
+
   reducers: {
     logout: (state) => {
       localStorage.removeItem('token');
       localStorage.removeItem('role');
       localStorage.removeItem('user');
+
       state.token = null;
       state.role = null;
       state.user = null;
       state.isAuthenticated = false;
+      state.loading = false;
+      state.error = null;
     },
+
     clearAuthError: (state) => {
       state.error = null;
     },
   },
+
   extraReducers: (builder) => {
     builder
+
+      // LOGIN PENDING
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
+
+      // LOGIN SUCCESS
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.isAuthenticated = true;
+        state.error = null;
+
         state.token = action.payload?.token || null;
+
+        state.role = action.payload?.role || null;
+
         state.user = action.payload?.user || null;
-        state.role = action.payload?.user?.role || null;
+
+        state.isAuthenticated = !!state.token;
       })
+
+      // LOGIN FAILED
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.isAuthenticated = false;
-        state.error = action.payload || 'Login failed';
+
+        state.error =
+          action.payload || 'Login failed';
       })
+
+      // REGISTER PENDING
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
+
+      // REGISTER SUCCESS
       .addCase(register.fulfilled, (state) => {
         state.loading = false;
+        state.error = null;
       })
+
+      // REGISTER FAILED
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Registration failed';
+
+        state.error =
+          action.payload || 'Registration failed';
       });
   },
 });
 
-export const { logout, clearAuthError } = authSlice.actions;
+export const {
+  logout,
+  clearAuthError,
+} = authSlice.actions;
+
 export default authSlice.reducer;
