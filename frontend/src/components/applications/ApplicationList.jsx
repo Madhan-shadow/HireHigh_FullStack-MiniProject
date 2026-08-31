@@ -146,4 +146,75 @@ const ApplicationList = () => {
               className={`row-list-row applications-grid${canEditStage ? '' : ' no-actions'}`}
               key={app.id}
             >
-              <span className="cell-title">{app.candidate?.user?.fullName ||
+              <span className="cell-title">{app.candidate?.user?.fullName || '—'}</span>
+              <span className="cell-muted">{app.job?.title || '—'}</span>
+              <StageRail stage={app.currentStage} />
+              <span className="cell-mono">
+                {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}
+              </span>
+              {canEditStage && (
+                <div className="cell-actions">
+                  <button className="btn btn-link" onClick={() => setEditingApplication(app)}>
+                    Edit
+                  </button>
+                  <button className="btn btn-danger" onClick={() => setConfirmDeleteId(app.id)}>
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage <= 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage >= totalPages - 1}
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {editingApplication && (
+        <StageEditModal
+          application={editingApplication}
+          onClose={() => setEditingApplication(null)}
+          onSubmit={handleStageSave}
+        />
+      )}
+
+      {confirmDeleteId != null && (
+        <div className="modal-overlay" onClick={() => setConfirmDeleteId(null)}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete this application?</h3>
+            <p>This action cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>
+                Cancel
+              </button>
+              <button className="btn btn-danger" onClick={handleDeleteConfirm}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ApplicationList;
