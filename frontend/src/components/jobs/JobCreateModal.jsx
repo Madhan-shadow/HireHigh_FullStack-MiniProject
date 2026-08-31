@@ -1,19 +1,30 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { createJob, updateJob } from '../../store/slices/jobSlice';
-import './JobCreateModal.css';
+import React, { useState, useEffect } from 'react';
 
-export default function JobCreateModal({ job, onClose }) {
-  const dispatch = useDispatch();
+const emptyForm = {
+  title: '',
+  department: '',
+  hiringGoal: 1,
+  description: '',
+  status: 'OPEN',
+};
+
+const JobCreateModal = ({ job, onClose, onSubmit }) => {
   const isEdit = Boolean(job);
+  const [formData, setFormData] = useState(emptyForm);
 
-  const [formData, setFormData] = useState({
-    title: job?.title || '',
-    department: job?.department || '',
-    hiringGoal: job?.hiringGoal || 1,
-    status: job?.status || 'OPEN',
-    description: job?.description || '',
-  });
+  useEffect(() => {
+    if (job) {
+      setFormData({
+        title: job.title || '',
+        department: job.department || '',
+        hiringGoal: job.hiringGoal || 1,
+        description: job.description || '',
+        status: job.status || 'OPEN',
+      });
+    } else {
+      setFormData(emptyForm);
+    }
+  }, [job]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,89 +34,84 @@ export default function JobCreateModal({ job, onClose }) {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (isEdit) {
-      await dispatch(updateJob({ id: job.id, jobData: formData }));
-    } else {
-      await dispatch(createJob(formData));
-    }
-    onClose();
+    onSubmit(formData);
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal">
         <div className="modal-header">
-          <h3>{isEdit ? 'Edit Job' : 'Post New Job'}</h3>
-          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+          <h2>{isEdit ? 'Edit Job' : 'Post New Job'}</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Close">
+            ×
+          </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="field">
-            <label htmlFor="title">Job Title</label>
-            <input
-              id="title"
-              name="title"
-              type="text"
-              placeholder="e.g. Senior Java Developer"
-              value={formData.title}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <label htmlFor="title">Job Title</label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            placeholder="e.g. Senior Java Developer"
+            value={formData.title}
+            onChange={handleChange}
+            required
+          />
 
-          <div className="field">
-            <label htmlFor="department">Department</label>
-            <input
-              id="department"
-              name="department"
-              type="text"
-              placeholder="e.g. Engineering"
-              value={formData.department}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <label htmlFor="department">Department</label>
+          <input
+            id="department"
+            name="department"
+            type="text"
+            placeholder="e.g. Engineering"
+            value={formData.department}
+            onChange={handleChange}
+            required
+          />
 
-          <div className="field">
-            <label htmlFor="hiringGoal">Hiring Goal (Open Seats)</label>
-            <input
-              id="hiringGoal"
-              name="hiringGoal"
-              type="number"
-              min="1"
-              value={formData.hiringGoal}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <label htmlFor="hiringGoal">Hiring Goal (Open Seats)</label>
+          <input
+            id="hiringGoal"
+            name="hiringGoal"
+            type="number"
+            min="1"
+            value={formData.hiringGoal}
+            onChange={handleChange}
+            required
+          />
 
           {isEdit && (
-            <div className="field">
+            <>
               <label htmlFor="status">Status</label>
               <select id="status" name="status" value={formData.status} onChange={handleChange}>
                 <option value="OPEN">Open</option>
                 <option value="CLOSED">Closed</option>
                 <option value="ON_HOLD">On Hold</option>
               </select>
-            </div>
+            </>
           )}
 
-          <div className="field">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              rows={4}
-              placeholder="Detailed job description..."
-              value={formData.description}
-              onChange={handleChange}
-            />
-          </div>
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="Detailed job description..."
+            value={formData.description}
+            onChange={handleChange}
+            rows={4}
+          />
 
           <div className="modal-actions">
-            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
             <button type="submit" className="btn btn-primary">
               {isEdit ? 'Update Job' : 'Post Job'}
             </button>
@@ -114,4 +120,6 @@ export default function JobCreateModal({ job, onClose }) {
       </div>
     </div>
   );
-}
+};
+
+export default JobCreateModal;

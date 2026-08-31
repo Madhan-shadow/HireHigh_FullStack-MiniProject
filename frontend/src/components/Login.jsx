@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { login, clearAuthError } from '../store/slices/authSlice';
-import StageRail from './common/StageRail';
-import './layout/Auth.css';
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -14,14 +12,18 @@ const Login = () => {
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
-    if (isAuthenticated) navigate('/jobs');
+    if (isAuthenticated) {
+      navigate('/jobs');
+    }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => () => dispatch(clearAuthError()), [dispatch]);
+  useEffect(() => {
+    return () => dispatch(clearAuthError());
+  }, [dispatch]);
 
   const validate = (name, value) => {
-    if (name === 'username' && !value.trim()) return 'Username is required.';
-    if (name === 'password' && value.length < 1) return 'Password is required.';
+    if (name === 'username' && !value.trim()) return 'Enter your username.';
+    if (name === 'password' && value.length < 1) return 'Enter your password.';
     return '';
   };
 
@@ -44,61 +46,56 @@ const Login = () => {
 
   return (
     <div className="auth-shell">
-      <aside className="auth-brand">
-        <div className="auth-brand-inner">
-          <span className="auth-brand-mark" aria-hidden="true" />
-          <h1 className="auth-brand-title">HireHigh</h1>
-          <p className="auth-brand-tag">Every candidate moves through the same five gates. Nothing gets lost between them.</p>
-          <div className="auth-brand-rail">
-            <StageRail stage="INTERVIEW" size="sm" />
-          </div>
+      <div className="auth-brand-panel">
+        <div className="auth-brand-content">
+          <span className="auth-brand-eyebrow">Applied → Screening → Interview → Offer → Hired</span>
+          <h1 className="auth-brand-headline">Find who's next.</h1>
+          <p className="auth-brand-sub">
+            One pipeline for every open role — from the first application to the offer letter.
+          </p>
         </div>
-      </aside>
+      </div>
 
-      <main className="auth-panel">
+      <div className="auth-form-panel">
         <form className="auth-card" onSubmit={handleSubmit} noValidate>
-          <h2 className="auth-title">Sign in</h2>
-          <p className="auth-subtitle">Welcome back to the pipeline.</p>
+          <h1 className="auth-title">Welcome back</h1>
+          <p className="auth-subtitle">Log in to HireHigh</p>
 
           {error && <div className="error-banner">{error}</div>}
 
-          <div className="field">
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              className={fieldErrors.username ? 'input-error' : ''}
-            />
-            {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
-          </div>
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+            className={fieldErrors.username ? 'input-error' : ''}
+          />
+          {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
 
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              className={fieldErrors.password ? 'input-error' : ''}
-            />
-            {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
-          </div>
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className={fieldErrors.password ? 'input-error' : ''}
+          />
+          {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
 
-          <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Logging in…' : 'Login'}
           </button>
 
           <p className="auth-switch">
             Don&apos;t have an account? <Link to="/register">Register here</Link>
           </p>
         </form>
-      </main>
+      </div>
     </div>
   );
 };

@@ -134,11 +134,7 @@ const JobList = () => {
                   </>
                 )}
                 {isCandidate && (
-                  <button
-                    className="btn btn-success"
-                    disabled={job.status !== 'OPEN'}
-                    onClick={() => handleApply(job.id)}
-                  >
+                  <button className="btn btn-success" onClick={() => handleApply(job.id)}>
                     Apply Now
                   </button>
                 )}
