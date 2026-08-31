@@ -57,11 +57,15 @@ const Login = () => {
       </div>
 
       <div className="auth-form-panel">
-        <form className="auth-card" onSubmit={handleSubmit} noValidate>
+        <form className="auth-card" onSubmit={handleSubmit} noValidate data-testid="login-form">
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">Log in to HireHigh</p>
 
-          {error && <div className="error-banner">{error}</div>}
+          {error && (
+            <div className="error-banner" role="alert" data-testid="login-error-alert">
+              {error}
+            </div>
+          )}
 
           <label htmlFor="username">Username</label>
           <input
@@ -72,6 +76,7 @@ const Login = () => {
             value={formData.username}
             onChange={handleChange}
             className={fieldErrors.username ? 'input-error' : ''}
+            data-testid="login-username-input"
           />
           {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
 
@@ -84,10 +89,16 @@ const Login = () => {
             value={formData.password}
             onChange={handleChange}
             className={fieldErrors.password ? 'input-error' : ''}
+            data-testid="login-password-input"
           />
           {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
 
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={loading}
+            data-testid="login-submit-button"
+          >
             {loading ? 'Logging in…' : 'Login'}
           </button>
 
