@@ -14,8 +14,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApplicationCapacityExceededException.class)
     public ResponseEntity<Map<String, String>> handleCapacityExceeded(ApplicationCapacityExceededException ex) {
         Map<String, String> body = new HashMap<>();
-        body.put("message", ex.getMessage()); // "Application capacity exceeded for this job"
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body); // 409
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
     @ExceptionHandler(RuntimeException.class)
