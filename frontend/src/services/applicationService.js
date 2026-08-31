@@ -1,44 +1,43 @@
 import api from './api';
 
-const apply = async (jobId) => {
-  const response = await api.post(`/applications/apply/${jobId}`);
-  return response.data;
-};
-
 const getAll = async (page = 0, size = 5, stage) => {
-  const response = await api.get('/applications', {
-    params: { page, size, ...(stage ? { stage } : {}) },
-  });
-  return response.data;
+  const params = { page, size };
+  if (stage) params.stage = stage;
+  const res = await api.get('/applications', { params });
+  return res.data;
 };
 
 const getMyApplications = async () => {
-  const response = await api.get('/applications/my-applications');
-  return response.data;
+  const res = await api.get('/applications/my-applications');
+  return res.data;
 };
 
 const getById = async (id) => {
-  const response = await api.get(`/applications/${id}`);
-  return response.data;
+  const res = await api.get(`/applications/${id}`);
+  return res.data;
+};
+
+const apply = async (jobId) => {
+  const res = await api.post(`/applications/apply/${jobId}`);
+  return res.data;
 };
 
 const updateStage = async (id, stage) => {
-  const response = await api.put(`/applications/${id}/stage`, { stage });
-  return response.data;
+  const res = await api.put(`/applications/${id}/stage`, { stage });
+  return res.data;
 };
 
 const deleteApplication = async (id) => {
-  const response = await api.delete(`/applications/${id}`);
-  return response.data;
+  const res = await api.delete(`/applications/${id}`);
+  return res.data;
 };
 
 const applicationService = {
-  apply,
   getAll,
   getMyApplications,
   getById,
+  apply,
   updateStage,
   delete: deleteApplication,
 };
-
 export default applicationService;

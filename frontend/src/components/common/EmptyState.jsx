@@ -1,17 +1,10 @@
 import React from 'react';
 
-const EmptyState = ({ title = 'Nothing here yet', message = '', actionLabel, onAction }) => {
-  return (
-    <div className="empty-state">
-      <h3>{title}</h3>
-      {message && <p>{message}</p>}
-      {actionLabel && onAction && (
-        <button className="btn btn-primary" onClick={onAction}>
-          {actionLabel}
-        </button>
-      )}
-    </div>
-  );
-};
+const EmptyState = ({ title, message }) => (
+  <div className="empty-state">
+    <h3>{title}</h3>
+    <p>{message}</p>
+  </div>
+);
 
 export default EmptyState;
