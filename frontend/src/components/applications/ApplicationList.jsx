@@ -1,174 +1,149 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchApplications,
-  updateApplicationStage,
+  updateStage,
   deleteApplication,
-  clearMessages,
 } from '../../store/slices/applicationSlice';
+import SearchFilterBar from '../common/SearchFilterBar';
+import EmptyState from '../common/EmptyState';
+import StageRail from '../common/StageRail';
 
 const STAGES = ['APPLIED', 'SCREENING', 'INTERVIEW', 'OFFER', 'HIRED', 'REJECTED'];
+const PAGE_SIZE = 5;
 
-export default function ApplicationList() {
-  const dispatch = useDispatch();
-  const {
-    items,
-    currentPage,
-    totalPages,
-    status,
-    successMessage,
-    warningMessage,
-    errorMessage,
-  } = useSelector((state) => state.applications);
+const StageEditModal = ({ application, onClose, onSubmit }) => {
+  const [stage, setStage] = useState(application.currentStage);
 
-  const [search, setSearch] = useState('');
-  const [stageFilter, setStageFilter] = useState('ALL');
-  const searchInputRef = useRef(null);
-  const debounceRef = useRef(null);
-
-  // Auto-focus search input on mount
-  useEffect(() => {
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, []);
-
-  // Refetch whenever the stage filter changes (T11)
-  useEffect(() => {
-    dispatch(fetchApplications({ page: 0, size: 5, stage: stageFilter }));
-  }, [stageFilter, dispatch]);
-
-  // Auto-dismiss banners after 3000ms
-  useEffect(() => {
-    if (successMessage || warningMessage || errorMessage) {
-      const timer = setTimeout(() => {
-        dispatch(clearMessages());
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage, warningMessage, errorMessage, dispatch]);
-
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearch(value);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      dispatch(fetchApplications({ page: 0, size: 5, stage: stageFilter }));
-    }, 300);
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
   };
 
-  const handleStageFilterChange = (e) => {
-    setStageFilter(e.target.value); // triggers the useEffect above
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(application.id, stage);
   };
-
-  const handlePageChange = (newPage) => {
-    dispatch(fetchApplications({ page: newPage, size: 5, stage: stageFilter }));
-  };
-
-  const handleStageChange = (id, newStage) => {
-    dispatch(updateApplicationStage({ id, stage: newStage }));
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this application?')) {
-      dispatch(deleteApplication(id));
-    }
-  };
-
-  const filteredItems = items.filter((app) => {
-    const matchesSearch = (app.candidate?.user?.fullName || '')
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    return matchesSearch;
-  });
 
   return (
-    <div className="application-list">
-      <h2>Application Pipeline</h2>
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal">
+        <div className="modal-header">
+          <h2>Update Application Stage</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="edit-stage">Current Stage</label>
+          <select id="edit-stage" value={stage} onChange={(e) => setStage(e.target.value)}>
+            {STAGES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
-      {successMessage && <div className="success-banner">{successMessage}</div>}
-      {warningMessage && <div className="warning-banner">{warningMessage}</div>}
-      {errorMessage && <div className="error-banner">{errorMessage}</div>}
+const ApplicationList = () => {
+  const dispatch = useDispatch();
+  const { role } = useSelector((state) => state.auth);
+  const { items, currentPage, totalPages, loading } = useSelector(
+    (state) => state.applications
+  );
 
-      <div className="application-filters">
-        <input
-          ref={searchInputRef}
-          type="text"
+  const [page, setPage] = useState(0);
+  const [stageFilter, setStageFilter] = useState('');
+  const [candidateFilter, setCandidateFilter] = useState('');
+  const [editingApplication, setEditingApplication] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  const canEditStage = role === 'RECRUITER' || role === 'TA_LEAD';
+
+  useEffect(() => {
+    dispatch(fetchApplications({ page, size: PAGE_SIZE, stage: stageFilter || undefined }));
+  }, [dispatch, page, stageFilter]);
+
+  const filteredItems = items.filter((app) => {
+    if (!candidateFilter) return true;
+    const q = candidateFilter.toLowerCase();
+    return app.candidate?.user?.fullName?.toLowerCase().includes(q);
+  });
+
+  const handleStageFilterChange = (e) => {
+    setStageFilter(e.target.value);
+    setPage(0);
+  };
+
+  const handleStageSave = (id, stage) => {
+    dispatch(updateStage({ id, stage }));
+    setEditingApplication(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (confirmDeleteId != null) {
+      dispatch(deleteApplication(confirmDeleteId));
+      setConfirmDeleteId(null);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <h1>Application Pipeline</h1>
+      </div>
+
+      <div className="pipeline-filters">
+        <SearchFilterBar
           placeholder="Filter by candidate"
-          value={search}
-          onChange={handleSearchChange}
+          onSearch={setCandidateFilter}
+          autoFocus
         />
-
         <select
+          className="stage-select"
           value={stageFilter}
           onChange={handleStageFilterChange}
           aria-label="Filter by stage"
         >
-          <option value="ALL">All Stages</option>
-          {STAGES.map((stage) => (
-            <option key={stage} value={stage}>
-              {stage}
+          <option value="">All Stages</option>
+          {STAGES.map((s) => (
+            <option key={s} value={s}>
+              {s}
             </option>
           ))}
         </select>
       </div>
 
-      {status === 'loading' && <p>Loading...</p>}
-
-      <table>
-        <thead>
-          <tr>
-            <th>Candidate</th>
-            <th>Job</th>
-            <th>Stage</th>
-            <th>Applied At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      {loading ? (
+        <p>Loading applications...</p>
+      ) : filteredItems.length === 0 ? (
+        <EmptyState
+          title="No applications found"
+          message="There are no applications matching this view."
+        />
+      ) : (
+        <div className="row-list">
+          <div className={`row-list-head applications-grid${canEditStage ? '' : ' no-actions'}`}>
+            <span>Candidate</span>
+            <span>Job Title</span>
+            <span>Stage</span>
+            <span>Applied</span>
+            {canEditStage && <span></span>}
+          </div>
           {filteredItems.map((app) => (
-            <tr key={app.id}>
-              <td>{app.candidate?.user?.fullName}</td>
-              <td>{app.job?.title}</td>
-              <td>
-                <select
-                  value={app.currentStage}
-                  onChange={(e) => handleStageChange(app.id, e.target.value)}
-                >
-                  {STAGES.map((stage) => (
-                    <option key={stage} value={stage}>
-                      {stage}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>{app.appliedAt}</td>
-              <td>
-                <button onClick={() => handleDelete(app.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="pagination">
-        <button
-          disabled={currentPage === 0}
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          Previous
-        </button>
-        <span>
-          Page {currentPage + 1} of {totalPages}
-        </span>
-        <button
-          disabled={currentPage + 1 >= totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Next
-        </button>
-      </div>
-    </div>
-  );
-}
+            <div
+              className={`row-list-row applications-grid${canEditStage ? '' : ' no-actions'}`}
+              key={app.id}
+            >
+              <span className="cell-title">{app.candidate?.user?.fullName ||
