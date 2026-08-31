@@ -33,27 +33,21 @@ public class RecruitmentServiceImpl implements RecruitmentService {
 
     @Override
     public List<JobApplication> getApplicationsByUsername(String username) {
-
         return applicationRepository.findByCandidateUserUsername(username);
-
     }
 
     @Override
     public JobApplication apply(Long jobId, String username) {
 
         SystemUser user = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new RuntimeException("User Not Found"));
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
 
         CandidateProfile candidate = candidateRepository.findByUser(user)
-                .orElseThrow(() ->
-                        new RuntimeException("Candidate Not Found"));
+                .orElseThrow(() -> new RuntimeException("Candidate Not Found"));
 
         JobPosting job = jobRepository.findById(jobId)
-                .orElseThrow(() ->
-                        new RuntimeException("Job Not Found"));
+                .orElseThrow(() -> new RuntimeException("Job Not Found"));
 
-        // Check whether the job has reached its hiring capacity
         if (job.getHiringGoal() != null
                 && job.getCurrentFills() != null
                 && job.getCurrentFills() >= job.getHiringGoal()) {
@@ -76,9 +70,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
 
         JobApplication application =
                 applicationRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Application Not Found"));
+                        .orElseThrow(() -> new RuntimeException("Application Not Found"));
 
         application.setCurrentStage(
                 ApplicationStage.valueOf(stage.toUpperCase()));
@@ -91,9 +83,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
 
         JobApplication application =
                 applicationRepository.findById(applicationId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Application Not Found"));
+                        .orElseThrow(() -> new RuntimeException("Application Not Found"));
 
         application.setCurrentStage(ApplicationStage.HIRED);
 
@@ -102,7 +92,6 @@ public class RecruitmentServiceImpl implements RecruitmentService {
 
     @Override
     public void deleteApplication(Long id) {
-
         applicationRepository.deleteById(id);
     }
 }

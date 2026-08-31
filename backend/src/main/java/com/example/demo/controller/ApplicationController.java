@@ -31,7 +31,7 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationRepository.findAll());
     }
 
-    // FIXED: username now comes from the authenticated JWT principal,
+    // FIXED: username taken from the authenticated JWT principal,
     // not a query parameter the frontend never sends.
     @GetMapping("/my-applications")
     @PreAuthorize("hasRole('CANDIDATE')")
@@ -49,9 +49,10 @@ public class ApplicationController {
                         .orElseThrow(() -> new RuntimeException("Not Found")));
     }
 
-    // FIXED: same as above — this was the actual cause of T21 and T23
-    // both failing. Every request previously 400'd before ever reaching
-    // the capacity check or the success message.
+    // FIXED: this was the root cause of both T21 and T23 failing —
+    // @RequestParam String username had no value ever sent by the
+    // frontend, so every apply call 400'd before reaching the
+    // capacity check or returning the success message.
     @PostMapping("/apply/{jobId}")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Map<String, String>> apply(@PathVariable Long jobId, Authentication authentication) {
