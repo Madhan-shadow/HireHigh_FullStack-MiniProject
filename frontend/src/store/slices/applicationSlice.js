@@ -30,12 +30,6 @@ const is401 = (err) => {
 
 const is409 = (err) => err?.response?.status === 409 || err?.status === 409;
 
-// FIX: server-provided messages must be checked BEFORE the generic
-// Axios Error.message ("Request failed with status code 409"), which
-// is always truthy on a real Axios error and was shadowing the real
-// backend message every time. This was the actual cause of T23 failing
-// whenever the capacity check relied on message content rather than
-// status code alone.
 const extractMessage = (payload, fallback) => {
   if (!payload) return fallback;
   if (typeof payload === 'string') return payload;
@@ -62,10 +56,21 @@ export const applyToJob = createAsyncThunk(
   async (jobId, { rejectWithValue }) => {
     try {
       const data = await applicationService.apply(jobId);
+
+      // DIAGNOSTIC — remove after you've captured this once
+      console.log('[DIAG] apply success raw data:', JSON.stringify(data));
+
       return data;
     } catch (err) {
       if (is401(err)) clearSession();
+
+      // DIAGNOSTIC — remove after you've captured this once
+      console.log('[DIAG] apply error status:', err?.response?.status);
+      console.log('[DIAG] apply error response.data:', JSON.stringify(err?.response?.data));
+      console.log('[DIAG] apply error.message:', err?.message);
+
       const rawMessage = extractMessage(err, '');
+
       if (is409(err) || /duplicate|already applied|capacity|exceed|full/i.test(rawMessage)) {
         return rejectWithValue({ conflict: true, message: rawMessage || 'Application capacity exceeded' });
       }
@@ -129,16 +134,21 @@ const applicationSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Failed to load applications. Please try again.';
       })
-      // T21
       .addCase(applyToJob.fulfilled, (state, action) => {
         state.error = null;
         state.warningMessage = null;
         state.successMessage = extractMessage(action.payload, 'Application submitted successfully.');
+
+        // DIAGNOSTIC — remove after you've captured this once
+        console.log('[DIAG] successMessage set to:', state.successMessage);
       })
-      // T23
       .addCase(applyToJob.rejected, (state, action) => {
         state.successMessage = null;
         const payload = action.payload;
+
+        // DIAGNOSTIC — remove after you've captured this once
+        console.log('[DIAG] applyToJob.rejected payload:', JSON.stringify(payload));
+
         if (payload && typeof payload === 'object' && payload.conflict) {
           state.warningMessage = payload.message || 'Application capacity exceeded';
           state.error = null;
@@ -146,6 +156,9 @@ const applicationSlice = createSlice({
           state.error = extractMessage(payload, 'Failed to submit application.');
           state.warningMessage = null;
         }
+
+        // DIAGNOSTIC — remove after you've captured this once
+        console.log('[DIAG] warningMessage set to:', state.warningMessage, '| error set to:', state.error);
       })
       .addCase(updateStage.pending, (state, action) => {
         const { id, stage } = action.meta.arg;

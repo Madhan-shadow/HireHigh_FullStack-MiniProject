@@ -22,9 +22,6 @@ const initialState = {
   error: null,
 };
 
-// Widened fallback chain: covers {token, user:{role}}, {accessToken, role},
-// {jwt, userRole}, and nested variants, without breaking any shape that
-// already worked.
 const resolveAuthPayload = (data = {}) => {
   const token =
     data.token ??
@@ -50,7 +47,16 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const data = await authService.login(credentials);
-      return resolveAuthPayload(data);
+
+      // DIAGNOSTIC — remove after you've captured this once
+      console.log('[DIAG] raw login response from authService:', JSON.stringify(data));
+
+      const resolved = resolveAuthPayload(data);
+
+      // DIAGNOSTIC — remove after you've captured this once
+      console.log('[DIAG] resolved auth payload:', JSON.stringify(resolved));
+
+      return resolved;
     } catch (err) {
       return rejectWithValue(
         err?.response?.data?.message || err?.message || 'Unable to login. Please check your credentials.'
@@ -103,12 +109,10 @@ const authSlice = createSlice({
         state.user = user;
         state.isAuthenticated = !!token;
 
-        // T25
         if (token) {
           localStorage.setItem('token', token);
         }
 
-        // T26
         if (role) {
           localStorage.setItem('role', role);
         }
@@ -116,6 +120,13 @@ const authSlice = createSlice({
         if (user) {
           localStorage.setItem('user', JSON.stringify(user));
         }
+
+        // DIAGNOSTIC — remove after you've captured this once
+        console.log('[DIAG] localStorage after login:', {
+          token: localStorage.getItem('token'),
+          role: localStorage.getItem('role'),
+          user: localStorage.getItem('user'),
+        });
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
