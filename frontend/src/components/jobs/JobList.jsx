@@ -77,9 +77,40 @@ const JobList = () => {
 
   return (
     <div className="page-container">
-      {successMessage && <div className="success-banner">{successMessage}</div>}
-      {warningMessage && <div className="warning-banner">{warningMessage}</div>}
-      {(appError || jobError) && <div className="error-banner">{appError || jobError}</div>}
+      {/* NOTE: role="alert" + role="status" + data-testid added so
+          testing-library queries (getByRole, getByTestId, getByText)
+          can all independently find these banners. This does not
+          change the visible text or styling at all. */}
+      {successMessage && (
+        <div
+          className="success-banner"
+          role="status"
+          data-testid="success-alert"
+          aria-live="polite"
+        >
+          {successMessage}
+        </div>
+      )}
+      {warningMessage && (
+        <div
+          className="warning-banner"
+          role="alert"
+          data-testid="warning-alert"
+          aria-live="assertive"
+        >
+          {warningMessage}
+        </div>
+      )}
+      {(appError || jobError) && (
+        <div
+          className="error-banner"
+          role="alert"
+          data-testid="error-alert"
+          aria-live="assertive"
+        >
+          {appError || jobError}
+        </div>
+      )}
 
       <div className="page-header">
         <h1>Open Roles</h1>
@@ -134,7 +165,11 @@ const JobList = () => {
                   </>
                 )}
                 {isCandidate && (
-                  <button className="btn btn-success" onClick={() => handleApply(job.id)}>
+                  <button
+                    className="btn btn-success"
+                    data-testid={`apply-button-${job.id}`}
+                    onClick={() => handleApply(job.id)}
+                  >
                     Apply Now
                   </button>
                 )}
