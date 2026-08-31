@@ -10,9 +10,16 @@ const register = async (userData) => {
   return response.data;
 };
 
+const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  localStorage.removeItem('user');
+};
+
 const authService = {
   login,
   register,
+  logout,
 };
 
 export default authService;
