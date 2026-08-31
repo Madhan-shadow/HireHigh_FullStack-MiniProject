@@ -22,4 +22,6 @@ const authService = {
   logout,
 };
 
+export { login, register, logout };
+
 export default authService;
