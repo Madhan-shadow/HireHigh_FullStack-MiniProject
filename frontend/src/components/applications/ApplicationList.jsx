@@ -24,6 +24,9 @@ const STAGES = [
 
 const PAGE_SIZE = 5;
 
+const STAGE_ROLES = ['RECRUITER', 'TA_LEAD'];
+const PIPELINE_VIEW_ROLES = ['RECRUITER', 'TA_LEAD', 'HIRING_MANAGER'];
+
 const StageEditModal = ({ application, onClose, onSubmit }) => {
   const [stage, setStage] = useState(application.currentStage);
 
@@ -111,16 +114,13 @@ const ApplicationList = () => {
   const [editingApplication, setEditingApplication] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
-  const canEditStage =
-    role === 'RECRUITER' || role === 'TA_LEAD';
+  const canEditStage = STAGE_ROLES.includes(role);
+  const canViewPipeline = PIPELINE_VIEW_ROLES.includes(role);
 
   useEffect(() => {
     if (role === 'CANDIDATE') {
       dispatch(fetchMyApplications());
-    } else if (
-      role === 'RECRUITER' ||
-      role === 'TA_LEAD'
-    ) {
+    } else if (canViewPipeline) {
       dispatch(
         fetchApplications({
           page,
@@ -129,6 +129,7 @@ const ApplicationList = () => {
         })
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, role, page, stageFilter]);
 
   useEffect(() => {
@@ -179,19 +180,19 @@ const ApplicationList = () => {
     <div className="page-container">
 
       {successMessage && (
-        <div className="success-banner">
+        <div className="success-banner" role="status" data-testid="success-alert">
           {successMessage}
         </div>
       )}
 
       {warningMessage && (
-        <div className="warning-banner">
+        <div className="warning-banner" role="alert" data-testid="warning-alert">
           {warningMessage}
         </div>
       )}
 
       {error && (
-        <div className="error-banner">
+        <div className="error-banner" role="alert" data-testid="error-alert">
           {error}
         </div>
       )}
