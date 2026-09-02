@@ -172,7 +172,7 @@ const ApplicationList = () => {
       setConfirmDeleteId(null);
     }
   };
-
+console.log('DEBUG ApplicationList banners:', { successMessage, warningMessage, error });
   return (
     <div className="page-container">
       {successMessage && (
