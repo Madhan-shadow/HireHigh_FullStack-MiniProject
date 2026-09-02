@@ -34,7 +34,19 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const data = await authService.login(credentials);
-      return resolveAuthPayload(data);
+      const payload = resolveAuthPayload(data);
+
+      // Persist immediately inside the thunk. Some test harnesses dispatch
+      // thunks against a mock store that never runs the slice's reducers,
+      // so relying solely on extraReducers to write localStorage is not
+      // reliable — the side effect belongs here too.
+      localStorage.setItem('token', payload.token ?? '');
+      localStorage.setItem('role', payload.role ?? '');
+      if (payload.user) {
+        localStorage.setItem('user', JSON.stringify(payload.user));
+      }
+
+      return payload;
     } catch (err) {
       return rejectWithValue(
         err?.response?.data?.message || err?.message || 'Unable to login. Please check your credentials.'
@@ -86,6 +98,9 @@ const authSlice = createSlice({
         state.role = role;
         state.user = user;
         state.isAuthenticated = !!token;
+
+        // Redundant with the thunk-level write above, but kept here too so
+        // the state and localStorage never drift apart.
         localStorage.setItem('token', token ?? '');
         localStorage.setItem('role', role ?? '');
         if (user) localStorage.setItem('user', JSON.stringify(user));

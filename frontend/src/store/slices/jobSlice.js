@@ -8,11 +8,14 @@ const initialState = {
   error: null,
 };
 
+// Same fix as applicationSlice: check the nested backend message BEFORE
+// the generic Axios err.message, or real server errors get masked.
 const extractMessage = (payload, fallback) => {
   if (!payload) return fallback;
   if (typeof payload === 'string') return payload;
-  if (payload.message) return payload.message;
   if (payload.response?.data?.message) return payload.response.data.message;
+  if (payload.data?.message) return payload.data.message;
+  if (payload.message) return payload.message;
   return fallback;
 };
 
