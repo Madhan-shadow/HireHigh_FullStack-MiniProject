@@ -90,8 +90,8 @@ const Login = () => {
           {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-  {loading ? 'Logging in…' : 'Login'}
-</button>
+            {loading ? 'Logging in…' : 'Login'}
+          </button>
 
           <p className="auth-switch">
             Don&apos;t have an account? <Link to="/register">Register here</Link>
