@@ -123,37 +123,46 @@ export const fetchMyApplications = createAsyncThunk(
    APPLY TO JOB
    ========================= */
 
+// export const applyToJob = createAsyncThunk(
+//   'applications/applyToJob',
+//   async (jobId, { rejectWithValue }) => {
+//     try {
+//       const data = await applicationService.apply(jobId);
+//       return data;
+//     } catch (err) {
+//       if (is401(err)) {
+//         clearSession();
+//       }
+
+//       const rawMessage = extractMessage(err, '');
+
+//       if (
+//         is409(err) ||
+//         /duplicate|already applied|capacity/i.test(rawMessage)
+//       ) {
+//         return rejectWithValue({
+//           conflict: true,
+//           message: 'Application capacity exceeded',
+//         });
+//       }
+
+//       return rejectWithValue({
+//         conflict: false,
+//         message: rawMessage || 'Failed to submit application.',
+//       });
+//     }
+//   }
+// );
 export const applyToJob = createAsyncThunk(
   'applications/applyToJob',
   async (jobId, { rejectWithValue }) => {
     try {
       const data = await applicationService.apply(jobId);
+      console.log('DEBUG applyToJob resolved with:', JSON.stringify(data));
       return data;
     } catch (err) {
-      if (is401(err)) {
-        clearSession();
-      }
-
-      const rawMessage = extractMessage(err, '');
-
-      if (
-        is409(err) ||
-        /duplicate|already applied|capacity/i.test(rawMessage)
-      ) {
-        return rejectWithValue({
-          conflict: true,
-          message: 'Application capacity exceeded',
-        });
-      }
-
-      return rejectWithValue({
-        conflict: false,
-        message: rawMessage || 'Failed to submit application.',
-      });
-    }
-  }
-);
-
+      console.log('DEBUG applyToJob threw:', err?.message, JSON.stringify(err?.response?.data));
+      // ...keep the rest of your existing catch logic exactly as-is below
 /* =========================
    UPDATE APPLICATION STAGE
    ========================= */
