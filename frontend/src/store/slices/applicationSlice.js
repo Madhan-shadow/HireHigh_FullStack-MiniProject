@@ -342,7 +342,6 @@
 // export const { clearMessages } = applicationSlice.actions;
 // export default applicationSlice.reducer;
 
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import applicationService from '../../services/applicationService';
 
@@ -473,11 +472,8 @@ export const applyToJob = createAsyncThunk(
   async (jobId, { rejectWithValue }) => {
     try {
       const data = await applicationService.apply(jobId);
-      console.log('DEBUG applyToJob resolved with:', JSON.stringify(data));
       return data;
     } catch (err) {
-      console.log('DEBUG applyToJob threw:', err?.message, JSON.stringify(err?.response?.data));
-
       if (is401(err)) {
         clearSession();
       }
