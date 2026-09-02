@@ -13,19 +13,20 @@ import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
 import StageRail from '../common/StageRail';
 
+// Matches the backend enum exactly (JobApplication.currentStage):
+// APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED.
+// NOTE: this was previously "OFFERED", which does not match the backend
+// enum and silently broke the stage filter and stage-edit modal.
 const STAGES = [
   'APPLIED',
   'SCREENING',
   'INTERVIEW',
-  'OFFERED',
+  'OFFER',
   'HIRED',
   'REJECTED',
 ];
 
 const PAGE_SIZE = 5;
-
-const STAGE_ROLES = ['RECRUITER', 'TA_LEAD'];
-const PIPELINE_VIEW_ROLES = ['RECRUITER', 'TA_LEAD', 'HIRING_MANAGER'];
 
 const StageEditModal = ({ application, onClose, onSubmit }) => {
   const [stage, setStage] = useState(application.currentStage);
@@ -80,10 +81,7 @@ const StageEditModal = ({ application, onClose, onSubmit }) => {
               Cancel
             </button>
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-            >
+            <button type="submit" className="btn btn-primary">
               Save
             </button>
           </div>
@@ -114,13 +112,20 @@ const ApplicationList = () => {
   const [editingApplication, setEditingApplication] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
-  const canEditStage = STAGE_ROLES.includes(role);
-  const canViewPipeline = PIPELINE_VIEW_ROLES.includes(role);
+  const isCandidate = role === 'CANDIDATE';
+
+  // Per the SRS, GET /api/applications is available to ROLE_RECRUITER,
+  // ROLE_TA_LEAD, and ROLE_HIRING_MANAGER — but only RECRUITER/TA_LEAD may
+  // change a stage or delete a record.
+  const canEditStage = role === 'RECRUITER' || role === 'TA_LEAD';
 
   useEffect(() => {
-    if (role === 'CANDIDATE') {
+    if (isCandidate) {
       dispatch(fetchMyApplications());
-    } else if (canViewPipeline) {
+    } else {
+      // Default to the pipeline view for RECRUITER, TA_LEAD,
+      // HIRING_MANAGER, or any role not explicitly CANDIDATE — the
+      // backend enforces the real authorization boundary.
       dispatch(
         fetchApplications({
           page,
@@ -129,8 +134,7 @@ const ApplicationList = () => {
         })
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, role, page, stageFilter]);
+  }, [dispatch, isCandidate, page, stageFilter]);
 
   useEffect(() => {
     if (successMessage || warningMessage || error) {
@@ -140,12 +144,7 @@ const ApplicationList = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [
-    successMessage,
-    warningMessage,
-    error,
-    dispatch,
-  ]);
+  }, [successMessage, warningMessage, error, dispatch]);
 
   const filteredItems = items.filter((app) => {
     if (!candidateFilter) {
@@ -154,9 +153,7 @@ const ApplicationList = () => {
 
     const q = candidateFilter.toLowerCase();
 
-    return app.candidate?.user?.fullName
-      ?.toLowerCase()
-      .includes(q);
+    return app.candidate?.user?.fullName?.toLowerCase().includes(q);
   });
 
   const handleStageFilterChange = (e) => {
@@ -178,15 +175,22 @@ const ApplicationList = () => {
 
   return (
     <div className="page-container">
-
       {successMessage && (
-        <div className="success-banner" role="status" data-testid="success-alert">
+        <div
+          className="success-banner"
+          role="status"
+          data-testid="success-alert"
+        >
           {successMessage}
         </div>
       )}
 
       {warningMessage && (
-        <div className="warning-banner" role="alert" data-testid="warning-alert">
+        <div
+          className="warning-banner"
+          role="alert"
+          data-testid="warning-alert"
+        >
           {warningMessage}
         </div>
       )}
@@ -202,7 +206,6 @@ const ApplicationList = () => {
       </div>
 
       <div className="pipeline-filters">
-
         <SearchFilterBar
           placeholder="Filter by candidate"
           onSearch={setCandidateFilter}
@@ -223,7 +226,6 @@ const ApplicationList = () => {
             </option>
           ))}
         </select>
-
       </div>
 
       {loading ? (
@@ -235,7 +237,6 @@ const ApplicationList = () => {
         />
       ) : (
         <div className="row-list">
-
           <div
             className={`row-list-head applications-grid${
               canEditStage ? '' : ' no-actions'
@@ -260,43 +261,31 @@ const ApplicationList = () => {
                 {app.candidate?.user?.fullName || '—'}
               </span>
 
-              <span className="cell-muted">
-                {app.job?.title || '—'}
-              </span>
+              <span className="cell-muted">{app.job?.title || '—'}</span>
 
-              <StageRail
-                stage={app.currentStage}
-              />
+              <StageRail stage={app.currentStage} />
 
               <span className="cell-mono">
                 {app.appliedAt
-                  ? new Date(
-                      app.appliedAt
-                    ).toLocaleDateString()
+                  ? new Date(app.appliedAt).toLocaleDateString()
                   : '—'}
               </span>
 
               {canEditStage && (
                 <div className="cell-actions">
-
                   <button
                     className="btn btn-link"
-                    onClick={() =>
-                      setEditingApplication(app)
-                    }
+                    onClick={() => setEditingApplication(app)}
                   >
                     Edit
                   </button>
 
                   <button
                     className="btn btn-danger"
-                    onClick={() =>
-                      setConfirmDeleteId(app.id)
-                    }
+                    onClick={() => setConfirmDeleteId(app.id)}
                   >
                     Delete
                   </button>
-
                 </div>
               )}
             </div>
@@ -306,13 +295,10 @@ const ApplicationList = () => {
 
       {totalPages > 1 && (
         <div className="pagination">
-
           <button
             className="btn btn-secondary"
             disabled={currentPage <= 0}
-            onClick={() =>
-              setPage((p) => Math.max(0, p - 1))
-            }
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
           >
             Previous
           </button>
@@ -323,30 +309,20 @@ const ApplicationList = () => {
 
           <button
             className="btn btn-secondary"
-            disabled={
-              currentPage >= totalPages - 1
-            }
+            disabled={currentPage >= totalPages - 1}
             onClick={() =>
-              setPage((p) =>
-                Math.min(
-                  totalPages - 1,
-                  p + 1
-                )
-              )
+              setPage((p) => Math.min(totalPages - 1, p + 1))
             }
           >
             Next
           </button>
-
         </div>
       )}
 
       {editingApplication && (
         <StageEditModal
           application={editingApplication}
-          onClose={() =>
-            setEditingApplication(null)
-          }
+          onClose={() => setEditingApplication(null)}
           onSubmit={handleStageSave}
         />
       )}
@@ -354,47 +330,28 @@ const ApplicationList = () => {
       {confirmDeleteId != null && (
         <div
           className="modal-overlay"
-          onClick={() =>
-            setConfirmDeleteId(null)
-          }
+          onClick={() => setConfirmDeleteId(null)}
         >
-          <div
-            className="modal confirm-modal"
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <h3>
-              Delete this application?
-            </h3>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete this application?</h3>
 
-            <p>
-              This action cannot be undone.
-            </p>
+            <p>This action cannot be undone.</p>
 
             <div className="modal-actions">
-
               <button
                 className="btn btn-secondary"
-                onClick={() =>
-                  setConfirmDeleteId(null)
-                }
+                onClick={() => setConfirmDeleteId(null)}
               >
                 Cancel
               </button>
 
-              <button
-                className="btn btn-danger"
-                onClick={handleDeleteConfirm}
-              >
+              <button className="btn btn-danger" onClick={handleDeleteConfirm}>
                 Delete
               </button>
-
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

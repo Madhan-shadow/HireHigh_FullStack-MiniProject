@@ -18,7 +18,7 @@ import EmptyState from '../common/EmptyState';
 const JobList = () => {
   const dispatch = useDispatch();
   const jobs = useSelector(selectFilteredJobs);
-  const { loading, error: jobError, searchQuery } = useSelector((state) => state.jobs);
+  const { loading, error: jobError } = useSelector((state) => state.jobs);
   const { role } = useSelector((state) => state.auth);
   const { successMessage, warningMessage, error: appError } = useSelector(
     (state) => state.applications
@@ -105,8 +105,7 @@ const JobList = () => {
 
       <SearchFilterBar
         placeholder="Search by job title or department"
-        value={searchQuery}
-        onChange={(v) => dispatch(setSearchQuery(v))}
+        onSearch={(v) => dispatch(setSearchQuery(v))}
       />
 
       {loading ? (
