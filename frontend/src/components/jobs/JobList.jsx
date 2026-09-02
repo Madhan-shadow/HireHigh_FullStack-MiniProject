@@ -15,14 +15,6 @@ import SearchFilterBar from '../common/SearchFilterBar';
 import CapacityBar from '../common/CapacityBar';
 import EmptyState from '../common/EmptyState';
 
-// const JobList = () => {
-//   const dispatch = useDispatch();
-//   const jobs = useSelector(selectFilteredJobs);
-//   const { loading, error: jobError } = useSelector((state) => state.jobs);
-//   const { role } = useSelector((state) => state.auth);
-//   const { successMessage, warningMessage, error: appError } = useSelector(
-//     (state) => state.applications
-//   );
 const JobList = () => {
   const dispatch = useDispatch();
   const jobs = useSelector(selectFilteredJobs);
@@ -32,9 +24,13 @@ const JobList = () => {
     (state) => state.applications
   );
 
-  console.log('DEBUG JobList render — role:', role, 'jobsCount:', jobs.length, 'success:', successMessage, 'warning:', warningMessage);
-
-  // ...rest of component unchanged
+  // eslint-disable-next-line no-console
+  console.log(
+    'DEBUG JobList RENDER — role:', role,
+    'jobsCount:', jobs.length,
+    'success:', successMessage,
+    'warning:', warningMessage
+  );
 
   const [showModal, setShowModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
@@ -87,7 +83,7 @@ const JobList = () => {
       setConfirmDeleteId(null);
     }
   };
-console.log('DEBUG JobList banners:', { successMessage, warningMessage, appError, jobError });
+
   return (
     <div className="page-container">
       {successMessage && (
