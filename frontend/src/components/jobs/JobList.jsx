@@ -87,7 +87,7 @@ const JobList = () => {
       setConfirmDeleteId(null);
     }
   };
-
+console.log('DEBUG JobList banners:', { successMessage, warningMessage, appError, jobError });
   return (
     <div className="page-container">
       {successMessage && (
