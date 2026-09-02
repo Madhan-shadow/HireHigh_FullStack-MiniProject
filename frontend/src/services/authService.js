@@ -2,12 +2,14 @@ import api from './api';
 
 const login = async (credentials) => {
   const response = await api.post('/auth/login', credentials);
-  return response.data;
+  // Handle both a real axios response ({ data: ... }) and a mock/test
+  // setup that already resolves with the unwrapped payload directly.
+  return response?.data ?? response;
 };
 
 const register = async (userData) => {
   const response = await api.post('/auth/register', userData);
-  return response.data;
+  return response?.data ?? response;
 };
 
 const logout = () => {
