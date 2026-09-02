@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { login, clearAuthError } from '../store/slices/authSlice';
+import AuthRail from './common/AuthRail';
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -11,13 +12,13 @@ const Login = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState({});
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isAuthenticated) {
       navigate('/jobs');
     }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     return () => dispatch(clearAuthError());
   }, [dispatch]);
 
@@ -48,11 +49,12 @@ const Login = () => {
     <div className="auth-shell">
       <div className="auth-brand-panel">
         <div className="auth-brand-content">
-          <span className="auth-brand-eyebrow">Applied → Screening → Interview → Offer → Hired</span>
           <h1 className="auth-brand-headline">Find who's next.</h1>
           <p className="auth-brand-sub">
-            One pipeline for every open role — from the first application to the offer letter.
+            One pipeline for every open role, from the first application to the
+            signed offer.
           </p>
+          <AuthRail activeStage="Hired" />
         </div>
       </div>
 
@@ -88,7 +90,7 @@ const Login = () => {
           {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Logging in…' : 'Login'}
+            {loading ? 'Logging in…' : 'Log in'}
           </button>
 
           <p className="auth-switch">

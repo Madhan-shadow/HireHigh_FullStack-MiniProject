@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { register, clearAuthError } from '../store/slices/authSlice';
+import AuthRail from './common/AuthRail';
 
 const ROLES = ['CANDIDATE', 'RECRUITER', 'HIRING_MANAGER', 'TA_LEAD'];
 
@@ -66,24 +67,24 @@ const Register = () => {
     <div className="auth-shell">
       <div className="auth-brand-panel">
         <div className="auth-brand-content">
-          <span className="auth-brand-eyebrow">Candidate · Recruiter · Hiring Manager · TA Lead</span>
           <h1 className="auth-brand-headline">Join the pipeline.</h1>
           <p className="auth-brand-sub">
-            One account, scoped to your role — apply to roles, manage postings, or move
-            candidates through the pipeline.
+            One account, scoped to your role — apply to roles, manage
+            postings, or move candidates forward.
           </p>
+          <AuthRail activeStage="Applied" />
         </div>
       </div>
 
       <div className="auth-form-panel">
         <form className="auth-card" onSubmit={handleSubmit} noValidate>
           <h1 className="auth-title">Create account</h1>
-          <p className="auth-subtitle">Join HireHigh Talent Acquisition</p>
+          <p className="auth-subtitle">Join HireHigh</p>
 
           {error && <div className="error-banner">{error}</div>}
           {successMessage && <div className="success-banner">{successMessage}</div>}
 
-          <label htmlFor="fullName">Full Name</label>
+          <label htmlFor="fullName">Full name</label>
           <input
             id="fullName"
             name="fullName"
@@ -95,7 +96,7 @@ const Register = () => {
           />
           {fieldErrors.fullName && <span className="field-error">{fieldErrors.fullName}</span>}
 
-          <label htmlFor="email">Email Address</label>
+          <label htmlFor="email">Email address</label>
           <input
             id="email"
             name="email"
@@ -119,9 +120,7 @@ const Register = () => {
                 onChange={handleChange}
                 className={fieldErrors.username ? 'input-error' : ''}
               />
-              {fieldErrors.username && (
-                <span className="field-error">{fieldErrors.username}</span>
-              )}
+              {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
             </div>
             <div className="form-col">
               <label htmlFor="role">Role</label>
