@@ -1,110 +1,257 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import jobService from '../../services/jobService';
+import {
+  createAsyncThunk,
+  createSlice
+} from "@reduxjs/toolkit";
 
-const initialState = {
-  items: [],
-  searchQuery: '',
-  loading: false,
-  error: null,
-};
+import jobService from "../../services/jobService";
 
-// Same fix as applicationSlice: check the nested backend message BEFORE
-// the generic Axios err.message, or real server errors get masked.
-const extractMessage = (payload, fallback) => {
-  if (!payload) return fallback;
-  if (typeof payload === 'string') return payload;
-  if (payload.response?.data?.message) return payload.response.data.message;
-  if (payload.data?.message) return payload.data.message;
-  if (payload.message) return payload.message;
-  return fallback;
-};
 
-export const fetchJobs = createAsyncThunk('jobs/fetchJobs', async (_, { rejectWithValue }) => {
-  try {
+// ================================
+// FETCH JOBS
+// ================================
+
+export const fetchJobs = createAsyncThunk(
+  "jobs/fetchJobs",
+
+  async () => {
     return await jobService.getAll();
-  } catch (err) {
-    return rejectWithValue(extractMessage(err, 'Failed to load jobs.'));
   }
-});
+);
+
+
+// ================================
+// CREATE JOB
+// ================================
 
 export const createJob = createAsyncThunk(
-  'jobs/createJob',
-  async (jobData, { rejectWithValue }) => {
-    try {
-      return await jobService.create(jobData);
-    } catch (err) {
-      return rejectWithValue(extractMessage(err, 'Failed to create job.'));
-    }
+  "jobs/createJob",
+
+  async (jobData) => {
+    return await jobService.create(jobData);
   }
 );
+
+
+// ================================
+// UPDATE JOB
+// ================================
 
 export const updateJob = createAsyncThunk(
-  'jobs/updateJob',
-  async ({ id, jobData }, { rejectWithValue }) => {
-    try {
-      return await jobService.update(id, jobData);
-    } catch (err) {
-      return rejectWithValue(extractMessage(err, 'Failed to update job.'));
-    }
+  "jobs/updateJob",
+
+  async ({ id, data }) => {
+    return await jobService.update(
+      id,
+      data
+    );
   }
 );
+
+
+// ================================
+// DELETE JOB
+// ================================
 
 export const deleteJob = createAsyncThunk(
-  'jobs/deleteJob',
-  async (id, { rejectWithValue }) => {
-    try {
-      await jobService.delete(id);
-      return id;
-    } catch (err) {
-      return rejectWithValue(extractMessage(err, 'Failed to delete job.'));
-    }
+  "jobs/deleteJob",
+
+  async (id) => {
+    return await jobService.delete(id);
   }
 );
 
+
+// ================================
+// SLICE
+// ================================
+
 const jobSlice = createSlice({
-  name: 'jobs',
-  initialState,
-  reducers: {
-    setSearchQuery: (state, action) => {
-      state.searchQuery = action.payload;
-    },
+  name: "jobs",
+
+  initialState: {
+    items: [],
+
+    loading: false,
+
+    error: null,
+
+    searchQuery: ""
   },
+
+  reducers: {
+
+    setSearchQuery(
+      state,
+      action
+    ) {
+      state.searchQuery =
+        action.payload;
+    }
+
+  },
+
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchJobs.pending, (state) => {
+
+    // FETCH
+
+    builder.addCase(
+      fetchJobs.pending,
+      (state) => {
         state.loading = true;
         state.error = null;
-      })
-      .addCase(fetchJobs.fulfilled, (state, action) => {
+      }
+    );
+
+    builder.addCase(
+      fetchJobs.fulfilled,
+      (state, action) => {
+
         state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(fetchJobs.rejected, (state, action) => {
+
+        const response =
+          action.payload;
+
+        const jobs =
+          response?.content ||
+          response ||
+          [];
+
+        state.items =
+          Array.isArray(jobs)
+            ? jobs
+            : [];
+      }
+    );
+
+    builder.addCase(
+      fetchJobs.rejected,
+      (state, action) => {
+
         state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(createJob.fulfilled, (state, action) => {
-        state.items.push(action.payload);
-      })
-      .addCase(updateJob.fulfilled, (state, action) => {
-        const idx = state.items.findIndex((j) => j.id === action.payload.id);
-        if (idx !== -1) state.items[idx] = action.payload;
-      })
-      .addCase(deleteJob.fulfilled, (state, action) => {
-        state.items = state.items.filter((j) => j.id !== action.payload);
-      });
-  },
+
+        state.error =
+          action.error?.message ||
+          "Failed to load jobs";
+      }
+    );
+
+
+    // CREATE
+
+    builder.addCase(
+      createJob.fulfilled,
+      (state, action) => {
+
+        if (action.payload) {
+
+          state.items.unshift(
+            action.payload
+          );
+
+        }
+      }
+    );
+
+
+    // UPDATE
+
+    builder.addCase(
+      updateJob.fulfilled,
+      (state, action) => {
+
+        const updated =
+          action.payload;
+
+        if (!updated) {
+          return;
+        }
+
+        const index =
+          state.items.findIndex(
+            job =>
+              job.id ===
+              updated.id
+          );
+
+        if (index !== -1) {
+
+          state.items[index] =
+            updated;
+
+        }
+      }
+    );
+
+
+    // DELETE
+
+    builder.addCase(
+      deleteJob.fulfilled,
+      (state, action) => {
+
+        const deletedId =
+          action.meta.arg;
+
+        state.items =
+          state.items.filter(
+            job =>
+              job.id !==
+              deletedId
+          );
+      }
+    );
+  }
 });
 
-export const { setSearchQuery } = jobSlice.actions;
 
-export const selectFilteredJobs = (state) => {
-  const { items, searchQuery } = state.jobs;
-  if (!searchQuery) return items;
-  const q = searchQuery.toLowerCase();
-  return items.filter(
-    (job) => job.title?.toLowerCase().includes(q) || job.department?.toLowerCase().includes(q)
-  );
-};
+// ================================
+// EXPORTS
+// ================================
+
+export const {
+  setSearchQuery
+} = jobSlice.actions;
+
+
+// ================================
+// FILTERED JOB SELECTOR
+// ================================
+
+export const selectFilteredJobs =
+  (state) => {
+
+    const query =
+      (
+        state.jobs.searchQuery ||
+        ""
+      )
+        .toLowerCase()
+        .trim();
+
+    if (!query) {
+      return state.jobs.items;
+    }
+
+    return state.jobs.items.filter(
+      job => {
+
+        const values = [
+          job.title,
+          job.department,
+          job.description
+        ];
+
+        return values
+          .filter(Boolean)
+          .some(
+            value =>
+              String(value)
+                .toLowerCase()
+                .includes(query)
+          );
+      }
+    );
+  };
+
 
 export default jobSlice.reducer;

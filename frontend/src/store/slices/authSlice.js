@@ -1,127 +1,180 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import authService from '../../services/authService';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import authService from "../../services/authService";
 
-function safeParse(value) {
+const getSavedUser = () => {
   try {
-    return JSON.parse(value);
-  } catch {
+    const user = localStorage.getItem("user");
+
+    if (!user) {
+      return null;
+    }
+
+    return JSON.parse(user);
+  } catch (error) {
     return null;
   }
-}
-
-const storedToken = localStorage.getItem('token');
-const storedRole = localStorage.getItem('role');
-const storedUser = localStorage.getItem('user');
-
-const initialState = {
-  token: storedToken || null,
-  role: storedRole || null,
-  user: storedUser ? safeParse(storedUser) : null,
-  isAuthenticated: !!storedToken,
-  loading: false,
-  error: null,
 };
 
-const resolveAuthPayload = (data = {}) => {
-  const token = data.token ?? data.accessToken ?? data.jwt ?? null;
-  const role = data.role ?? data.user?.role ?? null;
-  const user = data.user ?? (role ? { role, ...data } : null);
-  return { token, role, user };
+const initialState = {
+  user: getSavedUser(),
+
+  token: localStorage.getItem("token"),
+
+  role: localStorage.getItem("role"),
+
+  loading: false,
+
+  error: null
 };
 
 export const login = createAsyncThunk(
-  'auth/login',
-  async (credentials, { rejectWithValue }) => {
-    try {
-      const data = await authService.login(credentials);
-      const payload = resolveAuthPayload(data);
-
-      // Persist immediately inside the thunk. Some test harnesses dispatch
-      // thunks against a mock store that never runs the slice's reducers,
-      // so relying solely on extraReducers to write localStorage is not
-      // reliable — the side effect belongs here too.
-      localStorage.setItem('token', payload.token ?? '');
-      localStorage.setItem('role', payload.role ?? '');
-      if (payload.user) {
-        localStorage.setItem('user', JSON.stringify(payload.user));
-      }
-
-      return payload;
-    } catch (err) {
-      return rejectWithValue(
-        err?.response?.data?.message || err?.message || 'Unable to login. Please check your credentials.'
-      );
-    }
+  "auth/login",
+  async (credentials) => {
+    return await authService.login(credentials);
   }
 );
 
 export const register = createAsyncThunk(
-  'auth/register',
-  async (userData, { rejectWithValue }) => {
-    try {
-      return await authService.register(userData);
-    } catch (err) {
-      return rejectWithValue(
-        err?.response?.data?.message || err?.message || 'Unable to register. Please try again.'
-      );
-    }
+  "auth/register",
+  async (userData) => {
+    return await authService.register(userData);
   }
 );
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
+
   initialState,
+
   reducers: {
-    logout: (state) => {
+    logout(state) {
+      authService.logout();
+
+      state.user = null;
       state.token = null;
       state.role = null;
-      state.user = null;
-      state.isAuthenticated = false;
-      localStorage.removeItem('token');
-      localStorage.removeItem('role');
-      localStorage.removeItem('user');
-    },
-    clearAuthError: (state) => {
       state.error = null;
     },
+
+    hydrate(state) {
+      state.token = localStorage.getItem("token");
+
+      state.role = localStorage.getItem("role");
+
+      state.user = getSavedUser();
+    }
   },
+
   extraReducers: (builder) => {
     builder
+
+      // LOGIN
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
+
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        const { token, role, user } = action.payload;
-        state.token = token;
-        state.role = role;
-        state.user = user;
-        state.isAuthenticated = !!token;
 
-        // Redundant with the thunk-level write above, but kept here too so
-        // the state and localStorage never drift apart.
-        localStorage.setItem('token', token ?? '');
-        localStorage.setItem('role', role ?? '');
-        if (user) localStorage.setItem('user', JSON.stringify(user));
+        const payload = action.payload || {};
+
+        const token =
+          payload.token ||
+          payload.accessToken ||
+          localStorage.getItem("token");
+
+        const user =
+          payload.user ||
+          payload;
+
+        const role =
+          payload.role ||
+          user?.role ||
+          localStorage.getItem("role") ||
+          "CANDIDATE";
+
+        state.token = token;
+        state.user = user;
+        state.role = role;
+
+        if (token) {
+          localStorage.setItem("token", token);
+        }
+
+        if (role) {
+          localStorage.setItem("role", role);
+        }
+
+        if (user) {
+          localStorage.setItem(
+            "user",
+            JSON.stringify(user)
+          );
+        }
       })
+
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+
+        state.error =
+          action.error?.message ||
+          "Login failed";
       })
+
+      // REGISTER
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state) => {
+
+      .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
+        state.error = null;
+
+        const payload = action.payload || {};
+
+        if (payload.token) {
+          state.token = payload.token;
+
+          localStorage.setItem(
+            "token",
+            payload.token
+          );
+        }
+
+        if (payload.user) {
+          state.user = payload.user;
+
+          state.role =
+            payload.user.role ||
+            "CANDIDATE";
+
+          localStorage.setItem(
+            "user",
+            JSON.stringify(payload.user)
+          );
+
+          localStorage.setItem(
+            "role",
+            state.role
+          );
+        }
       })
+
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+
+        state.error =
+          action.error?.message ||
+          "Registration failed";
       });
-  },
+  }
 });
 
-export const { logout, clearAuthError } = authSlice.actions;
+export const {
+  logout,
+  hydrate
+} = authSlice.actions;
+
 export default authSlice.reducer;
