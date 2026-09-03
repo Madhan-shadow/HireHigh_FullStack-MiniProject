@@ -1,119 +1,164 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
 
-const emptyForm = {
-  title: '',
-  department: '',
-  hiringGoal: 1,
-  description: '',
-  status: 'OPEN',
+const initialForm = {
+  title: "",
+  department: "",
+  hiringGoal: "",
+  description: "",
 };
 
-const JobCreateModal = ({ job, onClose, onSubmit }) => {
-  const isEdit = Boolean(job);
-  const [formData, setFormData] = useState(emptyForm);
+const JobCreateModal = ({
+  open,
+  onClose,
+  onSubmit,
+  initialData = null,
+  loading = false,
+}) => {
+  const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
-    if (job) {
-      setFormData({
-        title: job.title || '',
-        department: job.department || '',
-        hiringGoal: job.hiringGoal || 1,
-        description: job.description || '',
-        status: job.status || 'OPEN',
+    if (initialData) {
+      setForm({
+        title: initialData.title || initialData.jobTitle || "",
+        department: initialData.department || "",
+        hiringGoal: initialData.hiringGoal || "",
+        description: initialData.description || "",
       });
     } else {
-      setFormData(emptyForm);
+      setForm(initialForm);
     }
-  }, [job]);
+  }, [initialData, open]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'hiringGoal' ? Number(value) : value,
+  if (!open) {
+    return null;
+  }
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
     }));
   };
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    onSubmit(form);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(formData);
+  const handleOverlayClick = (event) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
   };
 
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal">
+    <div
+      className="modal-overlay"
+      onMouseDown={handleOverlayClick}
+    >
+      <div className="modal-card">
         <div className="modal-header">
-          <h2>{isEdit ? 'Edit job' : 'Post a new role'}</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close">
+          <div>
+            <p className="eyebrow">JOB MANAGEMENT</p>
+            <h2>
+              {initialData ? "Edit Job" : "Post New Job"}
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label="Close"
+            onClick={onClose}
+          >
             ×
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label htmlFor="title">Job title</label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            placeholder="e.g. Senior Java Developer"
-            value={formData.title}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group">
+            <label htmlFor="job-title">Job Title</label>
 
-          <label htmlFor="department">Department</label>
-          <input
-            id="department"
-            name="department"
-            type="text"
-            placeholder="e.g. Engineering"
-            value={formData.department}
-            onChange={handleChange}
-            required
-          />
+            <input
+              id="job-title"
+              name="title"
+              placeholder="Senior Java Developer"
+              value={form.title}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          <label htmlFor="hiringGoal">Hiring goal (open seats)</label>
-          <input
-            id="hiringGoal"
-            name="hiringGoal"
-            type="number"
-            min="1"
-            value={formData.hiringGoal}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group">
+            <label htmlFor="job-department">
+              Department
+            </label>
 
-          {isEdit && (
-            <>
-              <label htmlFor="status">Status</label>
-              <select id="status" name="status" value={formData.status} onChange={handleChange}>
-                <option value="OPEN">Open</option>
-                <option value="CLOSED">Closed</option>
-                <option value="ON_HOLD">On hold</option>
-              </select>
-            </>
-          )}
+            <input
+              id="job-department"
+              name="department"
+              placeholder="Engineering"
+              value={form.department}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            placeholder="What the role involves, day to day..."
-            value={formData.description}
-            onChange={handleChange}
-            rows={4}
-          />
+          <div className="form-group">
+            <label htmlFor="job-goal">
+              Hiring Goal
+            </label>
+
+            <input
+              id="job-goal"
+              name="hiringGoal"
+              type="number"
+              min="1"
+              placeholder="5"
+              value={form.hiringGoal}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="job-description">
+              Description
+            </label>
+
+            <textarea
+              id="job-description"
+              name="description"
+              rows="5"
+              placeholder="Describe the role..."
+              value={form.description}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={onClose}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
-              {isEdit ? 'Save changes' : 'Post role'}
+
+            <button
+              type="submit"
+              className="primary-btn"
+              disabled={loading}
+            >
+              {loading
+                ? "Saving..."
+                : initialData
+                ? "Update Job"
+                : "Create Job"}
             </button>
           </div>
         </form>

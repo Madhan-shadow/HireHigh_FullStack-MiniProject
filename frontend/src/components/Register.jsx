@@ -1,159 +1,205 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
-import { register, clearAuthError } from '../store/slices/authSlice';
-import AuthRail from './common/AuthRail';
-
-const ROLES = ['CANDIDATE', 'RECRUITER', 'HIRING_MANAGER', 'TA_LEAD'];
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { register } from "../store/slices/authSlice";
 
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((state) => state.auth);
 
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    username: '',
-    role: 'CANDIDATE',
-    password: '',
+  const { loading, error } = useSelector(
+    (state) => state.auth
+  );
+
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    username: "",
+    role: "CANDIDATE",
+    password: "",
   });
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState(null);
 
-  const validate = (name, value) => {
-    switch (name) {
-      case 'fullName':
-        return value.trim() ? '' : 'Enter your full name.';
-      case 'email':
-        return /\S+@\S+\.\S+/.test(value) ? '' : 'Enter a valid email address.';
-      case 'username':
-        return value.trim().length >= 3 ? '' : 'Username must be at least 3 characters.';
-      case 'password':
-        return value.length >= 8 ? '' : 'Password must be at least 8 characters.';
-      default:
-        return '';
-    }
+  const [validation, setValidation] = useState({});
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+
+    setValidation((previous) => ({
+      ...previous,
+      [name]: "",
+    }));
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (name !== 'role') {
-      setFieldErrors((prev) => ({ ...prev, [name]: validate(name, value) }));
+  const validate = () => {
+    const errors = {};
+
+    if (!form.fullName.trim()) {
+      errors.fullName = "Full name is required";
     }
+
+    if (!form.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+      errors.email = "Enter a valid email";
+    }
+
+    if (!form.username.trim()) {
+      errors.username = "Username is required";
+    }
+
+    if (!form.password.trim()) {
+      errors.password = "Password is required";
+    } else if (form.password.length < 6) {
+      errors.password = "Password must contain at least 6 characters";
+    }
+
+    setValidation(errors);
+
+    return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    dispatch(clearAuthError());
-    const errors = {
-      fullName: validate('fullName', formData.fullName),
-      email: validate('email', formData.email),
-      username: validate('username', formData.username),
-      password: validate('password', formData.password),
-    };
-    setFieldErrors(errors);
-    if (Object.values(errors).some(Boolean)) return;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    const result = await dispatch(register(formData));
-    if (register.fulfilled.match(result)) {
-      setSuccessMessage('Account created. Redirecting to login…');
-      setTimeout(() => navigate('/login'), 1500);
+    if (!validate()) {
+      return;
+    }
+
+    const result = await dispatch(register(form));
+
+    if (!result.error) {
+      navigate("/login");
     }
   };
 
   return (
-    <div className="auth-shell">
-      <div className="auth-brand-panel">
-        <div className="auth-brand-content">
-          <h1 className="auth-brand-headline">Join the pipeline.</h1>
-          <p className="auth-brand-sub">
-            One account, scoped to your role — apply to roles, manage
-            postings, or move candidates forward.
-          </p>
-          <AuthRail activeStage="Applied" />
+    <div className="auth-page">
+      <div className="auth-card register-card">
+        <div className="auth-logo">
+          <span className="brand-mark">H</span>
+          <span>HireHigh</span>
         </div>
-      </div>
 
-      <div className="auth-form-panel">
-        <form className="auth-card" onSubmit={handleSubmit} noValidate>
-          <h1 className="auth-title">Create account</h1>
-          <p className="auth-subtitle">Join HireHigh</p>
+        <div className="auth-header">
+          <h1>Create Account</h1>
+          <p>Join HireHigh and manage your recruitment journey.</p>
+        </div>
 
-          {error && <div className="error-banner">{error}</div>}
-          {successMessage && <div className="success-banner">{successMessage}</div>}
+        {error && (
+          <div className="error-banner" role="alert">
+            {error}
+          </div>
+        )}
 
-          <label htmlFor="fullName">Full name</label>
-          <input
-            id="fullName"
-            name="fullName"
-            type="text"
-            placeholder="John Doe"
-            value={formData.fullName}
-            onChange={handleChange}
-            className={fieldErrors.fullName ? 'input-error' : ''}
-          />
-          {fieldErrors.fullName && <span className="field-error">{fieldErrors.fullName}</span>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="fullName">Full Name</label>
 
-          <label htmlFor="email">Email address</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="john@example.com"
-            value={formData.email}
-            onChange={handleChange}
-            className={fieldErrors.email ? 'input-error' : ''}
-          />
-          {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              placeholder="Full name"
+              value={form.fullName}
+              onChange={handleChange}
+            />
 
-          <div className="form-row">
-            <div className="form-col">
-              <label htmlFor="username">Username</label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleChange}
-                className={fieldErrors.username ? 'input-error' : ''}
-              />
-              {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
-            </div>
-            <div className="form-col">
-              <label htmlFor="role">Role</label>
-              <select id="role" name="role" value={formData.role} onChange={handleChange}>
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r.charAt(0) + r.slice(1).toLowerCase().replace('_', ' ')}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {validation.fullName && (
+              <small className="field-error">
+                {validation.fullName}
+              </small>
+            )}
           </div>
 
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className={fieldErrors.password ? 'input-error' : ''}
-          />
-          {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
 
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Creating account…' : 'Register'}
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Email address"
+              value={form.email}
+              onChange={handleChange}
+            />
+
+            {validation.email && (
+              <small className="field-error">
+                {validation.email}
+              </small>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Username"
+              value={form.username}
+              onChange={handleChange}
+            />
+
+            {validation.username && (
+              <small className="field-error">
+                {validation.username}
+              </small>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="role">Role</label>
+
+            <select
+              id="role"
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+            >
+              <option value="CANDIDATE">Candidate</option>
+              <option value="RECRUITER">Recruiter</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+            />
+
+            {validation.password && (
+              <small className="field-error">
+                {validation.password}
+              </small>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className="primary-btn full-width"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create Account"}
           </button>
-
-          <p className="auth-switch">
-            Already have an account? <Link to="/login">Login here</Link>
-          </p>
         </form>
+
+        <p className="auth-footer">
+          Already have an account?{" "}
+          <Link to="/login">Login</Link>
+        </p>
       </div>
     </div>
   );

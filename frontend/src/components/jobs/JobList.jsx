@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import {
   fetchJobs,
   createJob,
@@ -7,201 +8,370 @@ import {
   deleteJob,
   setSearchQuery,
   selectFilteredJobs,
-} from '../../store/slices/jobSlice';
-import { applyToJob, clearMessages } from '../../store/slices/applicationSlice';
-import JobCreateModal from './JobCreateModal';
-import ConfirmModal from '../common/ConfirmModal';
-import SearchFilterBar from '../common/SearchFilterBar';
-import CapacityBar from '../common/CapacityBar';
-import EmptyState from '../common/EmptyState';
+} from "../../store/slices/jobSlice";
 
-const DEPT_COLORS = ['#3B6FA0', '#C1592E', '#6B4F9E', '#1F5E4A', '#B8862F'];
+import {
+  applyToJob,
+  clearMessages,
+} from "../../store/slices/applicationSlice";
 
-const deptColor = (name = '') => {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return DEPT_COLORS[Math.abs(hash) % DEPT_COLORS.length];
-};
+import JobCreateModal from "./JobCreateModal";
 
 const JobList = () => {
   const dispatch = useDispatch();
+
   const jobs = useSelector(selectFilteredJobs);
-  const { loading, error: jobError } = useSelector((state) => state.jobs);
-  const { role } = useSelector((state) => state.auth);
-  const { successMessage, warningMessage, error: appError } = useSelector(
-    (state) => state.applications
+  const searchQuery = useSelector(
+    (state) => state.jobs.searchQuery
   );
 
-  // eslint-disable-next-line no-console
-  console.log('DEBUG JobList banners:', {
-    successMessage,
-    warningMessage,
-    error: appError || jobError,
-  });
+  const {
+    loading: jobLoading,
+    error: jobError,
+  } = useSelector((state) => state.jobs);
 
-  const [showModal, setShowModal] = useState(false);
+  const applicationState = useSelector(
+    (state) => state.applications || {}
+  );
+
+  const auth = useSelector((state) => state.auth || {});
+
+  const role =
+    auth.role ||
+    localStorage.getItem("role") ||
+    "";
+
+  const normalizedRole = role.toUpperCase();
+
+  const canManage =
+    normalizedRole === "RECRUITER" ||
+    normalizedRole === "TA_LEAD" ||
+    normalizedRole === "ADMIN";
+
+  const isCandidate =
+    normalizedRole === "CANDIDATE";
+
+  const [modalOpen, setModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
-  const isRecruiter = role === 'RECRUITER' || role === 'TA_LEAD';
-  const isCandidate = role === 'CANDIDATE';
+  const [notice, setNotice] = useState("");
+  const [warning, setWarning] = useState("");
 
   useEffect(() => {
     dispatch(fetchJobs());
   }, [dispatch]);
 
   useEffect(() => {
-    if (successMessage || warningMessage || appError) {
-      const timer = setTimeout(() => dispatch(clearMessages()), 3000);
+    if (applicationState.successMessage) {
+      setNotice(applicationState.successMessage);
+
+      const timer = setTimeout(() => {
+        setNotice("");
+        dispatch(clearMessages());
+      }, 3000);
+
       return () => clearTimeout(timer);
     }
-  }, [successMessage, warningMessage, appError, dispatch]);
 
-  const handleOpenCreate = () => {
-    setEditingJob(null);
-    setShowModal(true);
-  };
-
-  const handleOpenEdit = (job) => {
-    setEditingJob(job);
-    setShowModal(true);
-  };
-
-  const handleModalSubmit = (formData) => {
-    if (editingJob) {
-      dispatch(updateJob({ id: editingJob.id, jobData: formData }));
-    } else {
-      dispatch(createJob(formData));
+    if (applicationState.error) {
+      setWarning(applicationState.error);
     }
-    setShowModal(false);
+  }, [
+    applicationState.successMessage,
+    applicationState.error,
+    dispatch,
+  ]);
+
+  const normalizedJobs = useMemo(() => {
+    if (Array.isArray(jobs)) {
+      return jobs;
+    }
+
+    if (jobs?.content) {
+      return jobs.content;
+    }
+
+    return [];
+  }, [jobs]);
+
+  const openCreate = () => {
+    setEditingJob(null);
+    setModalOpen(true);
   };
 
-  const handleApply = (jobId) => {
-    // eslint-disable-next-line no-console
-    console.log('DEBUG handleApply called with jobId:', jobId);
-    dispatch(applyToJob(jobId));
+  const openEdit = (job) => {
+    setEditingJob(job);
+    setModalOpen(true);
   };
 
-  const handleDeleteRequest = (jobId) => {
-    setConfirmDeleteId(jobId);
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingJob(null);
   };
 
-  const handleConfirmDelete = () => {
-    if (confirmDeleteId != null) {
-      dispatch(deleteJob(confirmDeleteId));
-      setConfirmDeleteId(null);
+  const handleSaveJob = async (formData) => {
+    setModalLoading(true);
+
+    try {
+      if (editingJob) {
+        await dispatch(
+          updateJob({
+            id: editingJob.id || editingJob.jobId,
+            jobData: formData,
+          })
+        ).unwrap();
+      } else {
+        await dispatch(createJob(formData)).unwrap();
+      }
+
+      closeModal();
+      dispatch(fetchJobs());
+    } catch (error) {
+      setWarning(
+        error?.message ||
+          "Something went wrong while saving the job."
+      );
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleDelete = async (job) => {
+    const id = job.id || job.jobId;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${
+        job.title || job.jobTitle
+      }"?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await dispatch(deleteJob(id)).unwrap();
+      dispatch(fetchJobs());
+      setNotice("Job deleted successfully.");
+    } catch (error) {
+      setWarning(
+        error?.message ||
+          "Something went wrong while deleting the job."
+      );
+    }
+  };
+
+  const handleApply = async (job) => {
+    const id = job.id || job.jobId;
+
+    setNotice("");
+    setWarning("");
+
+    const result = await dispatch(applyToJob(id));
+
+    if (result.error) {
+      setWarning(
+        result.payload ||
+          result.error.message ||
+          "Unable to submit application."
+      );
+    } else {
+      setNotice(
+        result.payload?.message ||
+          "Application submitted successfully."
+      );
     }
   };
 
   return (
     <div className="page-container">
-      {successMessage && (
-        <div className="success-banner" role="status" data-testid="success-alert">
-          {successMessage}
-        </div>
-      )}
-      {warningMessage && (
-        <div className="warning-banner" role="alert" data-testid="warning-alert">
-          {warningMessage}
-        </div>
-      )}
-      {(appError || jobError) && (
-        <div className="error-banner" role="alert" data-testid="error-alert">
-          {appError || jobError}
-        </div>
-      )}
+      <section className="page-hero">
+        <div>
+          <p className="eyebrow">HIRING PLATFORM</p>
 
-      <div className="page-header">
-        <h1>Open Roles</h1>
-        {isRecruiter && (
-          <button className="btn btn-primary" onClick={handleOpenCreate}>
-            Post New Job
+          <h1>Open Roles</h1>
+
+          <p className="hero-description">
+            Discover opportunities and manage your recruitment
+            pipeline from one place.
+          </p>
+        </div>
+
+        {canManage && (
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={openCreate}
+          >
+            + Post New Job
           </button>
         )}
+      </section>
+
+      <div className="toolbar">
+        <input
+          className="search-input"
+          type="text"
+          placeholder="Search jobs..."
+          value={searchQuery}
+          onChange={(event) =>
+            dispatch(setSearchQuery(event.target.value))
+          }
+        />
       </div>
 
-      <SearchFilterBar
-        placeholder="Search by job title or department"
-        onSearch={(v) => dispatch(setSearchQuery(v))}
-      />
+      {notice && (
+        <div className="success-banner" role="alert">
+          <span>{notice}</span>
 
-      {loading ? (
-        <p>Loading jobs...</p>
-      ) : jobs.length === 0 ? (
-        <EmptyState
-          title="No open roles"
-          message="There are no job postings matching your search."
-        />
-      ) : (
-        <div className="row-list">
-          <div className="row-list-head jobs-grid">
-            <span>Job Title</span>
-            <span>Department</span>
-            <span>Capacity</span>
-            <span>Status</span>
-            <span></span>
-          </div>
-          {jobs.map((job) => (
-            <div className="row-list-row jobs-grid" key={job.id}>
-              <span className="cell-title">{job.title}</span>
-              <span className="cell-muted dept-tag">
-                <span
-                  className="dept-dot"
-                  style={{ background: deptColor(job.department) }}
-                />
-                {job.department}
-              </span>
-              <CapacityBar currentFills={job.currentFills} hiringGoal={job.hiringGoal} />
-              <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
-                {job.status}
-              </span>
-              <div className="cell-actions">
-                {isRecruiter && (
-                  <>
-                    <button className="btn btn-link" onClick={() => handleOpenEdit(job)}>
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDeleteRequest(job.id)}
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
-                {isCandidate && (
-                  <button
-                    className="btn btn-success"
-                    data-testid={`apply-button-${job.id}`}
-                    onClick={() => handleApply(job.id)}
-                  >
-                    Apply Now
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setNotice("")}
+          >
+            ×
+          </button>
         </div>
       )}
 
-      {showModal && (
-        <JobCreateModal
-          job={editingJob}
-          onClose={() => setShowModal(false)}
-          onSubmit={handleModalSubmit}
-        />
+      {warning && (
+        <div className="warning-banner" role="alert">
+          <span>{warning}</span>
+
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setWarning("")}
+          >
+            ×
+          </button>
+        </div>
       )}
 
-      {confirmDeleteId != null && (
-        <ConfirmModal
-          title="Delete this job posting?"
-          message="This will permanently remove the job and its associated applications."
-          onCancel={() => setConfirmDeleteId(null)}
-          onConfirm={handleConfirmDelete}
-        />
+      {jobError && (
+        <div className="error-banner" role="alert">
+          {jobError}
+        </div>
       )}
+
+      {jobLoading ? (
+        <div className="loading-card">
+          <div className="spinner"></div>
+          <p>Loading jobs...</p>
+        </div>
+      ) : normalizedJobs.length === 0 ? (
+        <div className="empty-card">
+          <div className="empty-icon">⌁</div>
+          <h3>No jobs found</h3>
+          <p>
+            Try another search or create a new job opening.
+          </p>
+        </div>
+      ) : (
+        <div className="job-grid">
+          {normalizedJobs.map((job) => {
+            const jobId = job.id || job.jobId;
+
+            const title =
+              job.title ||
+              job.jobTitle ||
+              "Untitled Position";
+
+            const department =
+              job.department || "Engineering";
+
+            const status =
+              job.status || "OPEN";
+
+            const goal =
+              job.hiringGoal ||
+              job.hiringTarget ||
+              0;
+
+            const description =
+              job.description ||
+              "No description available.";
+
+            return (
+              <article
+                className="job-card"
+                key={jobId}
+              >
+                <div className="job-card-top">
+                  <span
+                    className={`status-badge ${status.toLowerCase()}`}
+                  >
+                    {status}
+                  </span>
+                </div>
+
+                <h2>{title}</h2>
+
+                <p className="job-department">
+                  {department}
+                </p>
+
+                <p className="job-description">
+                  {description}
+                </p>
+
+                <div className="job-meta">
+                  <div>
+                    <span>Hiring goal</span>
+                    <strong>{goal}</strong>
+                  </div>
+
+                  <div>
+                    <span>Position</span>
+                    <strong>Open</strong>
+                  </div>
+                </div>
+
+                <div className="job-actions">
+                  {isCandidate && (
+                    <button
+                      type="button"
+                      className="primary-btn full-width"
+                      onClick={() => handleApply(job)}
+                    >
+                      Apply Now
+                    </button>
+                  )}
+
+                  {canManage && (
+                    <>
+                      <button
+                        type="button"
+                        className="secondary-btn"
+                        onClick={() => openEdit(job)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="danger-btn"
+                        onClick={() => handleDelete(job)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      <JobCreateModal
+        open={modalOpen}
+        onClose={closeModal}
+        onSubmit={handleSaveJob}
+        initialData={editingJob}
+        loading={modalLoading}
+      />
     </div>
   );
 };
