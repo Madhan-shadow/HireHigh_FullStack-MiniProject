@@ -1,5 +1,7 @@
 import React from 'react';
 
+const ACCENTS = ['blue', 'coral', 'purple', 'gold'];
+
 const StatCards = ({ jobs = [], applications = [] }) => {
   const openJobs = jobs.filter((j) => j.status === 'OPEN').length;
   const totalHiringGoal = jobs.reduce((sum, j) => sum + (j.hiringGoal || 0), 0);
@@ -15,8 +17,8 @@ const StatCards = ({ jobs = [], applications = [] }) => {
 
   return (
     <div className="stat-cards">
-      {stats.map((stat) => (
-        <div className="stat-card" key={stat.label}>
+      {stats.map((stat, i) => (
+        <div className={`stat-card accent-${ACCENTS[i % ACCENTS.length]}`} key={stat.label}>
           <span className="stat-value">{stat.value}</span>
           <span className="stat-label">{stat.label}</span>
         </div>

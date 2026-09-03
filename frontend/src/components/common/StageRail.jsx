@@ -12,7 +12,7 @@ const StageRail = ({ stage, showLabel = true }) => {
   return (
     <div className="stage-rail">
       {FORWARD_STAGES.map((s, i) => {
-        let cls = 'stage-rail-segment';
+        let cls = `stage-rail-segment stage-${s.toLowerCase()}`;
         if (i < currentIndex) cls += ' done';
         if (i === currentIndex) cls += ' current';
         return <span key={s} className={cls} title={s} />;

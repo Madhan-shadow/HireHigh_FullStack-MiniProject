@@ -83,6 +83,15 @@ const JobList = () => {
       setConfirmDeleteId(null);
     }
   };
+  const DEPT_COLORS = ['#3B6FA0', '#C1592E', '#6B4F9E', '#1F5E4A', '#B8862F'];
+
+const deptColor = (name = '') => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return DEPT_COLORS[Math.abs(hash) % DEPT_COLORS.length];
+};
 
   return (
     <div className="page-container">
@@ -101,7 +110,13 @@ const JobList = () => {
           {appError || jobError}
         </div>
       )}
-
+<span className="cell-muted dept-tag">
+  <span
+    className="dept-dot"
+    style={{ background: deptColor(job.department) }}
+  />
+  {job.department}
+</span>
       <div className="page-header">
         <h1>Open Roles</h1>
         {isRecruiter && (
