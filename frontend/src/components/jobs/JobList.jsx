@@ -1,416 +1,200 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState
-} from "react";
-
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  useDispatch,
-  useSelector
-} from "react-redux";
-
-import {
-  applyToJob
-} from "../../store/slices/applicationSlice";
-
-import {
-  createJob,
-  deleteJob,
   fetchJobs,
-  selectFilteredJobs,
+  createJob,
+  updateJob,
+  deleteJob,
   setSearchQuery,
-  updateJob
-} from "../../store/slices/jobSlice";
+  selectFilteredJobs,
+} from '../../store/slices/jobSlice';
+import { applyToJob, clearMessages } from '../../store/slices/applicationSlice';
+import JobCreateModal from './JobCreateModal';
+import ConfirmModal from '../common/ConfirmModal';
+import SearchFilterBar from '../common/SearchFilterBar';
+import CapacityBar from '../common/CapacityBar';
+import EmptyState from '../common/EmptyState';
 
-import JobCreateModal from "./JobCreateModal";
+const DEPT_COLORS = ['#3B6FA0', '#C1592E', '#6B4F9E', '#1F5E4A', '#B8862F'];
 
-export default function JobList() {
+const deptColor = (name = '') => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return DEPT_COLORS[Math.abs(hash) % DEPT_COLORS.length];
+};
 
+const JobList = () => {
   const dispatch = useDispatch();
-
-  const role =
-    useSelector(
-      (state) => state.auth.role
-    ) ||
-    localStorage.getItem("role") ||
-    "CANDIDATE";
-
-  const jobs = useSelector(
-    selectFilteredJobs
+  const jobs = useSelector(selectFilteredJobs);
+  const { loading, error: jobError } = useSelector((state) => state.jobs);
+  const { role } = useSelector((state) => state.auth);
+  const { successMessage, warningMessage, error: appError } = useSelector(
+    (state) => state.applications
   );
 
-  const loading = useSelector(
-    (state) => state.jobs.loading
-  );
+  const [showModal, setShowModal] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
-  const error = useSelector(
-    (state) => state.jobs.error
-  );
-
-  const [modal, setModal] =
-    useState(false);
-
-  const [editing, setEditing] =
-    useState(null);
-
-  const [notice, setNotice] =
-    useState("");
-
-  const normalizedRole =
-    String(role).toUpperCase();
-
-  const canManage = [
-    "RECRUITER",
-    "TA_LEAD",
-    "ADMIN"
-  ].includes(normalizedRole);
-
-  const isCandidate =
-    normalizedRole === "CANDIDATE";
+  const isRecruiter = role === 'RECRUITER' || role === 'TA_LEAD';
+  const isCandidate = role === 'CANDIDATE';
 
   useEffect(() => {
-
     dispatch(fetchJobs());
-
   }, [dispatch]);
 
-  const title = useMemo(
-    () =>
-      canManage
-        ? "Open Roles"
-        : "Find your next opportunity",
-    [canManage]
-  );
+  useEffect(() => {
+    if (successMessage || warningMessage || appError) {
+      const timer = setTimeout(() => dispatch(clearMessages()), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, warningMessage, appError, dispatch]);
 
-  const save = async (data) => {
+  const handleOpenCreate = () => {
+    setEditingJob(null);
+    setShowModal(true);
+  };
 
-    let result;
+  const handleOpenEdit = (job) => {
+    setEditingJob(job);
+    setShowModal(true);
+  };
 
-    if (editing) {
-
-      result = await dispatch(
-        updateJob({
-          id: editing.id,
-          data
-        })
-      );
-
+  const handleModalSubmit = (formData) => {
+    if (editingJob) {
+      dispatch(updateJob({ id: editingJob.id, jobData: formData }));
     } else {
-
-      result = await dispatch(
-        createJob(data)
-      );
-
+      dispatch(createJob(formData));
     }
-
-    if (
-      result.meta?.requestStatus ===
-      "fulfilled"
-    ) {
-
-      setModal(false);
-
-      setEditing(null);
-
-      dispatch(fetchJobs());
-
-    }
-
+    setShowModal(false);
   };
 
-  const remove = async (id) => {
-
-    const confirmed =
-      window.confirm(
-        "Delete this job?"
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    const result =
-      await dispatch(
-        deleteJob(id)
-      );
-
-    if (
-      result.meta?.requestStatus ===
-      "fulfilled"
-    ) {
-
-      setNotice(
-        "Job deleted successfully."
-      );
-
-      setTimeout(() => {
-        setNotice("");
-      }, 3000);
-
-    }
-
+  const handleApply = (jobId) => {
+    dispatch(applyToJob(jobId));
   };
 
-  const apply = async (id) => {
-
-    const result =
-      await dispatch(
-        applyToJob(id)
-      );
-
-    if (!result.error) {
-
-      setNotice(
-        result.payload?.message ||
-        "Application submitted successfully."
-      );
-
-    } else {
-
-      setNotice(
-        "Application Capacity exceeded"
-      );
-
-    }
-
-    setTimeout(() => {
-      setNotice("");
-    }, 3000);
-
+  const handleDeleteRequest = (jobId) => {
+    setConfirmDeleteId(jobId);
   };
 
-  const closeModal = () => {
-
-    setModal(false);
-
-    setEditing(null);
-
+  const handleConfirmDelete = () => {
+    if (confirmDeleteId != null) {
+      dispatch(deleteJob(confirmDeleteId));
+      setConfirmDeleteId(null);
+    }
   };
 
   return (
-    <section>
+    <div className="page-container">
+      {successMessage && (
+        <div className="success-banner" role="status" data-testid="success-alert">
+          {successMessage}
+        </div>
+      )}
+      {warningMessage && (
+        <div className="warning-banner" role="alert" data-testid="warning-alert">
+          {warningMessage}
+        </div>
+      )}
+      {(appError || jobError) && (
+        <div className="error-banner" role="alert" data-testid="error-alert">
+          {appError || jobError}
+        </div>
+      )}
 
       <div className="page-header">
-
-        <div>
-
-          <p className="eyebrow">
-            HireHigh
-          </p>
-
-          <h1>
-            {title}
-          </h1>
-
-          <p className="muted">
-            Discover active positions and
-            keep hiring moving.
-          </p>
-
-        </div>
-
-        {canManage && (
-
-          <button
-            className="primary-btn"
-            type="button"
-            onClick={() => {
-              setEditing(null);
-              setModal(true);
-            }}
-          >
-            ＋ Post New Job
+        <h1>Open Roles</h1>
+        {isRecruiter && (
+          <button className="btn btn-primary" onClick={handleOpenCreate}>
+            Post New Job
           </button>
-
         )}
-
       </div>
 
-      {notice && (
-
-        <div
-          className="success-banner"
-          role="alert"
-        >
-
-          <span>
-            {notice}
-          </span>
-
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={() =>
-              setNotice("")
-            }
-          >
-            ×
-          </button>
-
-        </div>
-
-      )}
-
-      {error && (
-
-        <div
-          className="error-banner"
-          role="alert"
-        >
-          {error}
-        </div>
-
-      )}
-
-      <div className="toolbar">
-
-        <input
-          placeholder="Search jobs by title or department"
-          onChange={(e) =>
-            dispatch(
-              setSearchQuery(
-                e.target.value
-              )
-            )
-          }
-        />
-
-        <span className="result-count">
-          {jobs.length} roles
-        </span>
-
-      </div>
+      <SearchFilterBar
+        placeholder="Search by job title or department"
+        onSearch={(v) => dispatch(setSearchQuery(v))}
+      />
 
       {loading ? (
-
-        <div className="empty-state">
-          Loading open roles...
-        </div>
-
+        <p>Loading jobs...</p>
+      ) : jobs.length === 0 ? (
+        <EmptyState
+          title="No open roles"
+          message="There are no job postings matching your search."
+        />
       ) : (
-
-        <div className="job-grid">
-
+        <div className="row-list">
+          <div className="row-list-head jobs-grid">
+            <span>Job Title</span>
+            <span>Department</span>
+            <span>Capacity</span>
+            <span>Status</span>
+            <span></span>
+          </div>
           {jobs.map((job) => (
-
-            <article
-              className="job-card"
-              key={job.id}
-            >
-
-              <div className="job-icon">
-                ↗
-              </div>
-
-              <div className="job-main">
-
-                <div className="job-topline">
-
-                  <span className="status-dot">
-                    {job.status || "OPEN"}
-                  </span>
-
-                </div>
-
-                <h2>
-                  {job.title}
-                </h2>
-
-                <p className="job-meta">
-
-                  {job.department ||
-                    "Engineering"}
-
-                  {" · "}
-
-                  {job.hiringGoal || 0}
-
-                  {" open seat"}
-
-                  {job.hiringGoal === 1
-                    ? ""
-                    : "s"}
-
-                </p>
-
-                <p className="job-description">
-                  {job.description ||
-                    "Detailed job description."}
-                </p>
-
-              </div>
-
-              <div className="job-actions">
-
-                {isCandidate &&
-                  job.status !== "CLOSED" && (
-
-                  <button
-                    className="primary-btn"
-                    type="button"
-                    onClick={() =>
-                      apply(job.id)
-                    }
-                  >
-                    Apply
-                  </button>
-
-                )}
-
-                {canManage && (
-
+            <div className="row-list-row jobs-grid" key={job.id}>
+              <span className="cell-title">{job.title}</span>
+              <span className="cell-muted dept-tag">
+                <span
+                  className="dept-dot"
+                  style={{ background: deptColor(job.department) }}
+                />
+                {job.department}
+              </span>
+              <CapacityBar currentFills={job.currentFills} hiringGoal={job.hiringGoal} />
+              <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
+                {job.status}
+              </span>
+              <div className="cell-actions">
+                {isRecruiter && (
                   <>
-
-                    <button
-                      className="secondary-btn"
-                      type="button"
-                      onClick={() => {
-                        setEditing(job);
-                        setModal(true);
-                      }}
-                    >
+                    <button className="btn btn-link" onClick={() => handleOpenEdit(job)}>
                       Edit
                     </button>
-
                     <button
-                      className="danger-btn"
-                      type="button"
-                      onClick={() =>
-                        remove(job.id)
-                      }
+                      className="btn btn-danger"
+                      onClick={() => handleDeleteRequest(job.id)}
                     >
                       Delete
                     </button>
-
                   </>
-
                 )}
-
+                {isCandidate && (
+                  <button
+                    className="btn btn-success"
+                    data-testid={`apply-button-${job.id}`}
+                    onClick={() => handleApply(job.id)}
+                  >
+                    Apply Now
+                  </button>
+                )}
               </div>
-
-            </article>
-
-          ))}
-
-          {!jobs.length && (
-
-            <div className="empty-state">
-              No open roles found.
             </div>
-
-          )}
-
+          ))}
         </div>
-
       )}
 
-      <JobCreateModal
-        open={modal}
-        onClose={closeModal}
-        initialData={editing}
-        onSubmit={save}
-      />
+      {showModal && (
+        <JobCreateModal
+          job={editingJob}
+          onClose={() => setShowModal(false)}
+          onSubmit={handleModalSubmit}
+        />
+      )}
 
-    </section>
+      {confirmDeleteId != null && (
+        <ConfirmModal
+          title="Delete this job posting?"
+          message="This will permanently remove the job and its associated applications."
+          onCancel={() => setConfirmDeleteId(null)}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
+    </div>
   );
-}
+};
+
+export default JobList;
