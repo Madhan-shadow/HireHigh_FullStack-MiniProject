@@ -1,17 +1,7 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
-  useDispatch,
-  useSelector,
-} from "react-redux";
-
-import {
-  fetchApplications,
-  fetchMyApplications,
   updateStage,
   optimisticStageUpdate,
   deleteApplication,
@@ -32,10 +22,7 @@ const STAGES = [
 function ApplicationList() {
   const dispatch = useDispatch();
 
-  const auth = useSelector(
-    (state) => state.auth || {}
-  );
-
+  const auth = useSelector((state) => state.auth || {});
   const applicationsState = useSelector(
     (state) => state.applications || {}
   );
@@ -48,110 +35,86 @@ function ApplicationList() {
   const isCandidate =
     String(role).toUpperCase() === "CANDIDATE";
 
-  const reduxItems =
-    applicationsState.items || [];
+  const reduxItems = applicationsState.items || [];
+  const reduxLoading = applicationsState.loading || false;
+  const reduxError = applicationsState.error || null;
 
-  const reduxLoading =
-    applicationsState.loading || false;
-
-  const reduxError =
-    applicationsState.error || null;
-
-  const [items, setItems] = useState(
-    reduxItems
+  const [items, setItems] = useState(reduxItems);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(
+    applicationsState.totalPages || 1
   );
 
-  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [totalPages, setTotalPages] =
-    useState(
-      applicationsState.totalPages || 1
-    );
+  const [success, setSuccess] = useState(
+    "Application submitted successfully."
+  );
 
-  const [loading, setLoading] =
-    useState(false);
+  const [warning, setWarning] = useState(
+    "Application Capacity exceeded"
+  );
 
-  const [error, setError] =
-    useState(null);
-
-  const [success, setSuccess] =
-    useState(
-      "Application submitted successfully."
-    );
-
-  const [warning, setWarning] =
-    useState(
-      "Application Capacity exceeded"
-    );
-
-  const [candidateFilter, setCandidateFilter] =
-    useState("");
-
-  const [stageFilter, setStageFilter] =
-    useState("");
+  const [candidateFilter, setCandidateFilter] = useState("");
+  const [stageFilter, setStageFilter] = useState("");
 
   const filterRef = useRef(null);
 
   const [editingApplication, setEditingApplication] =
     useState(null);
 
-  const [selectedStage, setSelectedStage] =
-    useState("");
+  const [selectedStage, setSelectedStage] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  const [showEditModal, setShowEditModal] =
-    useState(false);
-
-  // Keep local data synchronized with Redux
+  /*
+   * Keep local applications synchronized with Redux.
+   */
   useEffect(() => {
-    if (reduxItems) {
-      setItems(reduxItems);
-    }
+    setItems(reduxItems);
   }, [reduxItems]);
 
-  // Focus candidate filter
+  /*
+   * Automatically focus candidate filter.
+   */
   useEffect(() => {
     if (filterRef.current) {
       filterRef.current.focus();
     }
   }, []);
 
-  // Initial API call
+  /*
+   * Load applications when component mounts.
+   */
   useEffect(() => {
     loadApplications(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isCandidate]);
 
-  // API call when stage changes
+  /*
+   * Reload applications when stage filter changes.
+   */
   useEffect(() => {
     if (stageFilter !== "") {
       loadApplications(0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageFilter]);
+  }, [stageFilter, isCandidate]);
 
-  async function loadApplications(
-    requestedPage = page
-  ) {
+  /*
+   * Load applications from backend.
+   */
+  async function loadApplications(requestedPage = 0) {
     setLoading(true);
     setError(null);
 
     try {
       let response;
 
-      if (isCandidate) {
-        if (
-          typeof applicationService.getMyApplications ===
-          "function"
-        ) {
-          response =
-            await applicationService.getMyApplications();
-        } else {
-          response =
-            await applicationService.getAll(
-              requestedPage,
-              5
-            );
-        }
+      if (
+        isCandidate &&
+        typeof applicationService.getMyApplications === "function"
+      ) {
+        response =
+          await applicationService.getMyApplications();
       } else {
         response =
           await applicationService.getAll(
@@ -160,36 +123,31 @@ function ApplicationList() {
           );
       }
 
-      let content = [];
-
       if (Array.isArray(response)) {
-        content = response;
+        setItems(response);
         setTotalPages(1);
+        setPage(0);
       } else {
-        content = response?.content || [];
+        const content = response?.content || [];
+
+        setItems(content);
 
         setTotalPages(
           response?.totalPages ?? 1
         );
 
         setPage(
-          response?.number ??
-            requestedPage
+          response?.number ?? requestedPage
         );
       }
 
-      setItems(content);
       setLoading(false);
     } catch (err) {
       setLoading(false);
 
-      const status =
-        err?.response?.status;
+      const status = err?.response?.status;
 
-      if (
-        status === 401 ||
-        status === 403
-      ) {
+      if (status === 401 || status === 403) {
         localStorage.removeItem("token");
         localStorage.removeItem("role");
         localStorage.removeItem("user");
@@ -203,53 +161,23 @@ function ApplicationList() {
     }
   }
 
-  // Debounced candidate search
+  /*
+   * Candidate search debounce - 300ms.
+   */
   useEffect(() => {
     const timer = setTimeout(() => {
-      dispatch(
-        setSearchQuery(candidateFilter)
-      );
+      dispatch(setSearchQuery(candidateFilter));
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [candidateFilter, dispatch]);
 
-  const filteredItems = items.filter(
-    (application) => {
-      const candidate =
-        application?.candidate?.name ||
-        application?.candidate?.fullName ||
-        application?.candidateName ||
-        application?.candidate?.user?.username ||
-        application?.username ||
-        "";
-
-      const stage =
-        application?.currentStage ||
-        application?.stage ||
-        "";
-
-      const candidateMatches =
-        candidate
-          .toLowerCase()
-          .includes(
-            candidateFilter.toLowerCase()
-          );
-
-      const stageMatches =
-        !stageFilter ||
-        stage === stageFilter;
-
-      return (
-        candidateMatches &&
-        stageMatches
-      );
-    }
-  );
-
-  const getCandidateName = (
-    application
-  ) => {
+  /*
+   * Get candidate name safely.
+   */
+  const getCandidateName = (application) => {
     return (
       application?.candidate?.name ||
       application?.candidate?.fullName ||
@@ -260,9 +188,10 @@ function ApplicationList() {
     );
   };
 
-  const getJobTitle = (
-    application
-  ) => {
+  /*
+   * Get job title safely.
+   */
+  const getJobTitle = (application) => {
     return (
       application?.job?.title ||
       application?.jobTitle ||
@@ -271,9 +200,10 @@ function ApplicationList() {
     );
   };
 
-  const getCurrentStage = (
-    application
-  ) => {
+  /*
+   * Get current application stage.
+   */
+  const getCurrentStage = (application) => {
     return (
       application?.currentStage ||
       application?.stage ||
@@ -281,6 +211,34 @@ function ApplicationList() {
     );
   };
 
+  /*
+   * Filter applications.
+   */
+  const filteredItems = items.filter((application) => {
+    const candidate =
+      getCandidateName(application).toLowerCase();
+
+    const stage =
+      getCurrentStage(application);
+
+    const candidateMatches =
+      candidate.includes(
+        candidateFilter.toLowerCase()
+      );
+
+    const stageMatches =
+      !stageFilter ||
+      stage === stageFilter;
+
+    return (
+      candidateMatches &&
+      stageMatches
+    );
+  });
+
+  /*
+   * Change application stage.
+   */
   const handleStageChange = async (
     application,
     newStage
@@ -302,10 +260,7 @@ function ApplicationList() {
           item?.id ||
           item?.applicationId;
 
-        if (
-          String(itemId) ===
-          String(id)
-        ) {
+        if (String(itemId) === String(id)) {
           return {
             ...item,
             currentStage: newStage,
@@ -341,21 +296,16 @@ function ApplicationList() {
         "Application updated successfully."
       );
     } catch (err) {
-      // Restore previous value
       setItems((previous) =>
         previous.map((item) => {
           const itemId =
             item?.id ||
             item?.applicationId;
 
-          if (
-            String(itemId) ===
-            String(id)
-          ) {
+          if (String(itemId) === String(id)) {
             return {
               ...item,
-              currentStage:
-                previousStage,
+              currentStage: previousStage,
               stage: previousStage,
             };
           }
@@ -371,9 +321,10 @@ function ApplicationList() {
     }
   };
 
-  const handleDelete = async (
-    application
-  ) => {
+  /*
+   * Delete application.
+   */
+  const handleDelete = async (application) => {
     const id =
       application?.id ||
       application?.applicationId;
@@ -382,19 +333,16 @@ function ApplicationList() {
       return;
     }
 
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to delete this application?"
-      );
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this application?"
+    );
 
     if (!confirmed) {
       return;
     }
 
     try {
-      await applicationService.delete(
-        id
-      );
+      await applicationService.delete(id);
 
       setItems((previous) =>
         previous.filter((item) => {
@@ -402,16 +350,11 @@ function ApplicationList() {
             item?.id ||
             item?.applicationId;
 
-          return (
-            String(itemId) !==
-            String(id)
-          );
+          return String(itemId) !== String(id);
         })
       );
 
-      dispatch(
-        deleteApplication(id)
-      );
+      dispatch(deleteApplication(id));
 
       setSuccess(
         "Application deleted successfully."
@@ -424,12 +367,11 @@ function ApplicationList() {
     }
   };
 
-  const openEditModal = (
-    application
-  ) => {
-    setEditingApplication(
-      application
-    );
+  /*
+   * Open edit modal.
+   */
+  const openEditModal = (application) => {
+    setEditingApplication(application);
 
     setSelectedStage(
       getCurrentStage(application)
@@ -438,44 +380,40 @@ function ApplicationList() {
     setShowEditModal(true);
   };
 
+  /*
+   * Close edit modal.
+   */
   const closeEditModal = () => {
     setShowEditModal(false);
     setEditingApplication(null);
     setSelectedStage("");
   };
 
+  /*
+   * Save edited application.
+   */
   const saveEdit = async () => {
     if (!editingApplication) {
       return;
     }
-
-    const id =
-      editingApplication.id ||
-      editingApplication.applicationId;
 
     await handleStageChange(
       editingApplication,
       selectedStage
     );
 
-    setSuccess(
-      "Application updated successfully."
-    );
-
     closeEditModal();
-
-    if (id) {
-      await loadApplications(page);
-    }
   };
 
+  /*
+   * Pagination.
+   */
   const nextPage = () => {
-    if (
-      page <
-      totalPages - 1
-    ) {
+    if (page < totalPages - 1) {
       const next = page + 1;
+
       setPage(next);
+
       loadApplications(next);
     }
   };
@@ -483,11 +421,16 @@ function ApplicationList() {
   const previousPage = () => {
     if (page > 0) {
       const previous = page - 1;
+
       setPage(previous);
+
       loadApplications(previous);
     }
   };
 
+  /*
+   * Dismiss alerts.
+   */
   const dismissSuccess = () => {
     setSuccess(null);
   };
@@ -500,7 +443,10 @@ function ApplicationList() {
     setWarning(null);
   };
 
-  // Auto dismiss success after 3 seconds
+  /*
+   * Automatically dismiss success message
+   * after 3 seconds.
+   */
   useEffect(() => {
     if (!success) {
       return undefined;
@@ -510,11 +456,12 @@ function ApplicationList() {
       setSuccess(null);
     }, 3000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [success]);
 
-  const isBusy =
-    loading || reduxLoading;
+  const isBusy = loading || reduxLoading;
 
   return (
     <section className="applications-page">
@@ -543,9 +490,7 @@ function ApplicationList() {
             className="success-banner"
             role="alert"
           >
-            <span>
-              {success}
-            </span>
+            <span>{success}</span>
 
             <button
               type="button"
@@ -563,8 +508,7 @@ function ApplicationList() {
             role="alert"
           >
             <span>
-              {error ||
-                reduxError}
+              {error || reduxError}
             </span>
 
             <button
@@ -582,16 +526,12 @@ function ApplicationList() {
             className="warning-banner"
             role="alert"
           >
-            <span>
-              {warning}
-            </span>
+            <span>{warning}</span>
 
             <button
               type="button"
               aria-label="Dismiss warning"
-              onClick={
-                dismissWarning
-              }
+              onClick={dismissWarning}
             >
               ×
             </button>
@@ -603,6 +543,7 @@ function ApplicationList() {
       <div className="filter-panel">
 
         <div className="filter-group">
+
           <label htmlFor="candidate-filter">
             Candidate
           </label>
@@ -613,15 +554,17 @@ function ApplicationList() {
             type="text"
             placeholder="Filter by candidate"
             value={candidateFilter}
-            onChange={(e) =>
+            onChange={(event) =>
               setCandidateFilter(
-                e.target.value
+                event.target.value
               )
             }
           />
+
         </div>
 
         <div className="filter-group">
+
           <label htmlFor="stage-filter">
             Stage
           </label>
@@ -629,9 +572,9 @@ function ApplicationList() {
           <select
             id="stage-filter"
             value={stageFilter}
-            onChange={(e) =>
+            onChange={(event) =>
               setStageFilter(
-                e.target.value
+                event.target.value
               )
             }
           >
@@ -648,6 +591,7 @@ function ApplicationList() {
               </option>
             ))}
           </select>
+
         </div>
 
       </div>
@@ -668,115 +612,109 @@ function ApplicationList() {
           )}
 
         {!isBusy &&
-          filteredItems.map(
-            (application) => {
-              const id =
-                application?.id ||
-                application?.applicationId;
+          filteredItems.map((application) => {
+            const id =
+              application?.id ||
+              application?.applicationId;
 
-              const currentStage =
-                getCurrentStage(
-                  application
-                );
+            const currentStage =
+              getCurrentStage(application);
 
-              return (
-                <article
-                  className="application-card"
-                  key={id}
-                >
+            return (
+              <article
+                className="application-card"
+                key={id}
+              >
 
-                  <div className="application-main">
+                <div className="application-main">
 
-                    <div>
-                      <span className="application-label">
-                        Candidate
-                      </span>
+                  <div>
+                    <span className="application-label">
+                      Candidate
+                    </span>
 
-                      <h3>
-                        {getCandidateName(
-                          application
-                        )}
-                      </h3>
-                    </div>
-
-                    <div>
-                      <span className="application-label">
-                        Position
-                      </span>
-
-                      <strong>
-                        {getJobTitle(
-                          application
-                        )}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span className="application-label">
-                        Current Stage
-                      </span>
-
-                      <select
-                        aria-label={`Stage for ${getCandidateName(
-                          application
-                        )}`}
-                        value={currentStage}
-                        onChange={(e) =>
-                          handleStageChange(
-                            application,
-                            e.target.value
-                          )
-                        }
-                      >
-                        {STAGES.map(
-                          (stage) => (
-                            <option
-                              key={stage}
-                              value={stage}
-                            >
-                              {stage}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </div>
-
+                    <h3>
+                      {getCandidateName(
+                        application
+                      )}
+                    </h3>
                   </div>
 
-                  <div className="application-actions">
+                  <div>
+                    <span className="application-label">
+                      Position
+                    </span>
 
+                    <strong>
+                      {getJobTitle(
+                        application
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span className="application-label">
+                      Current Stage
+                    </span>
+
+                    <select
+                      aria-label={`Stage for ${getCandidateName(
+                        application
+                      )}`}
+                      value={currentStage}
+                      onChange={(event) =>
+                        handleStageChange(
+                          application,
+                          event.target.value
+                        )
+                      }
+                    >
+                      {STAGES.map((stage) => (
+                        <option
+                          key={stage}
+                          value={stage}
+                        >
+                          {stage}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                </div>
+
+                <div className="application-actions">
+
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    onClick={() =>
+                      openEditModal(
+                        application
+                      )
+                    }
+                  >
+                    Edit
+                  </button>
+
+                  {!isCandidate && (
                     <button
                       type="button"
-                      className="secondary-btn"
+                      className="danger-btn"
                       onClick={() =>
-                        openEditModal(
+                        handleDelete(
                           application
                         )
                       }
                     >
-                      Edit
+                      Delete
                     </button>
+                  )}
 
-                    {!isCandidate && (
-                      <button
-                        type="button"
-                        className="danger-btn"
-                        onClick={() =>
-                          handleDelete(
-                            application
-                          )
-                        }
-                      >
-                        Delete
-                      </button>
-                    )}
+                </div>
 
-                  </div>
-
-                </article>
-              );
-            }
-          )}
+              </article>
+            );
+          })}
 
       </div>
 
@@ -813,15 +751,16 @@ function ApplicationList() {
         editingApplication && (
           <div
             className="modal-overlay"
-            onMouseDown={(e) => {
+            onMouseDown={(event) => {
               if (
-                e.target ===
-                e.currentTarget
+                event.target ===
+                event.currentTarget
               ) {
                 closeEditModal();
               }
             }}
           >
+
             <div
               className="modal-card"
               role="dialog"
@@ -832,9 +771,7 @@ function ApplicationList() {
                 type="button"
                 className="modal-close"
                 aria-label="Close"
-                onClick={
-                  closeEditModal
-                }
+                onClick={closeEditModal}
               >
                 ×
               </button>
@@ -854,6 +791,7 @@ function ApplicationList() {
               </p>
 
               <div className="form-group">
+
                 <label htmlFor="edit-stage">
                   Application Stage
                 </label>
@@ -861,23 +799,22 @@ function ApplicationList() {
                 <select
                   id="edit-stage"
                   value={selectedStage}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setSelectedStage(
-                      e.target.value
+                      event.target.value
                     )
                   }
                 >
-                  {STAGES.map(
-                    (stage) => (
-                      <option
-                        key={stage}
-                        value={stage}
-                      >
-                        {stage}
-                      </option>
-                    )
-                  )}
+                  {STAGES.map((stage) => (
+                    <option
+                      key={stage}
+                      value={stage}
+                    >
+                      {stage}
+                    </option>
+                  ))}
                 </select>
+
               </div>
 
               <div className="modal-actions">
@@ -885,9 +822,7 @@ function ApplicationList() {
                 <button
                   type="button"
                   className="secondary-btn"
-                  onClick={
-                    closeEditModal
-                  }
+                  onClick={closeEditModal}
                 >
                   Cancel
                 </button>
@@ -903,6 +838,7 @@ function ApplicationList() {
               </div>
 
             </div>
+
           </div>
         )}
 
