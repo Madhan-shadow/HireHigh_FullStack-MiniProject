@@ -1,90 +1,78 @@
 import React, {
   useEffect,
-  useMemo,
   useRef,
-  useState
+  useState,
 } from "react";
 
 import {
-  useDispatch
+  useDispatch,
+  useSelector,
 } from "react-redux";
+
+import {
+  fetchApplications,
+  fetchMyApplications,
+  updateStage,
+  optimisticStageUpdate,
+  deleteApplication,
+  setSearchQuery,
+} from "../../store/slices/applicationSlice";
 
 import applicationService from "../../services/applicationService";
 
-import {
-  deleteApplication,
-  updateApplicationStage
-} from "../../store/slices/applicationSlice";
-
-const stages = [
+const STAGES = [
   "APPLIED",
   "SCREENING",
   "INTERVIEW",
   "OFFER",
   "HIRED",
-  "REJECTED"
+  "REJECTED",
 ];
 
-const progress = {
-  APPLIED: 16.7,
-  SCREENING: 33.3,
-  INTERVIEW: 50,
-  OFFER: 66.7,
-  HIRED: 100,
-  REJECTED: 0
-};
-
-function getCandidate(app) {
-
-  return (
-    app?.candidate?.fullName ||
-    app?.candidate?.user?.fullName ||
-    app?.candidate?.user?.username ||
-    app?.candidateName ||
-    "Unknown candidate"
-  );
-
-}
-
-function getJob(app) {
-
-  return (
-    app?.job?.title ||
-    app?.jobTitle ||
-    "Untitled role"
-  );
-
-}
-
-export default function ApplicationList() {
-
+function ApplicationList() {
   const dispatch = useDispatch();
 
-  const inputRef = useRef(null);
+  const auth = useSelector(
+    (state) => state.auth || {}
+  );
 
-  const [candidateFilter, setCandidateFilter] =
-    useState("");
+  const applicationsState = useSelector(
+    (state) => state.applications || {}
+  );
 
-  const [stage, setStage] =
-    useState("");
+  const role =
+    auth.role ||
+    localStorage.getItem("role") ||
+    "RECRUITER";
 
-  const [items, setItems] =
-    useState([]);
+  const isCandidate =
+    String(role).toUpperCase() === "CANDIDATE";
 
-  const [page, setPage] =
-    useState(0);
+  const reduxItems =
+    applicationsState.items || [];
+
+  const reduxLoading =
+    applicationsState.loading || false;
+
+  const reduxError =
+    applicationsState.error || null;
+
+  const [items, setItems] = useState(
+    reduxItems
+  );
+
+  const [page, setPage] = useState(0);
 
   const [totalPages, setTotalPages] =
-    useState(1);
-
-  const [totalElements, setTotalElements] =
-    useState(0);
+    useState(
+      applicationsState.totalPages || 1
+    );
 
   const [loading, setLoading] =
     useState(false);
 
   const [error, setError] =
-    useState("");
+    useState(null);
 
   const [success, setSuccess] =
     useState(
@@ -96,330 +84,445 @@ export default function ApplicationList() {
       "Application Capacity exceeded"
     );
 
-  /*
-   * Focus candidate filter.
-   */
+  const [candidateFilter, setCandidateFilter] =
+    useState("");
+
+  const [stageFilter, setStageFilter] =
+    useState("");
+
+  const filterRef = useRef(null);
+
+  const [editingApplication, setEditingApplication] =
+    useState(null);
+
+  const [selectedStage, setSelectedStage] =
+    useState("");
+
+  const [showEditModal, setShowEditModal] =
+    useState(false);
+
+  // Keep local data synchronized with Redux
   useEffect(() => {
+    if (reduxItems) {
+      setItems(reduxItems);
+    }
+  }, [reduxItems]);
 
-    inputRef.current?.focus();
-
+  // Focus candidate filter
+  useEffect(() => {
+    if (filterRef.current) {
+      filterRef.current.focus();
+    }
   }, []);
 
-  /*
-   * Fetch applications.
-   *
-   * SRS:
-   * pagination size = 5
-   */
+  // Initial API call
   useEffect(() => {
+    loadApplications(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    let active = true;
+  // API call when stage changes
+  useEffect(() => {
+    if (stageFilter !== "") {
+      loadApplications(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stageFilter]);
 
+  async function loadApplications(
+    requestedPage = page
+  ) {
     setLoading(true);
+    setError(null);
 
-    const loadApplications = async () => {
+    try {
+      let response;
 
-      try {
-
-        const response =
+      if (isCandidate) {
+        if (
+          typeof applicationService.getMyApplications ===
+          "function"
+        ) {
+          response =
+            await applicationService.getMyApplications();
+        } else {
+          response =
+            await applicationService.getAll(
+              requestedPage,
+              5
+            );
+        }
+      } else {
+        response =
           await applicationService.getAll(
-            page,
+            requestedPage,
             5
           );
-
-        if (!active) {
-          return;
-        }
-
-        setItems(
-          response?.content || []
-        );
-
-        setTotalPages(
-          response?.totalPages || 1
-        );
-
-        setTotalElements(
-          response?.totalElements ||
-          response?.content?.length ||
-          0
-        );
-
-        setError("");
-
-      } catch (err) {
-
-        if (!active) {
-          return;
-        }
-
-        const status =
-          err?.response?.status;
-
-        if (
-          status === 401 ||
-          status === 403
-        ) {
-
-          localStorage.removeItem(
-            "token"
-          );
-
-          localStorage.removeItem(
-            "role"
-          );
-
-          localStorage.removeItem(
-            "user"
-          );
-
-        }
-
-        setError(
-          "Something went wrong while loading applications."
-        );
-
-      } finally {
-
-        if (active) {
-          setLoading(false);
-        }
-
       }
 
-    };
+      let content = [];
 
-    loadApplications();
+      if (Array.isArray(response)) {
+        content = response;
+        setTotalPages(1);
+      } else {
+        content = response?.content || [];
 
-    return () => {
-      active = false;
-    };
+        setTotalPages(
+          response?.totalPages ?? 1
+        );
 
-  }, [page, stage]);
+        setPage(
+          response?.number ??
+            requestedPage
+        );
+      }
 
-  /*
-   * Candidate filter debounce.
-   */
-  useEffect(() => {
+      setItems(content);
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
 
-    const timer = setTimeout(() => {
+      const status =
+        err?.response?.status;
 
-      // Filtering is applied to the
-      // currently loaded server page.
-
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-    };
-
-  }, [candidateFilter]);
-
-  /*
-   * Filter applications.
-   */
-  const visible = useMemo(() => {
-
-    const query =
-      candidateFilter
-        .toLowerCase()
-        .trim();
-
-    return items.filter((app) => {
-
-      const candidate =
-        getCandidate(app)
-          .toLowerCase();
-
-      const matchesCandidate =
-        !query ||
-        candidate.includes(query);
-
-      const matchesStage =
-        !stage ||
-        app.currentStage === stage;
-
-      return (
-        matchesCandidate &&
-        matchesStage
-      );
-
-    });
-
-  }, [
-    items,
-    candidateFilter,
-    stage
-  ]);
-
-  /*
-   * Close success alert.
-   */
-  const dismiss = () => {
-
-    setSuccess("");
-
-  };
-
-  /*
-   * Change application stage.
-   */
-  const changeStage = async (
-    id,
-    nextStage
-  ) => {
-
-    const oldItem =
-      items.find(
-        (item) => item.id === id
-      );
-
-    const oldStage =
-      oldItem?.currentStage ||
-      "APPLIED";
-
-    /*
-     * Optimistic update.
-     */
-    setItems((previous) =>
-      previous.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              currentStage:
-                nextStage
-            }
-          : item
-      )
-    );
-
-    const result =
-      await dispatch(
-        updateApplicationStage({
-          id,
-          stage: nextStage
-        })
-      );
-
-    if (result.error) {
-
-      setItems((previous) =>
-        previous.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                currentStage:
-                  oldStage
-              }
-            : item
-        )
-      );
+      if (
+        status === 401 ||
+        status === 403
+      ) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("user");
+      }
 
       setError(
-        "Failed to update application stage."
+        err?.response?.data?.message ||
+          err?.message ||
+          "Something went wrong while loading applications."
       );
+    }
+  }
 
+  // Debounced candidate search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(
+        setSearchQuery(candidateFilter)
+      );
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [candidateFilter, dispatch]);
+
+  const filteredItems = items.filter(
+    (application) => {
+      const candidate =
+        application?.candidate?.name ||
+        application?.candidate?.fullName ||
+        application?.candidateName ||
+        application?.candidate?.user?.username ||
+        application?.username ||
+        "";
+
+      const stage =
+        application?.currentStage ||
+        application?.stage ||
+        "";
+
+      const candidateMatches =
+        candidate
+          .toLowerCase()
+          .includes(
+            candidateFilter.toLowerCase()
+          );
+
+      const stageMatches =
+        !stageFilter ||
+        stage === stageFilter;
+
+      return (
+        candidateMatches &&
+        stageMatches
+      );
+    }
+  );
+
+  const getCandidateName = (
+    application
+  ) => {
+    return (
+      application?.candidate?.name ||
+      application?.candidate?.fullName ||
+      application?.candidateName ||
+      application?.candidate?.user?.username ||
+      application?.username ||
+      "Unknown Candidate"
+    );
+  };
+
+  const getJobTitle = (
+    application
+  ) => {
+    return (
+      application?.job?.title ||
+      application?.jobTitle ||
+      application?.job?.jobTitle ||
+      "Unknown Job"
+    );
+  };
+
+  const getCurrentStage = (
+    application
+  ) => {
+    return (
+      application?.currentStage ||
+      application?.stage ||
+      "APPLIED"
+    );
+  };
+
+  const handleStageChange = async (
+    application,
+    newStage
+  ) => {
+    const id =
+      application?.id ||
+      application?.applicationId;
+
+    if (!id || !newStage) {
       return;
     }
 
-    setSuccess(
-      result.payload?.message ||
-      "Application updated successfully."
+    const previousStage =
+      getCurrentStage(application);
+
+    setItems((previous) =>
+      previous.map((item) => {
+        const itemId =
+          item?.id ||
+          item?.applicationId;
+
+        if (
+          String(itemId) ===
+          String(id)
+        ) {
+          return {
+            ...item,
+            currentStage: newStage,
+            stage: newStage,
+          };
+        }
+
+        return item;
+      })
     );
 
-    setTimeout(() => {
-      setSuccess("");
-    }, 3000);
+    dispatch(
+      optimisticStageUpdate({
+        id,
+        stage: newStage,
+      })
+    );
 
+    try {
+      await applicationService.updateStage(
+        id,
+        newStage
+      );
+
+      dispatch(
+        updateStage({
+          id,
+          stage: newStage,
+        })
+      );
+
+      setSuccess(
+        "Application updated successfully."
+      );
+    } catch (err) {
+      // Restore previous value
+      setItems((previous) =>
+        previous.map((item) => {
+          const itemId =
+            item?.id ||
+            item?.applicationId;
+
+          if (
+            String(itemId) ===
+            String(id)
+          ) {
+            return {
+              ...item,
+              currentStage:
+                previousStage,
+              stage: previousStage,
+            };
+          }
+
+          return item;
+        })
+      );
+
+      setError(
+        err?.response?.data?.message ||
+          "Failed to update application."
+      );
+    }
   };
 
-  /*
-   * Delete application.
-   */
-  const remove = async (id) => {
+  const handleDelete = async (
+    application
+  ) => {
+    const id =
+      application?.id ||
+      application?.applicationId;
+
+    if (!id) {
+      return;
+    }
 
     const confirmed =
       window.confirm(
-        "Delete this application?"
+        "Are you sure you want to delete this application?"
       );
 
     if (!confirmed) {
       return;
     }
 
-    const result =
-      await dispatch(
+    try {
+      await applicationService.delete(
+        id
+      );
+
+      setItems((previous) =>
+        previous.filter((item) => {
+          const itemId =
+            item?.id ||
+            item?.applicationId;
+
+          return (
+            String(itemId) !==
+            String(id)
+          );
+        })
+      );
+
+      dispatch(
         deleteApplication(id)
       );
 
-    if (!result.error) {
-
-      setItems((previous) =>
-        previous.filter(
-          (item) => item.id !== id
-        )
-      );
-
       setSuccess(
-        result.payload?.message ||
         "Application deleted successfully."
       );
-
-      setTimeout(() => {
-        setSuccess("");
-      }, 3000);
-
-    } else {
-
+    } catch (err) {
       setError(
-        "Failed to delete application."
+        err?.response?.data?.message ||
+          "Failed to delete application."
       );
-
     }
-
   };
 
-  /*
-   * Pagination.
-   */
-  const previousPage = () => {
+  const openEditModal = (
+    application
+  ) => {
+    setEditingApplication(
+      application
+    );
 
-    if (page > 0) {
-      setPage(
-        (previous) =>
-          previous - 1
-      );
+    setSelectedStage(
+      getCurrentStage(application)
+    );
+
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingApplication(null);
+    setSelectedStage("");
+  };
+
+  const saveEdit = async () => {
+    if (!editingApplication) {
+      return;
     }
 
+    const id =
+      editingApplication.id ||
+      editingApplication.applicationId;
+
+    await handleStageChange(
+      editingApplication,
+      selectedStage
+    );
+
+    setSuccess(
+      "Application updated successfully."
+    );
+
+    closeEditModal();
+
+    if (id) {
+      await loadApplications(page);
+    }
   };
 
   const nextPage = () => {
-
     if (
-      page + 1 <
-      totalPages
+      page <
+      totalPages - 1
     ) {
-
-      setPage(
-        (previous) =>
-          previous + 1
-      );
-
+      const next = page + 1;
+      setPage(next);
+      loadApplications(next);
     }
-
   };
 
-  return (
-    <section>
+  const previousPage = () => {
+    if (page > 0) {
+      const previous = page - 1;
+      setPage(previous);
+      loadApplications(previous);
+    }
+  };
 
-      {/* HEADER */}
+  const dismissSuccess = () => {
+    setSuccess(null);
+  };
+
+  const dismissError = () => {
+    setError(null);
+  };
+
+  const dismissWarning = () => {
+    setWarning(null);
+  };
+
+  // Auto dismiss success after 3 seconds
+  useEffect(() => {
+    if (!success) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setSuccess(null);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [success]);
+
+  const isBusy =
+    loading || reduxLoading;
+
+  return (
+    <section className="applications-page">
 
       <div className="page-header">
-
         <div>
-
           <p className="eyebrow">
-            Talent Operations
+            HIRING WORKSPACE
           </p>
 
           <h1>
@@ -427,379 +530,384 @@ export default function ApplicationList() {
           </h1>
 
           <p className="muted">
-            Track every candidate from
-            application to hire.
+            Track candidates and manage
+            application stages.
           </p>
-
         </div>
-
-        <div className="pipeline-summary">
-
-          <strong>
-            {visible.length}
-          </strong>
-
-          <span>
-            visible candidates
-          </span>
-
-        </div>
-
       </div>
 
-      {/* SUCCESS */}
+      <div className="alert-stack">
 
-      {success && (
-
-        <div
-          className="success-banner"
-          role="alert"
-        >
-
-          <span>
-            ✓ {success}
-          </span>
-
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={dismiss}
+        {success && (
+          <div
+            className="success-banner"
+            role="alert"
           >
-            ×
-          </button>
+            <span>
+              {success}
+            </span>
 
-        </div>
+            <button
+              type="button"
+              aria-label="Dismiss success"
+              onClick={dismissSuccess}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
-      )}
-
-      {/* WARNING */}
-
-      {warning && (
-
-        <div
-          className="warning-banner"
-          role="alert"
-        >
-
-          <span>
-            ⚠ {warning}
-          </span>
-
-          <button
-            type="button"
-            aria-label="Close warning"
-            onClick={() =>
-              setWarning("")
-            }
+        {(error || reduxError) && (
+          <div
+            className="error-banner"
+            role="alert"
           >
-            ×
-          </button>
+            <span>
+              {error ||
+                reduxError}
+            </span>
 
-        </div>
+            <button
+              type="button"
+              aria-label="Dismiss error"
+              onClick={dismissError}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
-      )}
+        {warning && (
+          <div
+            className="warning-banner"
+            role="alert"
+          >
+            <span>
+              {warning}
+            </span>
 
-      {/* ERROR */}
+            <button
+              type="button"
+              aria-label="Dismiss warning"
+              onClick={
+                dismissWarning
+              }
+            >
+              ×
+            </button>
+          </div>
+        )}
 
-      {error && (
-
-        <div
-          className="error-banner"
-          role="alert"
-        >
-          {error}
-        </div>
-
-      )}
-
-      {/* FILTER */}
+      </div>
 
       <div className="filter-panel">
 
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder="Filter by candidate"
-          value={candidateFilter}
-          onChange={(e) => {
-
-            setCandidateFilter(
-              e.target.value
-            );
-
-          }}
-        />
-
-        <select
-          value={stage}
-          onChange={(e) => {
-
-            setStage(
-              e.target.value
-            );
-
-            setPage(0);
-
-          }}
-        >
-
-          <option value="">
-            All stages
-          </option>
-
-          {stages.map((s) => (
-
-            <option
-              key={s}
-              value={s}
-            >
-              {s}
-            </option>
-
-          ))}
-
-        </select>
-
-      </div>
-
-      {/* PIPELINE */}
-
-      <div className="pipeline-table">
-
-        <div className="pipeline-head">
-
-          <span>
+        <div className="filter-group">
+          <label htmlFor="candidate-filter">
             Candidate
-          </span>
+          </label>
 
-          <span>
-            Role
-          </span>
-
-          <span>
-            Application progress
-          </span>
-
-          <span>
-            Stage
-          </span>
-
-          <span>
-            Actions
-          </span>
-
+          <input
+            id="candidate-filter"
+            ref={filterRef}
+            type="text"
+            placeholder="Filter by candidate"
+            value={candidateFilter}
+            onChange={(e) =>
+              setCandidateFilter(
+                e.target.value
+              )
+            }
+          />
         </div>
 
-        {loading && (
+        <div className="filter-group">
+          <label htmlFor="stage-filter">
+            Stage
+          </label>
 
-          <div className="empty-state">
-            Loading applications...
-          </div>
+          <select
+            id="stage-filter"
+            value={stageFilter}
+            onChange={(e) =>
+              setStageFilter(
+                e.target.value
+              )
+            }
+          >
+            <option value="">
+              All stages
+            </option>
 
-        )}
-
-        {!loading &&
-          visible.map((app) => {
-
-            const pct =
-              progress[
-                app.currentStage
-              ] ?? 16.7;
-
-            return (
-
-              <div
-                className="pipeline-row"
-                key={app.id}
+            {STAGES.map((stage) => (
+              <option
+                key={stage}
+                value={stage}
               >
-
-                {/* CANDIDATE */}
-
-                <div className="candidate-cell">
-
-                  <div className="avatar">
-
-                    {getCandidate(app)
-                      .slice(0, 1)
-                      .toUpperCase()}
-
-                  </div>
-
-                  <div>
-
-                    <strong>
-                      {getCandidate(app)}
-                    </strong>
-
-                    <small>
-                      Application #{app.id}
-                    </small>
-
-                  </div>
-
-                </div>
-
-                {/* JOB */}
-
-                <div>
-
-                  <strong>
-                    {getJob(app)}
-                  </strong>
-
-                  <small>
-
-                    {app.appliedAt
-                      ? new Date(
-                          app.appliedAt
-                        ).toLocaleDateString()
-                      : "Recently applied"}
-
-                  </small>
-
-                </div>
-
-                {/* PROGRESS */}
-
-                <div className="progress-cell">
-
-                  <div className="progress-line">
-
-                    <span
-                      style={{
-                        width:
-                          `${pct}%`
-                      }}
-                    />
-
-                  </div>
-
-                  <div className="progress-label">
-
-                    <b>
-                      {pct}%
-                    </b>
-
-                    <span>
-                      {app.currentStage ||
-                        "APPLIED"}
-                    </span>
-
-                  </div>
-
-                </div>
-
-                {/* STAGE */}
-
-                <div>
-
-                  <select
-                    value={
-                      app.currentStage ||
-                      "APPLIED"
-                    }
-                    onChange={(e) =>
-                      changeStage(
-                        app.id,
-                        e.target.value
-                      )
-                    }
-                    aria-label={
-                      `Stage for ${getCandidate(app)}`
-                    }
-                  >
-
-                    {stages.map(
-                      (s) => (
-
-                        <option
-                          key={s}
-                          value={s}
-                        >
-                          {s}
-                        </option>
-
-                      )
-                    )}
-
-                  </select>
-
-                </div>
-
-                {/* ACTION */}
-
-                <div className="row-actions">
-
-                  <button
-                    type="button"
-                    className="danger-btn"
-                    onClick={() =>
-                      remove(app.id)
-                    }
-                  >
-                    Delete
-                  </button>
-
-                </div>
-
-              </div>
-
-            );
-
-          })}
-
-        {!loading &&
-          !visible.length && (
-
-          <div className="empty-state">
-
-            No applications match
-            the current filters.
-
-          </div>
-
-        )}
+                {stage}
+              </option>
+            ))}
+          </select>
+        </div>
 
       </div>
 
-      {/* PAGINATION */}
+      <div className="application-list">
+
+        {isBusy && (
+          <div className="loading-state">
+            Loading applications...
+          </div>
+        )}
+
+        {!isBusy &&
+          filteredItems.length === 0 && (
+            <div className="empty-state">
+              No applications found.
+            </div>
+          )}
+
+        {!isBusy &&
+          filteredItems.map(
+            (application) => {
+              const id =
+                application?.id ||
+                application?.applicationId;
+
+              const currentStage =
+                getCurrentStage(
+                  application
+                );
+
+              return (
+                <article
+                  className="application-card"
+                  key={id}
+                >
+
+                  <div className="application-main">
+
+                    <div>
+                      <span className="application-label">
+                        Candidate
+                      </span>
+
+                      <h3>
+                        {getCandidateName(
+                          application
+                        )}
+                      </h3>
+                    </div>
+
+                    <div>
+                      <span className="application-label">
+                        Position
+                      </span>
+
+                      <strong>
+                        {getJobTitle(
+                          application
+                        )}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span className="application-label">
+                        Current Stage
+                      </span>
+
+                      <select
+                        aria-label={`Stage for ${getCandidateName(
+                          application
+                        )}`}
+                        value={currentStage}
+                        onChange={(e) =>
+                          handleStageChange(
+                            application,
+                            e.target.value
+                          )
+                        }
+                      >
+                        {STAGES.map(
+                          (stage) => (
+                            <option
+                              key={stage}
+                              value={stage}
+                            >
+                              {stage}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </div>
+
+                  </div>
+
+                  <div className="application-actions">
+
+                    <button
+                      type="button"
+                      className="secondary-btn"
+                      onClick={() =>
+                        openEditModal(
+                          application
+                        )
+                      }
+                    >
+                      Edit
+                    </button>
+
+                    {!isCandidate && (
+                      <button
+                        type="button"
+                        className="danger-btn"
+                        onClick={() =>
+                          handleDelete(
+                            application
+                          )
+                        }
+                      >
+                        Delete
+                      </button>
+                    )}
+
+                  </div>
+
+                </article>
+              );
+            }
+          )}
+
+      </div>
 
       <div className="pagination">
 
         <button
           type="button"
           className="secondary-btn"
-          disabled={page <= 0}
+          disabled={page === 0}
           onClick={previousPage}
         >
-          ← Previous
+          Previous
         </button>
 
         <span>
           Page {page + 1} of{" "}
-          {Math.max(
-            totalPages,
-            1
-          )}
+          {Math.max(totalPages, 1)}
         </span>
 
         <button
           type="button"
           className="secondary-btn"
           disabled={
-            page + 1 >= totalPages
+            page >= totalPages - 1
           }
           onClick={nextPage}
         >
-          Next →
+          Next
         </button>
 
-        <small>
-          {totalElements} applications
-        </small>
-
       </div>
+
+      {showEditModal &&
+        editingApplication && (
+          <div
+            className="modal-overlay"
+            onMouseDown={(e) => {
+              if (
+                e.target ===
+                e.currentTarget
+              ) {
+                closeEditModal();
+              }
+            }}
+          >
+            <div
+              className="modal-card"
+              role="dialog"
+              aria-modal="true"
+            >
+
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Close"
+                onClick={
+                  closeEditModal
+                }
+              >
+                ×
+              </button>
+
+              <h2>
+                Update Application
+              </h2>
+
+              <p className="muted">
+                {getCandidateName(
+                  editingApplication
+                )}{" "}
+                —{" "}
+                {getJobTitle(
+                  editingApplication
+                )}
+              </p>
+
+              <div className="form-group">
+                <label htmlFor="edit-stage">
+                  Application Stage
+                </label>
+
+                <select
+                  id="edit-stage"
+                  value={selectedStage}
+                  onChange={(e) =>
+                    setSelectedStage(
+                      e.target.value
+                    )
+                  }
+                >
+                  {STAGES.map(
+                    (stage) => (
+                      <option
+                        key={stage}
+                        value={stage}
+                      >
+                        {stage}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+
+              <div className="modal-actions">
+
+                <button
+                  type="button"
+                  className="secondary-btn"
+                  onClick={
+                    closeEditModal
+                  }
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={saveEdit}
+                >
+                  Update Application
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+        )}
 
     </section>
   );
 }
+
+export default ApplicationList;

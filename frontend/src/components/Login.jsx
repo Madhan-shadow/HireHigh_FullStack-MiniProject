@@ -1,31 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import {
   useDispatch,
-  useSelector
+  useSelector,
 } from "react-redux";
 
 import {
   Link,
-  useNavigate
+  useNavigate,
 } from "react-router-dom";
 
 import {
-  login
+  login,
+  clearAuthError,
 } from "../store/slices/authSlice";
 
 export default function Login() {
-
   const dispatch = useDispatch();
-
   const navigate = useNavigate();
 
-  const loading = useSelector(
-    (state) => state.auth.loading
-  );
-
-  const error = useSelector(
-    (state) => state.auth.error
+  const {
+    loading,
+    error,
+  } = useSelector(
+    (state) => state.auth || {}
   );
 
   const [username, setUsername] =
@@ -34,54 +32,41 @@ export default function Login() {
   const [password, setPassword] =
     useState("");
 
-  const [validation, setValidation] =
+  const [validationError, setValidationError] =
     useState("");
 
-  useEffect(() => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    const token =
-      localStorage.getItem("token");
-
-    if (token) {
-      navigate("/jobs", {
-        replace: true
-      });
-    }
-
-  }, [navigate]);
-
-  const submit = async (e) => {
-
-    e.preventDefault();
-
-    if (!username.trim() || !password.trim()) {
-
-      setValidation(
-        "Username and password are required."
+    if (!username.trim()) {
+      setValidationError(
+        "Username is required."
       );
-
       return;
     }
 
-    setValidation("");
+    if (!password.trim()) {
+      setValidationError(
+        "Password is required."
+      );
+      return;
+    }
+
+    setValidationError("");
+    dispatch(clearAuthError());
 
     const result = await dispatch(
       login({
         username: username.trim(),
-        password
+        password,
       })
     );
 
     if (
       login.fulfilled.match(result)
     ) {
-
-      navigate("/jobs", {
-        replace: true
-      });
-
+      navigate("/jobs");
     }
-
   };
 
   return (
@@ -90,17 +75,15 @@ export default function Login() {
       <div className="auth-card">
 
         <div className="auth-brand">
-
           <span className="brand-mark">
             H
           </span>
 
           HireHigh
-
         </div>
 
         <p className="eyebrow">
-          Talent Acquisition Platform
+          TALENT ACQUISITION PLATFORM
         </p>
 
         <h1>
@@ -108,72 +91,71 @@ export default function Login() {
         </h1>
 
         <p className="muted">
-          Sign in to manage your hiring
-          pipeline.
+          Sign in to manage your
+          recruitment workflow.
         </p>
 
-        {validation && (
+        {(validationError ||
+          error) && (
           <div
             className="error-banner"
             role="alert"
           >
-            {validation}
-          </div>
-        )}
-
-        {error && (
-          <div
-            className="error-banner"
-            role="alert"
-          >
-            {error}
+            {validationError ||
+              error}
           </div>
         )}
 
         <form
-          onSubmit={submit}
+          onSubmit={handleSubmit}
           className="form-stack"
         >
 
-          <label htmlFor="username">
+          <div className="form-group">
 
-            Username
+            <label htmlFor="username">
+              Username
+            </label>
 
             <input
               id="username"
-              name="username"
               type="text"
               placeholder="Username"
               value={username}
               onChange={(e) =>
-                setUsername(e.target.value)
+                setUsername(
+                  e.target.value
+                )
               }
               autoComplete="username"
             />
 
-          </label>
+          </div>
 
-          <label htmlFor="password">
+          <div className="form-group">
 
-            Password
+            <label htmlFor="password">
+              Password
+            </label>
 
             <input
               id="password"
-              name="password"
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) =>
-                setPassword(e.target.value)
+                setPassword(
+                  e.target.value
+                )
               }
               autoComplete="current-password"
             />
 
-          </label>
+          </div>
 
           <button
-            className="primary-btn wide"
             type="submit"
+            className="primary-btn wide"
             disabled={loading}
           >
             {loading
@@ -184,13 +166,10 @@ export default function Login() {
         </form>
 
         <p className="auth-footer">
-
           Don't have an account?{" "}
-
           <Link to="/register">
-            Register here
+            Register
           </Link>
-
         </p>
 
       </div>

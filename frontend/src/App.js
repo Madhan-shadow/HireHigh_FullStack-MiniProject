@@ -1,9 +1,6 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Provider, useDispatch } from "react-redux";
-
-import { store } from "./store";
-import { hydrate } from "./store/slices/authSlice";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 import Navbar from "./components/layout/Navbar";
 import Login from "./components/Login";
@@ -11,7 +8,19 @@ import Register from "./components/Register";
 import JobList from "./components/jobs/JobList";
 import ApplicationList from "./components/applications/ApplicationList";
 
-function AppContent() {
+import { hydrate } from "./store/slices/authSlice";
+
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -19,38 +28,56 @@ function AppContent() {
   }, [dispatch]);
 
   return (
-    <>
+    <div className="app-shell">
       <Navbar />
 
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+      <main className="page-container">
+        <Routes>
 
-        <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={<Navigate to="/jobs" replace />}
+          />
 
-        <Route path="/register" element={<Register />} />
+          <Route
+            path="/login"
+            element={<Login />}
+          />
 
-        <Route path="/jobs" element={<JobList />} />
+          <Route
+            path="/register"
+            element={<Register />}
+          />
 
-        <Route
-          path="/applications"
-          element={<ApplicationList />}
-        />
+          <Route
+            path="/jobs"
+            element={
+              <ProtectedRoute>
+                <JobList />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="*"
-          element={<Navigate to="/login" replace />}
-        />
-      </Routes>
-    </>
+          <Route
+            path="/applications"
+            element={
+              <ProtectedRoute>
+                <ApplicationList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="*"
+            element={<Navigate to="/jobs" replace />}
+          />
+
+        </Routes>
+      </main>
+    </div>
   );
 }
 
-export default function App() {
-  return (
-    <Provider store={store}>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </Provider>
-  );
-}
+export default App;
+
+export { ProtectedRoute };

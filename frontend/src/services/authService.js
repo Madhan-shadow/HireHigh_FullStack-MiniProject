@@ -2,38 +2,41 @@ import api from "./api";
 
 const authService = {
   async login(credentials) {
-    try {
-      const response = await api.post("/auth/login", credentials);
+    const response = await api.post(
+      "/auth/login",
+      credentials
+    );
 
-      return response?.data || {
-        token: "demo-token",
-        role: credentials.username?.toLowerCase().includes("recruit")
-          ? "RECRUITER"
-          : "CANDIDATE",
-        username: credentials.username,
-      };
-    } catch (error) {
-      // Useful for Jest tests where axios may not have a real backend
-      if (!error?.response) {
-        return {
-          token: "demo-token",
-          role: credentials.username?.toLowerCase().includes("recruit")
-            ? "RECRUITER"
-            : "CANDIDATE",
-          username: credentials.username,
-        };
-      }
+    const data = response?.data || {};
 
-      throw error;
+    if (data.token) {
+      localStorage.setItem("token", data.token);
     }
+
+    if (data.role) {
+      localStorage.setItem("role", data.role);
+    }
+
+    if (data.user) {
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
+    }
+
+    return data;
   },
 
   async register(userData) {
-    const response = await api.post("/auth/register", userData);
-    return response?.data;
+    const response = await api.post(
+      "/auth/register",
+      userData
+    );
+
+    return response?.data || {};
   },
 
-  logout() {
+  async logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("user");
