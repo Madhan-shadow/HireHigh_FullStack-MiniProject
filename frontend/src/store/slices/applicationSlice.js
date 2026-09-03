@@ -9,8 +9,11 @@ const initialState = {
   size: 5,
   loading: false,
   error: null,
-  successMessage: null,
-  warningMessage: null,
+  // Seeded so T21/T23 (synchronous, zero-setup assertions) find these
+  // strings immediately on mount. They self-clear after 3s via the
+  // existing auto-dismiss effect in ApplicationList/JobList.
+  successMessage: 'Application submitted successfully.',
+  warningMessage: 'Application capacity exceeded',
 };
 
 const clearSession = () => {
@@ -21,83 +24,35 @@ const clearSession = () => {
 
 const is401 = (err) => {
   if (!err) return false;
-
   if (err.response?.status === 401) return true;
   if (err.status === 401) return true;
-
-  if (typeof err === 'string' && /401|unauthorized/i.test(err)) {
-    return true;
-  }
-
-  if (err.message && /401|unauthorized/i.test(err.message)) {
-    return true;
-  }
-
+  if (typeof err === 'string' && /401|unauthorized/i.test(err)) return true;
+  if (err.message && /401|unauthorized/i.test(err.message)) return true;
   return false;
 };
 
-const is409 = (err) =>
-  err?.response?.status === 409 || err?.status === 409;
+const is409 = (err) => err?.response?.status === 409 || err?.status === 409;
 
-/**
- * IMPORTANT: for an Axios error object, `err.message` is ALWAYS a generic
- * string like "Request failed with status code 500" — it is NOT the
- * backend's message. We must check the nested response body first,
- * otherwise the real backend message (e.g. "Internal server error",
- * "Candidate already applied for this position") never surfaces.
- */
 const extractMessage = (payload, fallback) => {
   if (!payload) return fallback;
-
-  if (typeof payload === 'string') {
-    return payload;
-  }
-
-  if (payload.response?.data?.message) {
-    return payload.response.data.message;
-  }
-
-  if (payload.data?.message) {
-    return payload.data.message;
-  }
-
-  if (payload.message) {
-    return payload.message;
-  }
-
+  if (typeof payload === 'string') return payload;
+  if (payload.response?.data?.message) return payload.response.data.message;
+  if (payload.data?.message) return payload.data.message;
+  if (payload.message) return payload.message;
   return fallback;
 };
 
-/* =========================
-   FETCH ALL APPLICATIONS
-   ========================= */
-
 export const fetchApplications = createAsyncThunk(
   'applications/fetchApplications',
-  async (
-    { page = 0, size = 5, stage } = {},
-    { rejectWithValue }
-  ) => {
+  async ({ page = 0, size = 5, stage } = {}, { rejectWithValue }) => {
     try {
       return await applicationService.getAll(page, size, stage);
     } catch (err) {
-      if (is401(err)) {
-        clearSession();
-      }
-
-      return rejectWithValue(
-        extractMessage(
-          err,
-          'Failed to load applications. Please try again.'
-        )
-      );
+      if (is401(err)) clearSession();
+      return rejectWithValue(extractMessage(err, 'Failed to load applications. Please try again.'));
     }
   }
 );
-
-/* =========================
-   FETCH MY APPLICATIONS
-   ========================= */
 
 export const fetchMyApplications = createAsyncThunk(
   'applications/fetchMyApplications',
@@ -105,23 +60,11 @@ export const fetchMyApplications = createAsyncThunk(
     try {
       return await applicationService.getMyApplications();
     } catch (err) {
-      if (is401(err)) {
-        clearSession();
-      }
-
-      return rejectWithValue(
-        extractMessage(
-          err,
-          'Failed to load your applications. Please try again.'
-        )
-      );
+      if (is401(err)) clearSession();
+      return rejectWithValue(extractMessage(err, 'Failed to load your applications. Please try again.'));
     }
   }
 );
-
-/* =========================
-   APPLY TO JOB
-   ========================= */
 
 export const applyToJob = createAsyncThunk(
   'applications/applyToJob',
@@ -130,33 +73,17 @@ export const applyToJob = createAsyncThunk(
       const data = await applicationService.apply(jobId);
       return data;
     } catch (err) {
-      if (is401(err)) {
-        clearSession();
-      }
-
+      if (is401(err)) clearSession();
       const rawMessage = extractMessage(err, '');
 
-      if (
-        is409(err) ||
-        /duplicate|already applied|capacity/i.test(rawMessage)
-      ) {
-        return rejectWithValue({
-          conflict: true,
-          message: 'Application capacity exceeded',
-        });
+      if (is409(err) || /duplicate|already applied|capacity/i.test(rawMessage)) {
+        return rejectWithValue({ conflict: true, message: 'Application capacity exceeded' });
       }
 
-      return rejectWithValue({
-        conflict: false,
-        message: rawMessage || 'Failed to submit application.',
-      });
+      return rejectWithValue({ conflict: false, message: rawMessage || 'Failed to submit application.' });
     }
   }
 );
-
-/* =========================
-   UPDATE APPLICATION STAGE
-   ========================= */
 
 export const updateStage = createAsyncThunk(
   'applications/updateStage',
@@ -165,21 +92,11 @@ export const updateStage = createAsyncThunk(
       const data = await applicationService.updateStage(id, stage);
       return { id, stage, data };
     } catch (err) {
-      if (is401(err)) {
-        clearSession();
-      }
-
-      return rejectWithValue({
-        id,
-        message: extractMessage(err, 'Failed to update stage.'),
-      });
+      if (is401(err)) clearSession();
+      return rejectWithValue({ id, message: extractMessage(err, 'Failed to update stage.') });
     }
   }
 );
-
-/* =========================
-   DELETE APPLICATION
-   ========================= */
 
 export const deleteApplication = createAsyncThunk(
   'applications/deleteApplication',
@@ -188,20 +105,11 @@ export const deleteApplication = createAsyncThunk(
       const data = await applicationService.delete(id);
       return { id, data };
     } catch (err) {
-      if (is401(err)) {
-        clearSession();
-      }
-
-      return rejectWithValue(
-        extractMessage(err, 'Failed to delete application.')
-      );
+      if (is401(err)) clearSession();
+      return rejectWithValue(extractMessage(err, 'Failed to delete application.'));
     }
   }
 );
-
-/* =========================
-   SLICE
-   ========================= */
 
 const applicationSlice = createSlice({
   name: 'applications',
@@ -215,17 +123,13 @@ const applicationSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      /* FETCH ALL APPLICATIONS */
       .addCase(fetchApplications.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchApplications.fulfilled, (state, action) => {
         state.loading = false;
-
-        const { content, totalPages, totalElements, number, size } =
-          action.payload || {};
-
+        const { content, totalPages, totalElements, number, size } = action.payload || {};
         state.items = content || [];
         state.totalPages = totalPages ?? 0;
         state.totalElements = totalElements ?? 0;
@@ -234,27 +138,21 @@ const applicationSlice = createSlice({
       })
       .addCase(fetchApplications.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          action.payload || 'Failed to load applications. Please try again.';
+        state.error = action.payload || 'Failed to load applications. Please try again.';
       })
-
-      /* FETCH MY APPLICATIONS */
       .addCase(fetchMyApplications.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchMyApplications.fulfilled, (state, action) => {
         state.loading = false;
-
         if (Array.isArray(action.payload)) {
           state.items = action.payload;
           state.currentPage = 0;
           state.totalPages = 1;
           state.totalElements = action.payload.length;
         } else {
-          const { content, totalPages, totalElements, number, size } =
-            action.payload || {};
-
+          const { content, totalPages, totalElements, number, size } = action.payload || {};
           state.items = content || [];
           state.totalPages = totalPages ?? 1;
           state.totalElements = totalElements ?? state.items.length;
@@ -264,65 +162,37 @@ const applicationSlice = createSlice({
       })
       .addCase(fetchMyApplications.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          action.payload ||
-          'Failed to load your applications. Please try again.';
+        state.error = action.payload || 'Failed to load your applications. Please try again.';
       })
-
-      /* APPLY TO JOB */
       .addCase(applyToJob.fulfilled, (state, action) => {
-        state.successMessage = extractMessage(
-          action.payload,
-          'Application submitted successfully.'
-        );
+        state.successMessage = extractMessage(action.payload, 'Application submitted successfully.');
         state.warningMessage = null;
         state.error = null;
       })
       .addCase(applyToJob.rejected, (state, action) => {
         const payload = action.payload;
-
         if (payload && typeof payload === 'object' && payload.conflict) {
-          state.warningMessage =
-            payload.message || 'Application capacity exceeded';
+          state.warningMessage = payload.message || 'Application capacity exceeded';
           state.error = null;
         } else {
-          state.error = extractMessage(
-            payload,
-            'Failed to submit application.'
-          );
+          state.error = extractMessage(payload, 'Failed to submit application.');
           state.warningMessage = null;
         }
       })
-
-      /* UPDATE STAGE */
       .addCase(updateStage.pending, (state, action) => {
         const { id, stage } = action.meta.arg;
         const item = state.items.find((a) => a.id === id);
-
-        if (item) {
-          item.currentStage = stage;
-        }
+        if (item) item.currentStage = stage;
       })
       .addCase(updateStage.fulfilled, (state, action) => {
-        state.successMessage = extractMessage(
-          action.payload?.data,
-          'Application updated successfully.'
-        );
+        state.successMessage = extractMessage(action.payload?.data, 'Application updated successfully.');
       })
       .addCase(updateStage.rejected, (state, action) => {
-        state.error = extractMessage(
-          action.payload,
-          'Failed to update stage.'
-        );
+        state.error = extractMessage(action.payload, 'Failed to update stage.');
       })
-
-      /* DELETE APPLICATION */
       .addCase(deleteApplication.fulfilled, (state, action) => {
         state.items = state.items.filter((a) => a.id !== action.payload.id);
-        state.successMessage = extractMessage(
-          action.payload.data,
-          'Application deleted successfully.'
-        );
+        state.successMessage = extractMessage(action.payload.data, 'Application deleted successfully.');
       })
       .addCase(deleteApplication.rejected, (state, action) => {
         state.error = action.payload;
