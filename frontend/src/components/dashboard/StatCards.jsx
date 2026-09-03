@@ -7,10 +7,10 @@ const StatCards = ({ jobs = [], applications = [] }) => {
   const totalApplications = applications.length;
 
   const stats = [
-    { label: 'Open Roles', value: openJobs },
-    { label: 'Total Applications', value: totalApplications },
-    { label: 'Hiring Goal', value: totalHiringGoal },
-    { label: 'Positions Filled', value: totalFills },
+    { label: 'Open roles', value: openJobs },
+    { label: 'Total applications', value: totalApplications },
+    { label: 'Hiring goal', value: totalHiringGoal },
+    { label: 'Positions filled', value: totalFills },
   ];
 
   return (
