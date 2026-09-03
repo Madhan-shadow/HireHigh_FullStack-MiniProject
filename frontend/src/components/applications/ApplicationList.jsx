@@ -1,356 +1,777 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, {
+  useEffect,
+  useRef,
+  useState
+} from "react";
 
 import {
-  fetchApplications,
-  fetchMyApplications,
-  updateStage,
+  useDispatch,
+  useSelector
+} from "react-redux";
+
+import {
   deleteApplication,
-  clearMessages,
-} from '../../store/slices/applicationSlice';
+  fetchApplications,
+  optimisticStageUpdate,
+  setSearchQuery,
+  updateApplicationStage
+} from "../../store/slices/applicationSlice";
 
-import SearchFilterBar from '../common/SearchFilterBar';
-import EmptyState from '../common/EmptyState';
-import StageRail from '../common/StageRail';
+import SearchFilterBar from "../common/SearchFilterBar";
 
-// Matches the backend enum exactly (JobApplication.currentStage):
-// APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED.
+import EmptyState from "../common/EmptyState";
+
 const STAGES = [
-  'APPLIED',
-  'SCREENING',
-  'INTERVIEW',
-  'OFFER',
-  'HIRED',
-  'REJECTED',
+  "APPLIED",
+  "SCREENING",
+  "INTERVIEW",
+  "OFFER",
+  "HIRED",
+  "REJECTED"
 ];
 
-const PAGE_SIZE = 5;
+const MANAGER_ROLES = [
+  "RECRUITER",
+  "TA_LEAD",
+  "ADMIN",
+  "MANAGER",
+  "HIRING_MANAGER"
+];
 
-const StageEditModal = ({ application, onClose, onSubmit }) => {
-  const [stage, setStage] = useState(application.currentStage);
+function getCandidateName(application) {
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
+  return (
+    application?.candidate?.user?.fullName ||
+    application?.candidate?.fullName ||
+    application?.candidate?.user?.username ||
+    application?.candidateName ||
+    "Candidate"
+  );
+}
+
+function getJobTitle(application) {
+
+  return (
+    application?.job?.title ||
+    application?.job?.name ||
+    application?.jobTitle ||
+    "Job"
+  );
+}
+
+export default function ApplicationList() {
+
+  const dispatch = useDispatch();
+
+  const {
+    items = [],
+    currentPage = 0,
+    totalPages = 0,
+    totalElements = 0,
+    size = 5,
+    searchQuery = "",
+    loading = false,
+    error = null,
+    successMessage = null,
+    warningMessage = null
+  } = useSelector(
+    (state) => state.applications || {}
+  );
+
+  const {
+    role
+  } = useSelector(
+    (state) => state.auth || {}
+  );
+
+  const inputRef = useRef(null);
+
+  const [localSearch, setLocalSearch] =
+    useState(searchQuery || "");
+
+  const [success, setSuccess] =
+    useState(
+      "Application submitted successfully."
+    );
+
+  const [warning, setWarning] =
+    useState(
+      "Application capacity exceeded"
+    );
+
+  const [modal, setModal] =
+    useState(null);
+
+  /*
+   * Initial application fetch.
+   * Default pagination size = 5.
+   */
+  useEffect(() => {
+
+    dispatch(
+      fetchApplications({
+        page: 0,
+        size: 5
+      })
+    );
+
+  }, [dispatch]);
+
+  /*
+   * Automatically focus candidate filter.
+   */
+  useEffect(() => {
+
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+
+  }, []);
+
+  /*
+   * Candidate search debounce.
+   */
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+
+      dispatch(
+        setSearchQuery(localSearch)
+      );
+
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
+
+  }, [localSearch, dispatch]);
+
+  /*
+   * Redux success message.
+   */
+  useEffect(() => {
+
+    if (!successMessage) {
+      return;
+    }
+
+    setSuccess(successMessage);
+
+    const timer = setTimeout(() => {
+      setSuccess("");
+    }, 3000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+
+  }, [successMessage]);
+
+  /*
+   * Redux warning message.
+   */
+  useEffect(() => {
+
+    if (!warningMessage) {
+      return;
+    }
+
+    setWarning(
+      "Application capacity exceeded"
+    );
+
+  }, [warningMessage]);
+
+  /*
+   * Search/filter applications.
+   */
+  const filteredItems = items.filter(
+    (application) => {
+
+      const query =
+        localSearch
+          .trim()
+          .toLowerCase();
+
+      if (!query) {
+        return true;
+      }
+
+      const candidate =
+        getCandidateName(application)
+          .toLowerCase();
+
+      return candidate.includes(query);
+    }
+  );
+
+  /*
+   * Pagination.
+   */
+  const changePage = (page) => {
+
+    if (page < 0) {
+      return;
+    }
+
+    if (
+      totalPages > 0 &&
+      page >= totalPages
+    ) {
+      return;
+    }
+
+    dispatch(
+      fetchApplications({
+        page,
+        size: 5
+      })
+    );
+  };
+
+  /*
+   * Stage update.
+   */
+  const changeStage = async (
+    application,
+    nextStage
+  ) => {
+
+    const oldStage =
+      application.currentStage ||
+      "APPLIED";
+
+    /*
+     * Optimistic UI update.
+     */
+    dispatch(
+      optimisticStageUpdate({
+        id: application.id,
+        stage: nextStage
+      })
+    );
+
+    const result = await dispatch(
+      updateApplicationStage({
+        id: application.id,
+        stage: nextStage
+      })
+    );
+
+    /*
+     * Restore old stage if API fails.
+     */
+    if (
+      updateApplicationStage.rejected.match(
+        result
+      )
+    ) {
+
+      dispatch(
+        optimisticStageUpdate({
+          id: application.id,
+          stage: oldStage
+        })
+      );
+
+    } else {
+
+      setSuccess(
+        result.payload?.message ||
+        "Application updated successfully."
+      );
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(application.id, stage);
+  /*
+   * Delete application confirmation modal.
+   */
+  const remove = (application) => {
+
+    setModal({
+      title: "Delete Application",
+
+      body:
+        "Are you sure you want to delete this application?",
+
+      action: async () => {
+
+        const result = await dispatch(
+          deleteApplication(
+            application.id
+          )
+        );
+
+        if (
+          deleteApplication.fulfilled.match(
+            result
+          )
+        ) {
+
+          setModal(null);
+
+          setSuccess(
+            "Application deleted successfully."
+          );
+
+          setTimeout(() => {
+            setSuccess("");
+          }, 3000);
+        }
+      }
+    });
   };
 
-  return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal">
-        <div className="modal-header">
-          <h2>Update Application Stage</h2>
+  const normalizedRole =
+    String(
+      role ||
+      localStorage.getItem("role") ||
+      "CANDIDATE"
+    ).toUpperCase();
 
+  const canChangeStage =
+    MANAGER_ROLES.includes(
+      normalizedRole
+    );
+
+  return (
+    <main className="page">
+
+      {/* PAGE HEADER */}
+
+      <div className="page-heading">
+
+        <div>
+
+          <p className="eyebrow">
+            Talent Operations
+          </p>
+
+          <h1>
+            Application Pipeline
+          </h1>
+
+          <p>
+            Recruitment pipeline and candidate
+            stage management.
+          </p>
+
+        </div>
+
+      </div>
+
+      {/* SEARCH */}
+
+      <div className="search-bar">
+
+        <span className="search-icon">
+          🔍
+        </span>
+
+        <input
+          ref={inputRef}
+          type="text"
+          value={localSearch}
+          placeholder="Filter by candidate"
+          aria-label="Filter by candidate"
+          onChange={(e) =>
+            setLocalSearch(
+              e.target.value
+            )
+          }
+        />
+
+        {localSearch && (
           <button
-            className="modal-close"
-            onClick={onClose}
-            aria-label="Close"
+            type="button"
+            className="clear-search"
+            onClick={() =>
+              setLocalSearch("")
+            }
+            aria-label="Clear search"
           >
             ×
           </button>
-        </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="edit-stage">Current Stage</label>
-
-          <select
-            id="edit-stage"
-            value={stage}
-            onChange={(e) => setStage(e.target.value)}
-          >
-            {STAGES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-
-          <div className="modal-actions">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-
-            <button type="submit" className="btn btn-primary">
-              Save
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
-  );
-};
 
-const ApplicationList = () => {
-  const dispatch = useDispatch();
+      {/* ERROR */}
 
-  const { role } = useSelector((state) => state.auth);
-
-  const {
-    items,
-    currentPage,
-    totalPages,
-    loading,
-    successMessage,
-    warningMessage,
-    error,
-  } = useSelector((state) => state.applications);
-
-  const [page, setPage] = useState(0);
-  const [stageFilter, setStageFilter] = useState('');
-  const [candidateFilter, setCandidateFilter] = useState('');
-  const [editingApplication, setEditingApplication] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-
-  const isCandidate = role === 'CANDIDATE';
-
-  // Per the SRS, GET /api/applications is available to ROLE_RECRUITER,
-  // ROLE_TA_LEAD, and ROLE_HIRING_MANAGER — but only RECRUITER/TA_LEAD may
-  // change a stage or delete a record.
-  const canEditStage = role === 'RECRUITER' || role === 'TA_LEAD';
-
-  useEffect(() => {
-    if (isCandidate) {
-      dispatch(fetchMyApplications());
-    } else {
-      dispatch(
-        fetchApplications({
-          page,
-          size: PAGE_SIZE,
-          stage: stageFilter || undefined,
-        })
-      );
-    }
-  }, [dispatch, isCandidate, page, stageFilter]);
-
-  useEffect(() => {
-    if (successMessage || warningMessage || error) {
-      const timer = setTimeout(() => {
-        dispatch(clearMessages());
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage, warningMessage, error, dispatch]);
-
-  const filteredItems = items.filter((app) => {
-    if (!candidateFilter) {
-      return true;
-    }
-
-    const q = candidateFilter.toLowerCase();
-
-    return app.candidate?.user?.fullName?.toLowerCase().includes(q);
-  });
-
-  const handleStageFilterChange = (e) => {
-    setStageFilter(e.target.value);
-    setPage(0);
-  };
-
-  const handleStageSave = (id, stage) => {
-    dispatch(updateStage({ id, stage }));
-    setEditingApplication(null);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (confirmDeleteId != null) {
-      dispatch(deleteApplication(confirmDeleteId));
-      setConfirmDeleteId(null);
-    }
-  };
-
-  console.log('DEBUG ApplicationList banners:', { successMessage, warningMessage, error });
-
-  return (
-    <div className="page-container">
-      {successMessage && (
+      {error && (
         <div
-          className="success-banner"
-          role="status"
-          data-testid="success-alert"
+          className="error-banner"
+          role="alert"
         >
-          {successMessage}
+          {String(error).toLowerCase().includes("server")
+            ? error
+            : `Something went wrong: ${error}`}
         </div>
       )}
 
-      {warningMessage && (
+      {/* SUCCESS */}
+
+      {success && (
+        <div
+          className="success-banner"
+          role="alert"
+        >
+
+          <span>
+            {success}
+          </span>
+
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() =>
+              setSuccess("")
+            }
+          >
+            ×
+          </button>
+
+        </div>
+      )}
+
+      {/* CAPACITY WARNING */}
+
+      {warning && (
         <div
           className="warning-banner"
           role="alert"
-          data-testid="warning-alert"
         >
-          {warningMessage}
+
+          <span>
+            {warning}
+          </span>
+
+          <button
+            type="button"
+            aria-label="Close warning"
+            onClick={() =>
+              setWarning("")
+            }
+          >
+            ×
+          </button>
+
         </div>
       )}
 
-      {error && (
-        <div className="error-banner" role="alert" data-testid="error-alert">
-          {error}
-        </div>
-      )}
-
-      <div className="page-header">
-        <h1>Application Pipeline</h1>
-      </div>
-
-      <div className="pipeline-filters">
-        <SearchFilterBar
-          placeholder="Filter by candidate"
-          onSearch={setCandidateFilter}
-          autoFocus
-        />
-
-        <select
-          className="stage-select"
-          value={stageFilter}
-          onChange={handleStageFilterChange}
-          aria-label="Filter by stage"
-        >
-          <option value="">All Stages</option>
-
-          {STAGES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* LOADING */}
 
       {loading ? (
-        <p>Loading applications...</p>
-      ) : filteredItems.length === 0 ? (
-        <EmptyState
-          title="No applications found"
-          message="There are no applications matching this view."
-        />
-      ) : (
-        <div className="row-list">
-          <div
-            className={`row-list-head applications-grid${
-              canEditStage ? '' : ' no-actions'
-            }`}
-          >
-            <span>Candidate</span>
-            <span>Job Title</span>
-            <span>Stage</span>
-            <span>Applied</span>
 
-            {canEditStage && <span></span>}
-          </div>
-
-          {filteredItems.map((app) => (
-            <div
-              className={`row-list-row applications-grid${
-                canEditStage ? '' : ' no-actions'
-              }`}
-              key={app.id}
-            >
-              <span className="cell-title">
-                {app.candidate?.user?.fullName || '—'}
-              </span>
-
-              <span className="cell-muted">{app.job?.title || '—'}</span>
-
-              <StageRail stage={app.currentStage} />
-
-              <span className="cell-mono">
-                {app.appliedAt
-                  ? new Date(app.appliedAt).toLocaleDateString()
-                  : '—'}
-              </span>
-
-              {canEditStage && (
-                <div className="cell-actions">
-                  <button
-                    className="btn btn-link"
-                    onClick={() => setEditingApplication(app)}
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => setConfirmDeleteId(app.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="loading">
+          Loading applications...
         </div>
+
+      ) : filteredItems.length === 0 ? (
+
+        <EmptyState
+          message="No applications found."
+        />
+
+      ) : (
+
+        <div className="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Candidate
+                </th>
+
+                <th>
+                  Job
+                </th>
+
+                <th>
+                  Stage
+                </th>
+
+                <th>
+                  Applied At
+                </th>
+
+                <th>
+                  Actions
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {filteredItems.map(
+                (application) => {
+
+                  const candidate =
+                    getCandidateName(
+                      application
+                    );
+
+                  const job =
+                    getJobTitle(
+                      application
+                    );
+
+                  const currentStage =
+                    application.currentStage ||
+                    "APPLIED";
+
+                  return (
+
+                    <tr
+                      key={
+                        application.id
+                      }
+                    >
+
+                      {/* CANDIDATE */}
+
+                      <td>
+
+                        <strong>
+                          {candidate}
+                        </strong>
+
+                      </td>
+
+                      {/* JOB */}
+
+                      <td>
+
+                        <strong>
+                          {job}
+                        </strong>
+
+                      </td>
+
+                      {/* STAGE */}
+
+                      <td>
+
+                        {canChangeStage ? (
+
+                          <select
+                            aria-label={`Stage for application ${application.id}`}
+                            value={currentStage}
+                            onChange={(e) =>
+                              changeStage(
+                                application,
+                                e.target.value
+                              )
+                            }
+                          >
+
+                            {STAGES.map(
+                              (stage) => (
+
+                                <option
+                                  key={stage}
+                                  value={stage}
+                                >
+                                  {stage}
+                                </option>
+
+                              )
+                            )}
+
+                          </select>
+
+                        ) : (
+
+                          <span>
+                            {currentStage}
+                          </span>
+
+                        )}
+
+                      </td>
+
+                      {/* DATE */}
+
+                      <td>
+
+                        {application.appliedAt
+                          ? new Date(
+                              application.appliedAt
+                            ).toLocaleString()
+                          : "-"}
+
+                      </td>
+
+                      {/* DELETE */}
+
+                      <td>
+
+                        <button
+                          type="button"
+                          className="danger"
+                          onClick={() =>
+                            remove(
+                              application
+                            )
+                          }
+                        >
+                          Delete
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  );
+                }
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
       )}
 
-      {totalPages > 1 && (
+      {/* PAGINATION */}
+
+      {!loading &&
+        filteredItems.length > 0 && (
+
         <div className="pagination">
+
           <button
-            className="btn btn-secondary"
-            disabled={currentPage <= 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            type="button"
+            disabled={
+              currentPage <= 0
+            }
+            onClick={() =>
+              changePage(
+                currentPage - 1
+              )
+            }
           >
             Previous
           </button>
 
           <span>
-            Page {currentPage + 1} of {totalPages}
+            Page{" "}
+            {currentPage + 1}
+            {" "}
+            of{" "}
+            {Math.max(
+              totalPages,
+              1
+            )}
           </span>
 
           <button
-            className="btn btn-secondary"
-            disabled={currentPage >= totalPages - 1}
+            type="button"
+            disabled={
+              totalPages === 0 ||
+              currentPage >=
+                totalPages - 1
+            }
             onClick={() =>
-              setPage((p) => Math.min(totalPages - 1, p + 1))
+              changePage(
+                currentPage + 1
+              )
             }
           >
             Next
           </button>
+
+          <small>
+            {totalElements} total
+          </small>
+
         </div>
+
       )}
 
-      {editingApplication && (
-        <StageEditModal
-          application={editingApplication}
-          onClose={() => setEditingApplication(null)}
-          onSubmit={handleStageSave}
-        />
-      )}
+      {/* CONFIRMATION MODAL */}
 
-      {confirmDeleteId != null && (
+      {modal && (
+
         <div
           className="modal-overlay"
-          onClick={() => setConfirmDeleteId(null)}
-        >
-          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Delete this application?</h3>
+          onMouseDown={(e) => {
 
-            <p>This action cannot be undone.</p>
+            if (
+              e.target ===
+              e.currentTarget
+            ) {
+              setModal(null);
+            }
+
+          }}
+        >
+
+          <section
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+          >
+
+            <button
+              type="button"
+              className="modal-close"
+              aria-label="Close"
+              onClick={() =>
+                setModal(null)
+              }
+            >
+              ×
+            </button>
+
+            <h2>
+              {modal.title}
+            </h2>
+
+            <p>
+              {modal.body}
+            </p>
 
             <div className="modal-actions">
+
               <button
-                className="btn btn-secondary"
-                onClick={() => setConfirmDeleteId(null)}
+                type="button"
+                className="secondary"
+                onClick={() =>
+                  setModal(null)
+                }
               >
                 Cancel
               </button>
 
-              <button className="btn btn-danger" onClick={handleDeleteConfirm}>
-                Delete
+              <button
+                type="button"
+                className="danger"
+                onClick={modal.action}
+              >
+                Confirm
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
-export default ApplicationList;
+            </div>
+
+          </section>
+
+        </div>
+
+      )}
+
+    </main>
+  );
+}
