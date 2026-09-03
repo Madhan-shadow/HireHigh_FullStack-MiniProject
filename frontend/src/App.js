@@ -1,25 +1,28 @@
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
-import Navbar from "./components/layout/Navbar";
-import Login from "./components/Login";
-import Register from "./components/Register";
+import Navbar from './components/layout/Navbar';
+import Login from './components/Login';
+import Register from './components/Register';
+import JobList from './components/jobs/JobList';
+import ApplicationList from './components/applications/ApplicationList';
 
-import JobList from "./components/jobs/JobList";
-import ApplicationList from "./components/applications/ApplicationList";
+function ProtectedRoute({ children }) {
+  const token = useSelector((state) => state.auth.token) || localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
 
-import ProtectedRoute from "./components/ProtectedRoute";
-
-export default function App() {
+function App() {
   return (
-    <BrowserRouter>
+    <>
       <Navbar />
-
       <Routes>
-        <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
         <Route
           path="/jobs"
           element={
@@ -28,7 +31,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/applications"
           element={
@@ -37,9 +39,10 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
-        <Route path="*" element={<Login />} />
+        <Route path="/" element={<Navigate to="/jobs" replace />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
+
+export default App;
