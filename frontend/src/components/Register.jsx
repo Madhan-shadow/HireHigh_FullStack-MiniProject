@@ -1,208 +1,200 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { register } from "../store/slices/authSlice";
+import React, { useEffect, useState } from "react";
 
-const Register = () => {
+import {
+  useDispatch,
+  useSelector
+} from "react-redux";
+
+import {
+  Link,
+  useNavigate
+} from "react-router-dom";
+
+import {
+  login
+} from "../store/slices/authSlice";
+
+export default function Login() {
+
   const dispatch = useDispatch();
+
   const navigate = useNavigate();
 
-  const { loading, error } = useSelector(
-    (state) => state.auth
+  const loading = useSelector(
+    (state) => state.auth.loading
   );
 
-  const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    username: "",
-    role: "CANDIDATE",
-    password: "",
-  });
+  const error = useSelector(
+    (state) => state.auth.error
+  );
 
-  const [validation, setValidation] = useState({});
+  const [username, setUsername] =
+    useState("");
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  const [password, setPassword] =
+    useState("");
 
-    setForm((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+  const [validation, setValidation] =
+    useState("");
 
-    setValidation((previous) => ({
-      ...previous,
-      [name]: "",
-    }));
-  };
+  useEffect(() => {
 
-  const validate = () => {
-    const errors = {};
+    const token =
+      localStorage.getItem("token");
 
-    if (!form.fullName.trim()) {
-      errors.fullName = "Full name is required";
+    if (token) {
+      navigate("/jobs", {
+        replace: true
+      });
     }
 
-    if (!form.email.trim()) {
-      errors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-      errors.email = "Enter a valid email";
-    }
+  }, [navigate]);
 
-    if (!form.username.trim()) {
-      errors.username = "Username is required";
-    }
+  const submit = async (e) => {
 
-    if (!form.password.trim()) {
-      errors.password = "Password is required";
-    } else if (form.password.length < 6) {
-      errors.password = "Password must contain at least 6 characters";
-    }
+    e.preventDefault();
 
-    setValidation(errors);
+    if (!username.trim() || !password.trim()) {
 
-    return Object.keys(errors).length === 0;
-  };
+      setValidation(
+        "Username and password are required."
+      );
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!validate()) {
       return;
     }
 
-    const result = await dispatch(register(form));
+    setValidation("");
 
-    if (!result.error) {
-      navigate("/login");
+    const result = await dispatch(
+      login({
+        username: username.trim(),
+        password
+      })
+    );
+
+    if (
+      login.fulfilled.match(result)
+    ) {
+
+      navigate("/jobs", {
+        replace: true
+      });
+
     }
+
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card register-card">
-        <div className="auth-logo">
-          <span className="brand-mark">H</span>
-          <span>HireHigh</span>
+    <section className="auth-page">
+
+      <div className="auth-card">
+
+        <div className="auth-brand">
+
+          <span className="brand-mark">
+            H
+          </span>
+
+          HireHigh
+
         </div>
 
-        <div className="auth-header">
-          <h1>Create Account</h1>
-          <p>Join HireHigh and manage your recruitment journey.</p>
-        </div>
+        <p className="eyebrow">
+          Talent Acquisition Platform
+        </p>
+
+        <h1>
+          HireHigh Login
+        </h1>
+
+        <p className="muted">
+          Sign in to manage your hiring
+          pipeline.
+        </p>
+
+        {validation && (
+          <div
+            className="error-banner"
+            role="alert"
+          >
+            {validation}
+          </div>
+        )}
 
         {error && (
-          <div className="error-banner" role="alert">
+          <div
+            className="error-banner"
+            role="alert"
+          >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="fullName">Full Name</label>
+        <form
+          onSubmit={submit}
+          className="form-stack"
+        >
 
-            <input
-              id="fullName"
-              name="fullName"
-              type="text"
-              placeholder="Full name"
-              value={form.fullName}
-              onChange={handleChange}
-            />
+          <label htmlFor="username">
 
-            {validation.fullName && (
-              <small className="field-error">
-                {validation.fullName}
-              </small>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Email address"
-              value={form.email}
-              onChange={handleChange}
-            />
-
-            {validation.email && (
-              <small className="field-error">
-                {validation.email}
-              </small>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
+            Username
 
             <input
               id="username"
               name="username"
               type="text"
               placeholder="Username"
-              value={form.username}
-              onChange={handleChange}
+              value={username}
+              onChange={(e) =>
+                setUsername(e.target.value)
+              }
+              autoComplete="username"
             />
 
-            {validation.username && (
-              <small className="field-error">
-                {validation.username}
-              </small>
-            )}
-          </div>
+          </label>
 
-          <div className="form-group">
-            <label htmlFor="role">Role</label>
+          <label htmlFor="password">
 
-            <select
-              id="role"
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-            >
-              <option value="CANDIDATE">Candidate</option>
-              <option value="RECRUITER">Recruiter</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+            Password
 
             <input
               id="password"
               name="password"
               type="password"
               placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) =>
+                setPassword(e.target.value)
+              }
+              autoComplete="current-password"
             />
 
-            {validation.password && (
-              <small className="field-error">
-                {validation.password}
-              </small>
-            )}
-          </div>
+          </label>
 
           <button
+            className="primary-btn wide"
             type="submit"
-            className="primary-btn full-width"
             disabled={loading}
           >
-            {loading ? "Creating..." : "Create Account"}
+            {loading
+              ? "Signing in..."
+              : "Login"}
           </button>
+
         </form>
 
         <p className="auth-footer">
-          Already have an account?{" "}
-          <Link to="/login">Login</Link>
-        </p>
-      </div>
-    </div>
-  );
-};
 
-export default Register;
+          Don't have an account?{" "}
+
+          <Link to="/register">
+            Register here
+          </Link>
+
+        </p>
+
+      </div>
+
+    </section>
+  );
+}
