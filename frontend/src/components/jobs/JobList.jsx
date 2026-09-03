@@ -15,6 +15,16 @@ import SearchFilterBar from '../common/SearchFilterBar';
 import CapacityBar from '../common/CapacityBar';
 import EmptyState from '../common/EmptyState';
 
+const DEPT_COLORS = ['#3B6FA0', '#C1592E', '#6B4F9E', '#1F5E4A', '#B8862F'];
+
+const deptColor = (name = '') => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return DEPT_COLORS[Math.abs(hash) % DEPT_COLORS.length];
+};
+
 const JobList = () => {
   const dispatch = useDispatch();
   const jobs = useSelector(selectFilteredJobs);
@@ -22,14 +32,6 @@ const JobList = () => {
   const { role } = useSelector((state) => state.auth);
   const { successMessage, warningMessage, error: appError } = useSelector(
     (state) => state.applications
-  );
-
-  // eslint-disable-next-line no-console
-  console.log(
-    'DEBUG JobList RENDER — role:', role,
-    'jobsCount:', jobs.length,
-    'success:', successMessage,
-    'warning:', warningMessage
   );
 
   const [showModal, setShowModal] = useState(false);
@@ -83,15 +85,6 @@ const JobList = () => {
       setConfirmDeleteId(null);
     }
   };
-  const DEPT_COLORS = ['#3B6FA0', '#C1592E', '#6B4F9E', '#1F5E4A', '#B8862F'];
-
-const deptColor = (name = '') => {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return DEPT_COLORS[Math.abs(hash) % DEPT_COLORS.length];
-};
 
   return (
     <div className="page-container">
@@ -110,13 +103,7 @@ const deptColor = (name = '') => {
           {appError || jobError}
         </div>
       )}
-<span className="cell-muted dept-tag">
-  <span
-    className="dept-dot"
-    style={{ background: deptColor(job.department) }}
-  />
-  {job.department}
-</span>
+
       <div className="page-header">
         <h1>Open Roles</h1>
         {isRecruiter && (
@@ -150,7 +137,13 @@ const deptColor = (name = '') => {
           {jobs.map((job) => (
             <div className="row-list-row jobs-grid" key={job.id}>
               <span className="cell-title">{job.title}</span>
-              <span className="cell-muted">{job.department}</span>
+              <span className="cell-muted dept-tag">
+                <span
+                  className="dept-dot"
+                  style={{ background: deptColor(job.department) }}
+                />
+                {job.department}
+              </span>
               <CapacityBar currentFills={job.currentFills} hiringGoal={job.hiringGoal} />
               <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
                 {job.status}
