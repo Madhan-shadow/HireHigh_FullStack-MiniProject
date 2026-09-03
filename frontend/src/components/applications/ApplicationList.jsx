@@ -15,8 +15,6 @@ import StageRail from '../common/StageRail';
 
 // Matches the backend enum exactly (JobApplication.currentStage):
 // APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED.
-// NOTE: this was previously "OFFERED", which does not match the backend
-// enum and silently broke the stage filter and stage-edit modal.
 const STAGES = [
   'APPLIED',
   'SCREENING',
@@ -123,9 +121,6 @@ const ApplicationList = () => {
     if (isCandidate) {
       dispatch(fetchMyApplications());
     } else {
-      // Default to the pipeline view for RECRUITER, TA_LEAD,
-      // HIRING_MANAGER, or any role not explicitly CANDIDATE — the
-      // backend enforces the real authorization boundary.
       dispatch(
         fetchApplications({
           page,
@@ -172,7 +167,9 @@ const ApplicationList = () => {
       setConfirmDeleteId(null);
     }
   };
-console.log('DEBUG ApplicationList banners:', { successMessage, warningMessage, error });
+
+  console.log('DEBUG ApplicationList banners:', { successMessage, warningMessage, error });
+
   return (
     <div className="page-container">
       {successMessage && (

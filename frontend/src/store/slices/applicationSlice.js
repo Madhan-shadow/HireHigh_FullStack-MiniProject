@@ -1,6 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import applicationService from '../../services/applicationService';
 
+// Exported so tests (and any other module) reference the exact same
+// strings the reducer sets — avoids drift and avoids `undefined` imports
+// silently breaking `toBeInTheDocument()` assertions.
+export const CRUD_CREATE_MSG = 'Application submitted successfully.';
+export const CRUD_UPDATE_MSG = 'Application updated successfully.';
+export const CRUD_DELETE_MSG = 'Application deleted successfully.';
+export const CAPACITY_WARNING_MSG = 'Application capacity exceeded';
+
 const initialState = {
   items: [],
   currentPage: 0,
@@ -84,7 +92,7 @@ export const applyToJob = createAsyncThunk(
       const rawMessage = extractMessage(err, '');
 
       if (is409(err) || /duplicate|already applied|capacity/i.test(rawMessage)) {
-        return rejectWithValue({ conflict: true, message: 'Application capacity exceeded' });
+        return rejectWithValue({ conflict: true, message: CAPACITY_WARNING_MSG });
       }
 
       return rejectWithValue({ conflict: false, message: rawMessage || 'Failed to submit application.' });
@@ -174,7 +182,7 @@ const applicationSlice = createSlice({
       .addCase(applyToJob.fulfilled, (state, action) => {
         // eslint-disable-next-line no-console
         console.log('DEBUG applyToJob.fulfilled REDUCER — action.payload:', JSON.stringify(action.payload));
-        state.successMessage = extractMessage(action.payload, 'Application submitted successfully.');
+        state.successMessage = extractMessage(action.payload, CRUD_CREATE_MSG);
         state.warningMessage = null;
         state.error = null;
       })
@@ -183,7 +191,7 @@ const applicationSlice = createSlice({
         console.log('DEBUG applyToJob.rejected REDUCER — action.payload:', JSON.stringify(action.payload));
         const payload = action.payload;
         if (payload && typeof payload === 'object' && payload.conflict) {
-          state.warningMessage = payload.message || 'Application capacity exceeded';
+          state.warningMessage = payload.message || CAPACITY_WARNING_MSG;
           state.error = null;
         } else {
           state.error = extractMessage(payload, 'Failed to submit application.');
@@ -196,14 +204,14 @@ const applicationSlice = createSlice({
         if (item) item.currentStage = stage;
       })
       .addCase(updateStage.fulfilled, (state, action) => {
-        state.successMessage = extractMessage(action.payload?.data, 'Application updated successfully.');
+        state.successMessage = extractMessage(action.payload?.data, CRUD_UPDATE_MSG);
       })
       .addCase(updateStage.rejected, (state, action) => {
         state.error = extractMessage(action.payload, 'Failed to update stage.');
       })
       .addCase(deleteApplication.fulfilled, (state, action) => {
         state.items = state.items.filter((a) => a.id !== action.payload.id);
-        state.successMessage = extractMessage(action.payload.data, 'Application deleted successfully.');
+        state.successMessage = extractMessage(action.payload.data, CRUD_DELETE_MSG);
       })
       .addCase(deleteApplication.rejected, (state, action) => {
         state.error = action.payload;
