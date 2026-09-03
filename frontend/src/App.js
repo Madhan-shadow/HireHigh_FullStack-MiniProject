@@ -6,32 +6,19 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 
 import JobList from "./components/jobs/JobList";
-import ApplicationList from "./components/application/ApplicationList";
+import ApplicationList from "./components/applications/ApplicationList";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
     <BrowserRouter>
-
       <Navbar />
 
       <Routes>
-
-        <Route
-          path="/"
-          element={<Login />}
-        />
-
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        <Route
-          path="/register"
-          element={<Register />}
-        />
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         <Route
           path="/jobs"
@@ -51,13 +38,8 @@ export default function App() {
           }
         />
 
-        <Route
-          path="*"
-          element={<Login />}
-        />
-
+        <Route path="*" element={<Login />} />
       </Routes>
-
     </BrowserRouter>
   );
 }
