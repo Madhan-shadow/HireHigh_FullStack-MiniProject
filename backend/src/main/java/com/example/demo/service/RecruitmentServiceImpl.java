@@ -17,7 +17,7 @@ import com.example.demo.repository.JobPostingRepository;
 import com.example.demo.repository.SystemUserRepository;
 
 @Service
-public class RecruitmentSer     viceImpl implements RecruitmentService {
+public class RecruitmentServiceImpl implements RecruitmentService {
 
     @Autowired
     private JobApplicationRepository applicationRepository;
