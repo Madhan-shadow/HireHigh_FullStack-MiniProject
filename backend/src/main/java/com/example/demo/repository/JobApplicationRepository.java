@@ -10,12 +10,12 @@ import com.example.demo.entity.JobApplication;
 
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
 
-    Page<JobApplication> findAll(Pageable pageable);
-
     List<JobApplication> findByCandidateUserUsername(String username);
+
+    Page<JobApplication> findAll(Pageable pageable);
 
     long countByJobIdAndCurrentStage(Long jobId, String stage);
 
+    // ADD THIS ONE
     boolean existsByCandidateIdAndJobId(Long candidateId, Long jobId);
-
 }
