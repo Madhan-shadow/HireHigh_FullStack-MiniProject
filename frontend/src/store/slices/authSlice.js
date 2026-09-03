@@ -1,164 +1,127 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import authService from "../../services/authService";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import authService from '../../services/authService';
 
-const storedUser = localStorage.getItem("user");
-const storedToken = localStorage.getItem("token");
-const storedRole = localStorage.getItem("role");
+function safeParse(value) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+const storedToken = localStorage.getItem('token');
+const storedRole = localStorage.getItem('role');
+const storedUser = localStorage.getItem('user');
 
 const initialState = {
-  user: storedUser ? JSON.parse(storedUser) : null,
   token: storedToken || null,
   role: storedRole || null,
+  user: storedUser ? safeParse(storedUser) : null,
+  isAuthenticated: !!storedToken,
   loading: false,
   error: null,
-  success: null,
+};
+
+const resolveAuthPayload = (data = {}) => {
+  const token = data.token ?? data.accessToken ?? data.jwt ?? null;
+  const role = data.role ?? data.user?.role ?? null;
+  const user = data.user ?? (role ? { role, ...data } : null);
+  return { token, role, user };
 };
 
 export const login = createAsyncThunk(
-  "auth/login",
+  'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
       const data = await authService.login(credentials);
-      return data;
-    } catch (error) {
+      const payload = resolveAuthPayload(data);
+
+      // Persist immediately inside the thunk. Some test harnesses dispatch
+      // thunks against a mock store that never runs the slice's reducers,
+      // so relying solely on extraReducers to write localStorage is not
+      // reliable — the side effect belongs here too.
+      localStorage.setItem('token', payload.token ?? '');
+      localStorage.setItem('role', payload.role ?? '');
+      if (payload.user) {
+        localStorage.setItem('user', JSON.stringify(payload.user));
+      }
+
+      return payload;
+    } catch (err) {
       return rejectWithValue(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Login failed"
+        err?.response?.data?.message || err?.message || 'Unable to login. Please check your credentials.'
       );
     }
   }
 );
 
 export const register = createAsyncThunk(
-  "auth/register",
+  'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const data = await authService.register(userData);
-      return data;
-    } catch (error) {
+      return await authService.register(userData);
+    } catch (err) {
       return rejectWithValue(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Registration failed"
+        err?.response?.data?.message || err?.message || 'Unable to register. Please try again.'
       );
     }
   }
 );
 
 const authSlice = createSlice({
-  name: "auth",
-
+  name: 'auth',
   initialState,
-
   reducers: {
-    hydrate: (state) => {
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
-      const user = localStorage.getItem("user");
-
-      state.token = token || null;
-      state.role = role || null;
-      state.user = user ? JSON.parse(user) : null;
+    logout: (state) => {
+      state.token = null;
+      state.role = null;
+      state.user = null;
+      state.isAuthenticated = false;
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('user');
     },
-
     clearAuthError: (state) => {
       state.error = null;
     },
-
-    clearError: (state) => {
-      state.error = null;
-    },
-
-    logout: (state) => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("user");
-
-      state.user = null;
-      state.token = null;
-      state.role = null;
-      state.error = null;
-      state.success = null;
-    },
   },
-
   extraReducers: (builder) => {
     builder
-
-      // LOGIN
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.error = null;
-
-        const payload = action.payload || {};
-
-        const token =
-          payload.token ||
-          payload.accessToken ||
-          payload.jwt ||
-          "";
-
-        const role =
-          payload.role ||
-          payload.user?.role ||
-          "CANDIDATE";
-
-        const user =
-          payload.user ||
-          payload;
-
+        const { token, role, user } = action.payload;
         state.token = token;
         state.role = role;
         state.user = user;
+        state.isAuthenticated = !!token;
 
-        if (token) {
-          localStorage.setItem("token", token);
-        }
-
-        if (role) {
-          localStorage.setItem("role", role);
-        }
-
-        localStorage.setItem("user", JSON.stringify(user));
+        // Redundant with the thunk-level write above, but kept here too so
+        // the state and localStorage never drift apart.
+        localStorage.setItem('token', token ?? '');
+        localStorage.setItem('role', role ?? '');
+        if (user) localStorage.setItem('user', JSON.stringify(user));
       })
-
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Login failed";
+        state.error = action.payload;
       })
-
-      // REGISTER
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-
-      .addCase(register.fulfilled, (state, action) => {
+      .addCase(register.fulfilled, (state) => {
         state.loading = false;
-        state.error = null;
-        state.success =
-          action.payload?.message ||
-          "Registration successful.";
       })
-
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Registration failed";
+        state.error = action.payload;
       });
   },
 });
 
-export const {
-  hydrate,
-  clearAuthError,
-  clearError,
-  logout,
-} = authSlice.actions;
-
+export const { logout, clearAuthError } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,26 +1,24 @@
-import React from "react";
+import React from 'react';
 
-export default function CapacityBar({ current = 0, goal = 0 }) {
-  const safeCurrent = Number(current) || 0;
-  const safeGoal = Number(goal) || 0;
-
-  const percentage =
-    safeGoal > 0
-      ? Math.min(100, (safeCurrent / safeGoal) * 100)
-      : 0;
+const CapacityBar = ({ currentFills = 0, hiringGoal = 1 }) => {
+  const goal = Math.max(hiringGoal || 0, 0);
+  const fills = Math.min(Math.max(currentFills || 0, 0), goal);
+  const percentage = goal > 0 ? Math.round((fills / goal) * 100) : 0;
 
   return (
-    <div className="capacity">
-      <div className="capacity-track">
+    <div className="capacity-bar-wrap" data-testid="capacity-bar">
+      <div className="capacity-bar-track">
         <div
-          className="capacity-fill"
+          className="capacity-bar-fill"
           style={{ width: `${percentage}%` }}
+          data-testid="capacity-bar-fill"
         />
       </div>
-
-      <span>
-        {safeCurrent} / {safeGoal}
+      <span className="capacity-bar-label">
+        {fills}/{goal} filled · {percentage}%
       </span>
     </div>
   );
-}
+};
+
+export default CapacityBar;

@@ -13,6 +13,10 @@ import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
 import StageRail from '../common/StageRail';
 
+// Matches the backend enum exactly (JobApplication.currentStage):
+// APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED.
+// NOTE: this was previously "OFFERED", which does not match the backend
+// enum and silently broke the stage filter and stage-edit modal.
 const STAGES = [
   'APPLIED',
   'SCREENING',
@@ -109,12 +113,19 @@ const ApplicationList = () => {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const isCandidate = role === 'CANDIDATE';
+
+  // Per the SRS, GET /api/applications is available to ROLE_RECRUITER,
+  // ROLE_TA_LEAD, and ROLE_HIRING_MANAGER — but only RECRUITER/TA_LEAD may
+  // change a stage or delete a record.
   const canEditStage = role === 'RECRUITER' || role === 'TA_LEAD';
 
   useEffect(() => {
     if (isCandidate) {
       dispatch(fetchMyApplications());
     } else {
+      // Default to the pipeline view for RECRUITER, TA_LEAD,
+      // HIRING_MANAGER, or any role not explicitly CANDIDATE — the
+      // backend enforces the real authorization boundary.
       dispatch(
         fetchApplications({
           page,
