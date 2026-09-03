@@ -47,14 +47,14 @@ const JobCreateModal = ({ job, onClose, onSubmit }) => {
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal">
         <div className="modal-header">
-          <h2>{isEdit ? 'Edit Job' : 'Post New Job'}</h2>
+          <h2>{isEdit ? 'Edit job' : 'Post a new role'}</h2>
           <button className="modal-close" onClick={onClose} aria-label="Close">
             ×
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label htmlFor="title">Job Title</label>
+          <label htmlFor="title">Job title</label>
           <input
             id="title"
             name="title"
@@ -76,7 +76,7 @@ const JobCreateModal = ({ job, onClose, onSubmit }) => {
             required
           />
 
-          <label htmlFor="hiringGoal">Hiring Goal (Open Seats)</label>
+          <label htmlFor="hiringGoal">Hiring goal (open seats)</label>
           <input
             id="hiringGoal"
             name="hiringGoal"
@@ -93,7 +93,7 @@ const JobCreateModal = ({ job, onClose, onSubmit }) => {
               <select id="status" name="status" value={formData.status} onChange={handleChange}>
                 <option value="OPEN">Open</option>
                 <option value="CLOSED">Closed</option>
-                <option value="ON_HOLD">On Hold</option>
+                <option value="ON_HOLD">On hold</option>
               </select>
             </>
           )}
@@ -102,7 +102,7 @@ const JobCreateModal = ({ job, onClose, onSubmit }) => {
           <textarea
             id="description"
             name="description"
-            placeholder="Detailed job description..."
+            placeholder="What the role involves, day to day..."
             value={formData.description}
             onChange={handleChange}
             rows={4}
@@ -113,7 +113,7 @@ const JobCreateModal = ({ job, onClose, onSubmit }) => {
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              {isEdit ? 'Update Job' : 'Post Job'}
+              {isEdit ? 'Save changes' : 'Post role'}
             </button>
           </div>
         </form>
