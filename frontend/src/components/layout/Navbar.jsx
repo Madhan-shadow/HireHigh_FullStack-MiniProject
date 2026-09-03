@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 
@@ -16,6 +16,8 @@ const Navbar = () => {
   const canSeePipeline =
     role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
 
+  const linkClass = ({ isActive }) => (isActive ? 'active' : undefined);
+
   return (
     <nav className="navbar">
       <div className="navbar-brand">
@@ -25,11 +27,21 @@ const Navbar = () => {
         </Link>
       </div>
       <div className="navbar-links">
-        <Link to="/">Home</Link>
-        <Link to="/jobs">Jobs</Link>
-        {isAuthenticated && canSeePipeline && <Link to="/applications">Applications</Link>}
+        <NavLink to="/" end className={linkClass}>
+          Home
+        </NavLink>
+        <NavLink to="/jobs" className={linkClass}>
+          Jobs
+        </NavLink>
+        {isAuthenticated && canSeePipeline && (
+          <NavLink to="/applications" className={linkClass}>
+            Applications
+          </NavLink>
+        )}
         {isAuthenticated && role === 'CANDIDATE' && (
-          <Link to="/applications">My Applications</Link>
+          <NavLink to="/applications" className={linkClass}>
+            My applications
+          </NavLink>
         )}
       </div>
       <div className="navbar-user">
