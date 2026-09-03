@@ -1,153 +1,67 @@
-import React from "react";
+import React from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../store/slices/authSlice';
 
-import {
-  Link,
-  useLocation,
-  useNavigate
-} from "react-router-dom";
-
-import {
-  useDispatch,
-  useSelector
-} from "react-redux";
-
-import {
-  logout
-} from "../../store/slices/authSlice";
-
-export default function Navbar() {
-
+const Navbar = () => {
   const dispatch = useDispatch();
-
   const navigate = useNavigate();
+  const { isAuthenticated, role, user } = useSelector((state) => state.auth);
 
-  const location = useLocation();
-
-  const role =
-    useSelector(
-      (state) => state.auth.role
-    ) ||
-    localStorage.getItem("role");
-
-  const token =
-    useSelector(
-      (state) => state.auth.token
-    ) ||
-    localStorage.getItem("token");
-
-  const normalizedRole =
-    String(role || "")
-      .toUpperCase();
-
-  const canManage = [
-    "RECRUITER",
-    "TA_LEAD",
-    "ADMIN",
-    "HIRING_MANAGER"
-  ].includes(normalizedRole);
-
-  const signOut = () => {
-
+  const handleLogout = () => {
     dispatch(logout());
-
-    navigate("/login", {
-      replace: true
-    });
+    navigate('/login');
   };
 
+  const canSeePipeline =
+    role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
+
+  const linkClass = ({ isActive }) => (isActive ? 'active' : undefined);
+
   return (
-    <nav
-      className="navbar"
-      aria-label="Main navigation"
-    >
-
-      <Link
-        className="brand"
-        to={
-          token
-            ? "/jobs"
-            : "/login"
-        }
-      >
-
-        <span className="brand-mark">
-          H
-        </span>
-
-        <span>
-          HireHigh
-        </span>
-
-      </Link>
-
-      {token && (
-
-        <div className="nav-links">
-
-          <Link
-            className={
-              location.pathname === "/jobs"
-                ? "active"
-                : ""
-            }
-            to="/jobs"
-          >
-            Open Roles
-          </Link>
-
-          {canManage && (
-
-            <Link
-              className={
-                location.pathname ===
-                "/applications"
-                  ? "active"
-                  : ""
-              }
-              to="/applications"
-            >
-              Pipeline
-            </Link>
-
-          )}
-
-        </div>
-
-      )}
-
-      <div className="nav-actions">
-
-        {token ? (
-
+    <nav className="navbar">
+      <div className="navbar-brand">
+        <Link to="/">
+          <span className="navbar-brand-mark">H</span>
+          <span className="navbar-brand-word">HireHigh</span>
+        </Link>
+      </div>
+      <div className="navbar-links">
+        <NavLink to="/" end className={linkClass}>
+          Home
+        </NavLink>
+        <NavLink to="/jobs" className={linkClass}>
+          Jobs
+        </NavLink>
+        {isAuthenticated && canSeePipeline && (
+          <NavLink to="/applications" className={linkClass}>
+            Applications
+          </NavLink>
+        )}
+        {isAuthenticated && role === 'CANDIDATE' && (
+          <NavLink to="/applications" className={linkClass}>
+            My applications
+          </NavLink>
+        )}
+      </div>
+      <div className="navbar-user">
+        {isAuthenticated ? (
           <>
-
-            <span className="role-pill">
-              {role || "CANDIDATE"}
+            <span className="welcome-text">
+              Welcome back, {(user?.fullName || role || 'user').toLowerCase()}
             </span>
-
-            <button
-              type="button"
-              className="ghost-btn"
-              onClick={signOut}
-            >
+            <button className="btn btn-logout" onClick={handleLogout}>
               Logout
             </button>
-
           </>
-
         ) : (
-
-          <Link
-            className="ghost-btn link-btn"
-            to="/login"
-          >
+          <Link to="/login" className="btn btn-login">
             Login
           </Link>
-
         )}
-
       </div>
-
     </nav>
   );
-}
+};
+
+export default Navbar;
