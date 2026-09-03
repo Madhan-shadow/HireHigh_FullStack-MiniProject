@@ -1,46 +1,87 @@
-import api from './api';
-
-const unwrap = (response) => response?.data ?? response;
-
-const apply = async (jobId) => {
-  const response = await api.post(`/applications/apply/${jobId}`);
-  return unwrap(response);
-};
-
-const getAll = async (page = 0, size = 5, stage) => {
-  const response = await api.get('/applications', {
-    params: { page, size, ...(stage ? { stage } : {}) },
-  });
-  return unwrap(response);
-};
-
-const getMyApplications = async () => {
-  const response = await api.get('/applications/my-applications');
-  return unwrap(response);
-};
-
-const getById = async (id) => {
-  const response = await api.get(`/applications/${id}`);
-  return unwrap(response);
-};
-
-const updateStage = async (id, stage) => {
-  const response = await api.put(`/applications/${id}/stage`, { stage });
-  return unwrap(response);
-};
-
-const deleteApplication = async (id) => {
-  const response = await api.delete(`/applications/${id}`);
-  return unwrap(response);
-};
+import api from "./api";
 
 const applicationService = {
-  apply,
-  getAll,
-  getMyApplications,
-  getById,
-  updateStage,
-  delete: deleteApplication,
+  async apply(jobId) {
+    try {
+      const response = await api.post(`/applications/apply/${jobId}`);
+
+      return (
+        response?.data || {
+          message: "Application submitted successfully.",
+        }
+      );
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async getAll(page = 0, size = 5, stage = "", candidate = "") {
+    const params = {
+      page,
+      size,
+    };
+
+    if (stage) {
+      params.stage = stage;
+    }
+
+    if (candidate) {
+      params.candidate = candidate;
+    }
+
+    const response = await api.get("/applications", {
+      params,
+    });
+
+    return response?.data || {
+      content: [],
+      totalPages: 0,
+      totalElements: 0,
+      number: page,
+      size,
+    };
+  },
+
+  async getById(id) {
+    const response = await api.get(`/applications/${id}`);
+    return response?.data;
+  },
+
+  async updateStage(id, stage) {
+    try {
+      const response = await api.put(`/applications/${id}/stage`, {
+        currentStage: stage,
+        stage,
+      });
+
+      return (
+        response?.data || {
+          message: "Application updated successfully.",
+        }
+      );
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async delete(id) {
+    try {
+      const response = await api.delete(`/applications/${id}`);
+
+      return (
+        response?.data || {
+          message: "Application deleted successfully.",
+        }
+      );
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async getMyApplications() {
+    const response = await api.get("/applications/my-applications");
+    return response?.data || [];
+  },
 };
 
 export default applicationService;

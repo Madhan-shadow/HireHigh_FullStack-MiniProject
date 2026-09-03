@@ -1,64 +1,72 @@
-import React from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../store/slices/authSlice';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import authService from "../../services/authService";
 
 const Navbar = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, role, user } = useSelector((state) => state.auth);
+
+  const auth = useSelector((state) => state.auth || {});
+
+  const token =
+    auth.token ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null);
+
+  const role =
+    auth.role ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem("role")
+      : null);
+
+  const normalizedRole = role?.toUpperCase();
+
+  const isLoggedIn = Boolean(token);
+
+  const canManage =
+    normalizedRole === "RECRUITER" ||
+    normalizedRole === "TA_LEAD" ||
+    normalizedRole === "ADMIN";
 
   const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
+    authService.logout();
+    navigate("/login");
   };
-
-  const canSeePipeline =
-    role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
-
-  const linkClass = ({ isActive }) => (isActive ? 'active' : undefined);
 
   return (
     <nav className="navbar">
-      <div className="navbar-brand">
-        <Link to="/">
-          <span className="navbar-brand-mark">H</span>
-          <span className="navbar-brand-word">HireHigh</span>
+      <div className="navbar-inner">
+        <Link to="/jobs" className="brand">
+          <span className="brand-mark">H</span>
+          <span>HireHigh</span>
         </Link>
-      </div>
-      <div className="navbar-links">
-        <NavLink to="/" end className={linkClass}>
-          Home
-        </NavLink>
-        <NavLink to="/jobs" className={linkClass}>
-          Jobs
-        </NavLink>
-        {isAuthenticated && canSeePipeline && (
-          <NavLink to="/applications" className={linkClass}>
-            Applications
-          </NavLink>
-        )}
-        {isAuthenticated && role === 'CANDIDATE' && (
-          <NavLink to="/applications" className={linkClass}>
-            My applications
-          </NavLink>
-        )}
-      </div>
-      <div className="navbar-user">
-        {isAuthenticated ? (
-          <>
-            <span className="welcome-text">
-              Welcome back, {(user?.fullName || role || 'user').toLowerCase()}
-            </span>
-            <button className="btn btn-logout" onClick={handleLogout}>
+
+        <div className="nav-links">
+          <Link to="/jobs">Jobs</Link>
+
+          {canManage && (
+            <Link to="/applications">
+              Application Pipeline
+            </Link>
+          )}
+
+          {!isLoggedIn && (
+            <Link to="/login" className="nav-login">
+              Login
+            </Link>
+          )}
+
+          {isLoggedIn && (
+            <button
+              type="button"
+              className="nav-logout"
+              onClick={handleLogout}
+            >
               Logout
             </button>
-          </>
-        ) : (
-          <Link to="/login" className="btn btn-login">
-            Login
-          </Link>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );
