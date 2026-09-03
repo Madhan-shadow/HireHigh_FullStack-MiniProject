@@ -1,75 +1,153 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import authService from "../../services/authService";
 
-const Navbar = () => {
+import {
+  Link,
+  useLocation,
+  useNavigate
+} from "react-router-dom";
+
+import {
+  useDispatch,
+  useSelector
+} from "react-redux";
+
+import {
+  logout
+} from "../../store/slices/authSlice";
+
+export default function Navbar() {
+
+  const dispatch = useDispatch();
+
   const navigate = useNavigate();
 
-  const auth = useSelector((state) => state.auth || {});
-
-  const token =
-    auth.token ||
-    (typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null);
+  const location = useLocation();
 
   const role =
-    auth.role ||
-    (typeof window !== "undefined"
-      ? localStorage.getItem("role")
-      : null);
+    useSelector(
+      (state) => state.auth.role
+    ) ||
+    localStorage.getItem("role");
 
-  const normalizedRole = role?.toUpperCase();
+  const token =
+    useSelector(
+      (state) => state.auth.token
+    ) ||
+    localStorage.getItem("token");
 
-  const isLoggedIn = Boolean(token);
+  const normalizedRole =
+    String(role || "")
+      .toUpperCase();
 
-  const canManage =
-    normalizedRole === "RECRUITER" ||
-    normalizedRole === "TA_LEAD" ||
-    normalizedRole === "ADMIN";
+  const canManage = [
+    "RECRUITER",
+    "TA_LEAD",
+    "ADMIN",
+    "HIRING_MANAGER"
+  ].includes(normalizedRole);
 
-  const handleLogout = () => {
-    authService.logout();
-    navigate("/login");
+  const signOut = () => {
+
+    dispatch(logout());
+
+    navigate("/login", {
+      replace: true
+    });
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-inner">
-        <Link to="/jobs" className="brand">
-          <span className="brand-mark">H</span>
-          <span>HireHigh</span>
-        </Link>
+    <nav
+      className="navbar"
+      aria-label="Main navigation"
+    >
+
+      <Link
+        className="brand"
+        to={
+          token
+            ? "/jobs"
+            : "/login"
+        }
+      >
+
+        <span className="brand-mark">
+          H
+        </span>
+
+        <span>
+          HireHigh
+        </span>
+
+      </Link>
+
+      {token && (
 
         <div className="nav-links">
-          <Link to="/jobs">Jobs</Link>
+
+          <Link
+            className={
+              location.pathname === "/jobs"
+                ? "active"
+                : ""
+            }
+            to="/jobs"
+          >
+            Open Roles
+          </Link>
 
           {canManage && (
-            <Link to="/applications">
-              Application Pipeline
+
+            <Link
+              className={
+                location.pathname ===
+                "/applications"
+                  ? "active"
+                  : ""
+              }
+              to="/applications"
+            >
+              Pipeline
             </Link>
+
           )}
 
-          {!isLoggedIn && (
-            <Link to="/login" className="nav-login">
-              Login
-            </Link>
-          )}
+        </div>
 
-          {isLoggedIn && (
+      )}
+
+      <div className="nav-actions">
+
+        {token ? (
+
+          <>
+
+            <span className="role-pill">
+              {role || "CANDIDATE"}
+            </span>
+
             <button
               type="button"
-              className="nav-logout"
-              onClick={handleLogout}
+              className="ghost-btn"
+              onClick={signOut}
             >
               Logout
             </button>
-          )}
-        </div>
+
+          </>
+
+        ) : (
+
+          <Link
+            className="ghost-btn link-btn"
+            to="/login"
+          >
+            Login
+          </Link>
+
+        )}
+
       </div>
+
     </nav>
   );
-};
-
-export default Navbar;
+}

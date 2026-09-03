@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import {
   useDispatch,
@@ -11,10 +11,10 @@ import {
 } from "react-router-dom";
 
 import {
-  login
+  register
 } from "../store/slices/authSlice";
 
-export default function Login() {
+export default function Register() {
 
   const dispatch = useDispatch();
 
@@ -24,61 +24,89 @@ export default function Login() {
     (state) => state.auth.loading
   );
 
-  const error = useSelector(
+  const apiError = useSelector(
     (state) => state.auth.error
   );
 
-  const [username, setUsername] =
+  const [form, setForm] =
+    useState({
+      fullName: "",
+      email: "",
+      username: "",
+      role: "CANDIDATE",
+      password: ""
+    });
+
+  const [error, setError] =
     useState("");
 
-  const [password, setPassword] =
+  const [success, setSuccess] =
     useState("");
 
-  const [validation, setValidation] =
-    useState("");
+  const update = (e) => {
 
-  useEffect(() => {
+    const {
+      name,
+      value
+    } = e.target;
 
-    const token =
-      localStorage.getItem("token");
+    setForm((previous) => ({
+      ...previous,
+      [name]: value
+    }));
 
-    if (token) {
-      navigate("/jobs", {
-        replace: true
-      });
-    }
-
-  }, [navigate]);
+    setError("");
+  };
 
   const submit = async (e) => {
 
     e.preventDefault();
 
-    if (!username.trim() || !password.trim()) {
+    if (
+      !form.fullName.trim() ||
+      !form.email.trim() ||
+      !form.username.trim() ||
+      !form.role ||
+      !form.password.trim()
+    ) {
 
-      setValidation(
-        "Username and password are required."
+      setError(
+        "Please complete all fields."
       );
 
       return;
     }
 
-    setValidation("");
+    if (
+      !/^\S+@\S+\.\S+$/.test(
+        form.email
+      )
+    ) {
+
+      setError(
+        "Enter a valid email address."
+      );
+
+      return;
+    }
+
+    setError("");
 
     const result = await dispatch(
-      login({
-        username: username.trim(),
-        password
-      })
+      register(form)
     );
 
     if (
-      login.fulfilled.match(result)
+      register.fulfilled.match(result)
     ) {
 
-      navigate("/jobs", {
-        replace: true
-      });
+      setSuccess(
+        "Registration successful."
+      );
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 800);
 
     }
 
@@ -87,7 +115,7 @@ export default function Login() {
   return (
     <section className="auth-page">
 
-      <div className="auth-card">
+      <div className="auth-card register-card">
 
         <div className="auth-brand">
 
@@ -100,26 +128,16 @@ export default function Login() {
         </div>
 
         <p className="eyebrow">
-          Talent Acquisition Platform
+          Create Account
         </p>
 
         <h1>
-          HireHigh Login
+          Create Account
         </h1>
 
         <p className="muted">
-          Sign in to manage your hiring
-          pipeline.
+          Join HireHigh Talent Acquisition.
         </p>
-
-        {validation && (
-          <div
-            className="error-banner"
-            role="alert"
-          >
-            {validation}
-          </div>
-        )}
 
         {error && (
           <div
@@ -130,65 +148,129 @@ export default function Login() {
           </div>
         )}
 
+        {apiError && (
+          <div
+            className="error-banner"
+            role="alert"
+          >
+            {apiError}
+          </div>
+        )}
+
+        {success && (
+          <div
+            className="success-banner"
+            role="alert"
+          >
+            {success}
+          </div>
+        )}
+
         <form
           onSubmit={submit}
-          className="form-stack"
+          className="form-grid"
         >
 
-          <label htmlFor="username">
+          <label className="full">
 
-            Username
+            Full Name
 
             <input
-              id="username"
-              name="username"
+              name="fullName"
               type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) =>
-                setUsername(e.target.value)
-              }
-              autoComplete="username"
+              placeholder="John Doe"
+              value={form.fullName}
+              onChange={update}
             />
 
           </label>
 
-          <label htmlFor="password">
+          <label className="full">
+
+            Email Address
+
+            <input
+              name="email"
+              type="email"
+              placeholder="john@example.com"
+              value={form.email}
+              onChange={update}
+            />
+
+          </label>
+
+          <label>
+
+            Username
+
+            <input
+              name="username"
+              type="text"
+              placeholder="recruiter"
+              value={form.username}
+              onChange={update}
+            />
+
+          </label>
+
+          <label>
+
+            Role
+
+            <select
+              name="role"
+              value={form.role}
+              onChange={update}
+            >
+
+              <option value="CANDIDATE">
+                Candidate
+              </option>
+
+              <option value="RECRUITER">
+                Recruiter
+              </option>
+
+              <option value="TA_LEAD">
+                TA Lead
+              </option>
+
+            </select>
+
+          </label>
+
+          <label className="full">
 
             Password
 
             <input
-              id="password"
               name="password"
               type="password"
               placeholder="Password"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              autoComplete="current-password"
+              value={form.password}
+              onChange={update}
             />
 
           </label>
 
           <button
-            className="primary-btn wide"
+            className="primary-btn wide full"
             type="submit"
             disabled={loading}
           >
             {loading
-              ? "Signing in..."
-              : "Login"}
+              ? "Creating..."
+              : "Register"}
           </button>
 
         </form>
 
         <p className="auth-footer">
 
-          Don't have an account?{" "}
+          Already have an account?{" "}
 
-          <Link to="/register">
-            Register here
+          <Link to="/login">
+            Login here
           </Link>
 
         </p>

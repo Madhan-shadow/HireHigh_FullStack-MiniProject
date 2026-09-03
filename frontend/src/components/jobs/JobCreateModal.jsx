@@ -1,6 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState
+} from "react";
 
-const EMPTY_JOB = {
+const empty = {
   title: "",
   department: "",
   hiringGoal: 1,
@@ -12,62 +15,86 @@ export default function JobCreateModal({
   open,
   onClose,
   onSubmit,
-  editingJob = null
+  initialData = null
 }) {
-  const [form, setForm] = useState(EMPTY_JOB);
+
+  const [form, setForm] =
+    useState(empty);
 
   useEffect(() => {
-    if (editingJob) {
+
+    if (initialData) {
+
       setForm({
-        title: editingJob.title || "",
-        department: editingJob.department || "",
-        hiringGoal: editingJob.hiringGoal ?? 1,
-        status: editingJob.status || "OPEN",
-        description: editingJob.description || ""
+        title:
+          initialData.title || "",
+
+        department:
+          initialData.department || "",
+
+        hiringGoal:
+          initialData.hiringGoal || 1,
+
+        status:
+          initialData.status || "OPEN",
+
+        description:
+          initialData.description || ""
       });
+
     } else {
-      setForm(EMPTY_JOB);
+
+      setForm(empty);
+
     }
-  }, [editingJob, open]);
+
+  }, [initialData, open]);
 
   if (!open) {
     return null;
   }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const update = (e) => {
 
     setForm((previous) => ({
       ...previous,
-      [name]: value
+      [e.target.name]:
+        e.target.value
     }));
+
   };
 
-  const handleSubmit = (e) => {
+  const submit = (e) => {
+
     e.preventDefault();
 
     onSubmit({
       ...form,
-      hiringGoal: Number(form.hiringGoal) || 1
+      hiringGoal:
+        Number(form.hiringGoal) || 1
     });
-  };
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
   };
 
   return (
     <div
-      className="modal-overlay"
-      onMouseDown={handleOverlayClick}
+      className="modal-backdrop"
+      onMouseDown={(e) => {
+
+        if (
+          e.target ===
+          e.currentTarget
+        ) {
+          onClose();
+        }
+
+      }}
     >
-      <section
-        className="modal"
+
+      <div
+        className="modal-card"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="job-modal-title"
       >
 
         <button
@@ -79,66 +106,82 @@ export default function JobCreateModal({
           ×
         </button>
 
-        <h2 id="job-modal-title">
-          {editingJob ? "Edit Job" : "Post New Job"}
+        <p className="eyebrow">
+
+          {initialData
+            ? "Edit Role"
+            : "New Role"}
+
+        </p>
+
+        <h2>
+
+          {initialData
+            ? "Edit Job"
+            : "Post New Job"}
+
         </h2>
 
-        <form onSubmit={handleSubmit}>
+        <form
+          className="form-stack"
+          onSubmit={submit}
+        >
 
-          <label htmlFor="job-title">
+          <label>
+
             Job Title
+
+            <input
+              name="title"
+              value={form.title}
+              onChange={update}
+              placeholder="e.g. Senior Java Developer"
+              required
+            />
+
           </label>
 
-          <input
-            id="job-title"
-            name="title"
-            type="text"
-            value={form.title}
-            onChange={handleChange}
-            placeholder="e.g. Senior Java Developer"
-            required
-          />
+          <label>
 
-          <label htmlFor="job-department">
             Department
+
+            <input
+              name="department"
+              value={form.department}
+              onChange={update}
+              placeholder="e.g. Engineering"
+              required
+            />
+
           </label>
 
-          <input
-            id="job-department"
-            name="department"
-            type="text"
-            value={form.department}
-            onChange={handleChange}
-            placeholder="e.g. Engineering"
-            required
-          />
+          <label>
 
-          <label htmlFor="job-goal">
             Hiring Goal (Open Seats)
+
+            <input
+              name="hiringGoal"
+              type="number"
+              min="1"
+              value={form.hiringGoal}
+              onChange={update}
+              required
+            />
+
           </label>
 
-          <input
-            id="job-goal"
-            name="hiringGoal"
-            type="number"
-            min="1"
-            value={form.hiringGoal}
-            onChange={handleChange}
-            required
-          />
+          {initialData && (
 
-          {editingJob && (
-            <>
-              <label htmlFor="job-status">
-                Status
-              </label>
+            <label>
+
+              Status
 
               <select
-                id="job-status"
                 name="status"
                 value={form.status}
-                onChange={handleChange}
+                onChange={update}
               >
+
                 <option value="OPEN">
                   OPEN
                 </option>
@@ -150,41 +193,54 @@ export default function JobCreateModal({
                 <option value="ON_HOLD">
                   ON_HOLD
                 </option>
+
               </select>
-            </>
+
+            </label>
+
           )}
 
-          <label htmlFor="job-description">
-            Description
-          </label>
+          <label>
 
-          <textarea
-            id="job-description"
-            name="description"
-            rows="5"
-            value={form.description}
-            onChange={handleChange}
-            placeholder="Detailed job description..."
-          />
+            Description
+
+            <textarea
+              name="description"
+              rows="5"
+              value={form.description}
+              onChange={update}
+              placeholder="Detailed job description..."
+            />
+
+          </label>
 
           <div className="modal-actions">
 
             <button
               type="button"
-              className="secondary"
+              className="secondary-btn"
               onClick={onClose}
             >
               Cancel
             </button>
 
-            <button type="submit">
-              {editingJob ? "Update Job" : "Post Job"}
+            <button
+              className="primary-btn"
+              type="submit"
+            >
+
+              {initialData
+                ? "Update Job"
+                : "Post Job"}
+
             </button>
 
           </div>
 
         </form>
-      </section>
+
+      </div>
+
     </div>
   );
 }

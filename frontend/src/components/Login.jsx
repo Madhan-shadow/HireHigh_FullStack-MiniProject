@@ -1,92 +1,200 @@
-import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 
-import Navbar from "./components/layout/Navbar";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import JobList from "./components/jobs/JobList";
-import ApplicationList from "./components/application/ApplicationList";
+import {
+  useDispatch,
+  useSelector
+} from "react-redux";
 
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("token");
+import {
+  Link,
+  useNavigate
+} from "react-router-dom";
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+import {
+  login
+} from "../store/slices/authSlice";
 
-  return children;
-}
+export default function Login() {
 
-function App() {
+  const dispatch = useDispatch();
+
+  const navigate = useNavigate();
+
+  const loading = useSelector(
+    (state) => state.auth.loading
+  );
+
+  const error = useSelector(
+    (state) => state.auth.error
+  );
+
+  const [username, setUsername] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [validation, setValidation] =
+    useState("");
+
+  useEffect(() => {
+
+    const token =
+      localStorage.getItem("token");
+
+    if (token) {
+      navigate("/jobs", {
+        replace: true
+      });
+    }
+
+  }, [navigate]);
+
+  const submit = async (e) => {
+
+    e.preventDefault();
+
+    if (!username.trim() || !password.trim()) {
+
+      setValidation(
+        "Username and password are required."
+      );
+
+      return;
+    }
+
+    setValidation("");
+
+    const result = await dispatch(
+      login({
+        username: username.trim(),
+        password
+      })
+    );
+
+    if (
+      login.fulfilled.match(result)
+    ) {
+
+      navigate("/jobs", {
+        replace: true
+      });
+
+    }
+
+  };
+
   return (
-    <div className="app-shell">
+    <section className="auth-page">
 
-      <Navbar />
+      <div className="auth-card">
 
-      <main className="page-container">
+        <div className="auth-brand">
 
-        <Routes>
+          <span className="brand-mark">
+            H
+          </span>
 
-          <Route
-            path="/"
-            element={
-              <Navigate
-                to={
-                  localStorage.getItem("token")
-                    ? "/jobs"
-                    : "/login"
-                }
-                replace
-              />
-            }
-          />
+          HireHigh
 
-          <Route
-            path="/login"
-            element={<Login />}
-          />
+        </div>
 
-          <Route
-            path="/register"
-            element={<Register />}
-          />
+        <p className="eyebrow">
+          Talent Acquisition Platform
+        </p>
 
-          <Route
-            path="/jobs"
-            element={
-              <ProtectedRoute>
-                <JobList />
-              </ProtectedRoute>
-            }
-          />
+        <h1>
+          HireHigh Login
+        </h1>
 
-          <Route
-            path="/applications"
-            element={
-              <ProtectedRoute>
-                <ApplicationList />
-              </ProtectedRoute>
-            }
-          />
+        <p className="muted">
+          Sign in to manage your hiring
+          pipeline.
+        </p>
 
-          <Route
-            path="*"
-            element={
-              <Navigate
-                to="/jobs"
-                replace
-              />
-            }
-          />
+        {validation && (
+          <div
+            className="error-banner"
+            role="alert"
+          >
+            {validation}
+          </div>
+        )}
 
-        </Routes>
+        {error && (
+          <div
+            className="error-banner"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
 
-      </main>
+        <form
+          onSubmit={submit}
+          className="form-stack"
+        >
 
-    </div>
+          <label htmlFor="username">
+
+            Username
+
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) =>
+                setUsername(e.target.value)
+              }
+              autoComplete="username"
+            />
+
+          </label>
+
+          <label htmlFor="password">
+
+            Password
+
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) =>
+                setPassword(e.target.value)
+              }
+              autoComplete="current-password"
+            />
+
+          </label>
+
+          <button
+            className="primary-btn wide"
+            type="submit"
+            disabled={loading}
+          >
+            {loading
+              ? "Signing in..."
+              : "Login"}
+          </button>
+
+        </form>
+
+        <p className="auth-footer">
+
+          Don't have an account?{" "}
+
+          <Link to="/register">
+            Register here
+          </Link>
+
+        </p>
+
+      </div>
+
+    </section>
   );
 }
-
-export default App;
-
-export { ProtectedRoute };
