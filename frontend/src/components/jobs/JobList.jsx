@@ -34,6 +34,13 @@ const JobList = () => {
     (state) => state.applications
   );
 
+  // eslint-disable-next-line no-console
+  console.log('DEBUG JobList banners:', {
+    successMessage,
+    warningMessage,
+    error: appError || jobError,
+  });
+
   const [showModal, setShowModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -72,6 +79,8 @@ const JobList = () => {
   };
 
   const handleApply = (jobId) => {
+    // eslint-disable-next-line no-console
+    console.log('DEBUG handleApply called with jobId:', jobId);
     dispatch(applyToJob(jobId));
   };
 
