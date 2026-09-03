@@ -1,246 +1,125 @@
-import React, {
-  useEffect,
-  useState
-} from "react";
+import React, { useState, useEffect } from 'react';
 
-const empty = {
-  title: "",
-  department: "",
+const emptyForm = {
+  title: '',
+  department: '',
   hiringGoal: 1,
-  status: "OPEN",
-  description: ""
+  description: '',
+  status: 'OPEN',
 };
 
-export default function JobCreateModal({
-  open,
-  onClose,
-  onSubmit,
-  initialData = null
-}) {
-
-  const [form, setForm] =
-    useState(empty);
+const JobCreateModal = ({ job, onClose, onSubmit }) => {
+  const isEdit = Boolean(job);
+  const [formData, setFormData] = useState(emptyForm);
 
   useEffect(() => {
-
-    if (initialData) {
-
-      setForm({
-        title:
-          initialData.title || "",
-
-        department:
-          initialData.department || "",
-
-        hiringGoal:
-          initialData.hiringGoal || 1,
-
-        status:
-          initialData.status || "OPEN",
-
-        description:
-          initialData.description || ""
+    if (job) {
+      setFormData({
+        title: job.title || '',
+        department: job.department || '',
+        hiringGoal: job.hiringGoal || 1,
+        description: job.description || '',
+        status: job.status || 'OPEN',
       });
-
     } else {
-
-      setForm(empty);
-
+      setFormData(emptyForm);
     }
+  }, [job]);
 
-  }, [initialData, open]);
-
-  if (!open) {
-    return null;
-  }
-
-  const update = (e) => {
-
-    setForm((previous) => ({
-      ...previous,
-      [e.target.name]:
-        e.target.value
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'hiringGoal' ? Number(value) : value,
     }));
-
   };
 
-  const submit = (e) => {
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
 
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    onSubmit({
-      ...form,
-      hiringGoal:
-        Number(form.hiringGoal) || 1
-    });
-
+    onSubmit(formData);
   };
 
   return (
-    <div
-      className="modal-backdrop"
-      onMouseDown={(e) => {
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal">
+        <div className="modal-header">
+          <h2>{isEdit ? 'Edit job' : 'Post a new role'}</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
 
-        if (
-          e.target ===
-          e.currentTarget
-        ) {
-          onClose();
-        }
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="title">Job title</label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            placeholder="e.g. Senior Java Developer"
+            value={formData.title}
+            onChange={handleChange}
+            required
+          />
 
-      }}
-    >
+          <label htmlFor="department">Department</label>
+          <input
+            id="department"
+            name="department"
+            type="text"
+            placeholder="e.g. Engineering"
+            value={formData.department}
+            onChange={handleChange}
+            required
+          />
 
-      <div
-        className="modal-card"
-        role="dialog"
-        aria-modal="true"
-      >
+          <label htmlFor="hiringGoal">Hiring goal (open seats)</label>
+          <input
+            id="hiringGoal"
+            name="hiringGoal"
+            type="number"
+            min="1"
+            value={formData.hiringGoal}
+            onChange={handleChange}
+            required
+          />
 
-        <button
-          type="button"
-          className="modal-close"
-          aria-label="Close"
-          onClick={onClose}
-        >
-          ×
-        </button>
-
-        <p className="eyebrow">
-
-          {initialData
-            ? "Edit Role"
-            : "New Role"}
-
-        </p>
-
-        <h2>
-
-          {initialData
-            ? "Edit Job"
-            : "Post New Job"}
-
-        </h2>
-
-        <form
-          className="form-stack"
-          onSubmit={submit}
-        >
-
-          <label>
-
-            Job Title
-
-            <input
-              name="title"
-              value={form.title}
-              onChange={update}
-              placeholder="e.g. Senior Java Developer"
-              required
-            />
-
-          </label>
-
-          <label>
-
-            Department
-
-            <input
-              name="department"
-              value={form.department}
-              onChange={update}
-              placeholder="e.g. Engineering"
-              required
-            />
-
-          </label>
-
-          <label>
-
-            Hiring Goal (Open Seats)
-
-            <input
-              name="hiringGoal"
-              type="number"
-              min="1"
-              value={form.hiringGoal}
-              onChange={update}
-              required
-            />
-
-          </label>
-
-          {initialData && (
-
-            <label>
-
-              Status
-
-              <select
-                name="status"
-                value={form.status}
-                onChange={update}
-              >
-
-                <option value="OPEN">
-                  OPEN
-                </option>
-
-                <option value="CLOSED">
-                  CLOSED
-                </option>
-
-                <option value="ON_HOLD">
-                  ON_HOLD
-                </option>
-
+          {isEdit && (
+            <>
+              <label htmlFor="status">Status</label>
+              <select id="status" name="status" value={formData.status} onChange={handleChange}>
+                <option value="OPEN">Open</option>
+                <option value="CLOSED">Closed</option>
+                <option value="ON_HOLD">On hold</option>
               </select>
-
-            </label>
-
+            </>
           )}
 
-          <label>
-
-            Description
-
-            <textarea
-              name="description"
-              rows="5"
-              value={form.description}
-              onChange={update}
-              placeholder="Detailed job description..."
-            />
-
-          </label>
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="What the role involves, day to day..."
+            value={formData.description}
+            onChange={handleChange}
+            rows={4}
+          />
 
           <div className="modal-actions">
-
-            <button
-              type="button"
-              className="secondary-btn"
-              onClick={onClose}
-            >
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>
-
-            <button
-              className="primary-btn"
-              type="submit"
-            >
-
-              {initialData
-                ? "Update Job"
-                : "Post Job"}
-
+            <button type="submit" className="btn btn-primary">
+              {isEdit ? 'Save changes' : 'Post role'}
             </button>
-
           </div>
-
         </form>
-
       </div>
-
     </div>
   );
-}
+};
+
+export default JobCreateModal;
