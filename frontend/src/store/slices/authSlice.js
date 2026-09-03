@@ -1,89 +1,30 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import authService from "../../services/authService";
 
-const savedToken = localStorage.getItem("token");
-
-let savedUser = null;
-
-try {
-  savedUser = JSON.parse(
-    localStorage.getItem("user") || "null"
-  );
-} catch (error) {
-  savedUser = null;
-}
+const storedUser = localStorage.getItem("user");
+const storedToken = localStorage.getItem("token");
+const storedRole = localStorage.getItem("role");
 
 const initialState = {
-  user: savedUser,
-  token: savedToken || null,
-
-  role:
-    localStorage.getItem("role") ||
-    savedUser?.role ||
-    null,
-
-  isAuthenticated: Boolean(savedToken),
-
+  user: storedUser ? JSON.parse(storedUser) : null,
+  token: storedToken || null,
+  role: storedRole || null,
   loading: false,
-
-  error: null
+  error: null,
+  success: null,
 };
 
 export const login = createAsyncThunk(
   "auth/login",
-
-  async (credentials, thunkAPI) => {
+  async (credentials, { rejectWithValue }) => {
     try {
-      const data =
-        await authService.login(credentials);
-
-      const token =
-        data?.token ||
-        data?.accessToken ||
-        data?.jwt;
-
-      const user =
-        data?.user || data;
-
-      const role =
-        data?.role ||
-        user?.role ||
-        null;
-
-      if (token) {
-        localStorage.setItem(
-          "token",
-          token
-        );
-      }
-
-      if (role) {
-        localStorage.setItem(
-          "role",
-          role
-        );
-      }
-
-      if (user) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(user)
-        );
-      }
-
-      return {
-        ...data,
-        token,
-        user,
-        role
-      };
-
+      const data = await authService.login(credentials);
+      return data;
     } catch (error) {
-
-      return thunkAPI.rejectWithValue(
+      return rejectWithValue(
         error?.response?.data?.message ||
-        error?.message ||
-        "Login failed"
+          error?.message ||
+          "Login failed"
       );
     }
   }
@@ -91,179 +32,133 @@ export const login = createAsyncThunk(
 
 export const register = createAsyncThunk(
   "auth/register",
-
-  async (userData, thunkAPI) => {
+  async (userData, { rejectWithValue }) => {
     try {
-
-      return await authService.register(
-        userData
-      );
-
+      const data = await authService.register(userData);
+      return data;
     } catch (error) {
-
-      return thunkAPI.rejectWithValue(
+      return rejectWithValue(
         error?.response?.data?.message ||
-        error?.message ||
-        "Registration failed"
+          error?.message ||
+          "Registration failed"
       );
     }
   }
 );
 
-export const logout = createAsyncThunk(
-  "auth/logout",
-
-  async () => {
-
-    authService.logout();
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("user");
-
-    return true;
-  }
-);
-
 const authSlice = createSlice({
-
   name: "auth",
 
   initialState,
 
   reducers: {
+    hydrate: (state) => {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+      const user = localStorage.getItem("user");
 
-    hydrate(state) {
-
-      state.token =
-        localStorage.getItem("token");
-
-      state.role =
-        localStorage.getItem("role");
-
-      state.isAuthenticated =
-        Boolean(state.token);
-
-      try {
-
-        state.user =
-          JSON.parse(
-            localStorage.getItem(
-              "user"
-            ) || "null"
-          );
-
-      } catch (error) {
-
-        state.user = null;
-      }
+      state.token = token || null;
+      state.role = role || null;
+      state.user = user ? JSON.parse(user) : null;
     },
 
-    clearAuthError(state) {
+    clearAuthError: (state) => {
       state.error = null;
-    }
+    },
+
+    clearError: (state) => {
+      state.error = null;
+    },
+
+    logout: (state) => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("user");
+
+      state.user = null;
+      state.token = null;
+      state.role = null;
+      state.error = null;
+      state.success = null;
+    },
   },
 
   extraReducers: (builder) => {
-
     builder
 
-      .addCase(
-        login.pending,
-        (state) => {
+      // LOGIN
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-          state.loading = true;
-          state.error = null;
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+
+        const payload = action.payload || {};
+
+        const token =
+          payload.token ||
+          payload.accessToken ||
+          payload.jwt ||
+          "";
+
+        const role =
+          payload.role ||
+          payload.user?.role ||
+          "CANDIDATE";
+
+        const user =
+          payload.user ||
+          payload;
+
+        state.token = token;
+        state.role = role;
+        state.user = user;
+
+        if (token) {
+          localStorage.setItem("token", token);
         }
-      )
 
-      .addCase(
-        login.fulfilled,
-        (state, action) => {
-
-          state.loading = false;
-          state.error = null;
-
-          state.token =
-            action.payload.token ||
-            state.token;
-
-          state.role =
-            action.payload.role ||
-            state.role;
-
-          state.user =
-            action.payload.user ||
-            state.user;
-
-          state.isAuthenticated =
-            Boolean(state.token);
+        if (role) {
+          localStorage.setItem("role", role);
         }
-      )
 
-      .addCase(
-        login.rejected,
-        (state, action) => {
+        localStorage.setItem("user", JSON.stringify(user));
+      })
 
-          state.loading = false;
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Login failed";
+      })
 
-          state.error =
-            action.payload ||
-            "Login failed";
+      // REGISTER
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-          state.isAuthenticated =
-            false;
-        }
-      )
+      .addCase(register.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.success =
+          action.payload?.message ||
+          "Registration successful.";
+      })
 
-      .addCase(
-        register.pending,
-        (state) => {
-
-          state.loading = true;
-          state.error = null;
-        }
-      )
-
-      .addCase(
-        register.fulfilled,
-        (state) => {
-
-          state.loading = false;
-          state.error = null;
-        }
-      )
-
-      .addCase(
-        register.rejected,
-        (state, action) => {
-
-          state.loading = false;
-
-          state.error =
-            action.payload ||
-            "Registration failed";
-        }
-      )
-
-      .addCase(
-        logout.fulfilled,
-        (state) => {
-
-          state.user = null;
-          state.token = null;
-          state.role = null;
-
-          state.isAuthenticated =
-            false;
-        }
-      );
-  }
+      .addCase(register.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Registration failed";
+      });
+  },
 });
 
 export const {
   hydrate,
-  clearAuthError
+  clearAuthError,
+  clearError,
+  logout,
 } = authSlice.actions;
 
 export default authSlice.reducer;

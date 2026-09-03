@@ -1,497 +1,308 @@
-import {
-  createAsyncThunk,
-  createSlice
-} from "@reduxjs/toolkit";
-
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import applicationService from "../../services/applicationService";
 
-export const CRUD_CREATE_MSG =
-  "Application submitted successfully.";
-
-export const CRUD_UPDATE_MSG =
-  "Application updated successfully.";
-
-export const CRUD_DELETE_MSG =
-  "Application deleted successfully.";
-
-export const CAPACITY_WARNING_MSG =
-  "Application capacity exceeded";
-
 const initialState = {
-
   items: [],
-
   currentPage: 0,
-
-  totalPages: 0,
-
+  totalPages: 1,
   totalElements: 0,
-
-  number: 0,
-
   size: 5,
 
   loading: false,
-
   error: null,
+  success: null,
 
-  successMessage: null,
-
-  warningMessage: null,
-
-  searchQuery: ""
+  searchQuery: "",
 };
 
-/* =========================
-   FETCH ALL APPLICATIONS
-========================= */
-
-export const fetchApplications =
-  createAsyncThunk(
-
-    "applications/fetchApplications",
-
-    async (
-      {
-        page = 0,
-        size = 5
-      } = {},
-      thunkAPI
-    ) => {
-
-      try {
-
-        return await applicationService.getAll(
-          page,
-          size
-        );
-
-      } catch (error) {
-
-        return thunkAPI.rejectWithValue(
+export const fetchApplications = createAsyncThunk(
+  "applications/fetchApplications",
+  async (
+    { page = 0, size = 5 } = {},
+    { rejectWithValue }
+  ) => {
+    try {
+      return await applicationService.getAll(page, size);
+    } catch (error) {
+      return rejectWithValue({
+        status: error?.response?.status,
+        message:
           error?.response?.data?.message ||
           error?.message ||
-          "Unable to load applications"
-        );
-      }
+          "Failed to load applications.",
+      });
     }
-  );
+  }
+);
 
-/* =========================
-   FETCH MY APPLICATIONS
-========================= */
+export const fetchMyApplications = createAsyncThunk(
+  "applications/fetchMyApplications",
+  async (_, { rejectWithValue }) => {
+    try {
+      if (typeof applicationService.getMyApplications === "function") {
+        return await applicationService.getMyApplications();
+      }
 
-export const fetchMyApplications =
-  createAsyncThunk(
-
-    "applications/fetchMyApplications",
-
-    async (
-      {
-        page = 0,
-        size = 5,
-        username
-      } = {},
-      thunkAPI
-    ) => {
-
-      try {
-
-        return await applicationService.getAll(
-          page,
-          size,
-          username
-        );
-
-      } catch (error) {
-
-        return thunkAPI.rejectWithValue(
+      return await applicationService.getAll(0, 5);
+    } catch (error) {
+      return rejectWithValue({
+        status: error?.response?.status,
+        message:
           error?.response?.data?.message ||
           error?.message ||
-          "Unable to load applications"
-        );
-      }
+          "Failed to load applications.",
+      });
     }
-  );
+  }
+);
 
-/* =========================
-   APPLY TO JOB
-========================= */
-
-export const applyToJob =
-  createAsyncThunk(
-
-    "applications/applyToJob",
-
-    async (
-      {
-        jobId,
-        username
-      },
-      thunkAPI
-    ) => {
-
-      try {
-
-        return await applicationService.apply(
-          jobId,
-          username
-        );
-
-      } catch (error) {
-
-        return thunkAPI.rejectWithValue(
+export const applyToJob = createAsyncThunk(
+  "applications/applyToJob",
+  async (jobId, { rejectWithValue }) => {
+    try {
+      return await applicationService.apply(jobId);
+    } catch (error) {
+      return rejectWithValue({
+        status: error?.response?.status,
+        message:
           error?.response?.data?.message ||
           error?.message ||
-          "Unable to submit application"
-        );
-      }
+          "Failed to submit application.",
+      });
     }
-  );
+  }
+);
 
-/*
- * Alias used by JobList.
- */
+// Alias expected by JobList
 export const applyForJob = applyToJob;
 
-/* =========================
-   UPDATE STAGE
-========================= */
-
-export const updateApplicationStage =
-  createAsyncThunk(
-
-    "applications/updateApplicationStage",
-
-    async (
-      {
-        id,
-        stage
-      },
-      thunkAPI
-    ) => {
-
-      try {
-
-        return await applicationService.updateStage(
-          id,
-          stage
-        );
-
-      } catch (error) {
-
-        return thunkAPI.rejectWithValue(
+export const updateApplicationStage = createAsyncThunk(
+  "applications/updateApplicationStage",
+  async ({ id, stage }, { rejectWithValue }) => {
+    try {
+      return await applicationService.updateStage(id, stage);
+    } catch (error) {
+      return rejectWithValue({
+        status: error?.response?.status,
+        message:
           error?.response?.data?.message ||
           error?.message ||
-          "Unable to update application"
-        );
-      }
+          "Failed to update application.",
+      });
     }
-  );
+  }
+);
 
-/*
- * Alias used by older ApplicationList.
- */
-export const updateStage =
-  updateApplicationStage;
+// Alias expected by ApplicationList
+export const updateStage = updateApplicationStage;
 
-/* =========================
-   DELETE
-========================= */
-
-export const deleteApplication =
-  createAsyncThunk(
-
-    "applications/deleteApplication",
-
-    async (
-      id,
-      thunkAPI
-    ) => {
-
-      try {
-
-        await applicationService.delete(id);
-
-        return id;
-
-      } catch (error) {
-
-        return thunkAPI.rejectWithValue(
+export const deleteApplication = createAsyncThunk(
+  "applications/deleteApplication",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await applicationService.delete(id);
+    } catch (error) {
+      return rejectWithValue({
+        status: error?.response?.status,
+        message:
           error?.response?.data?.message ||
           error?.message ||
-          "Unable to delete application"
-        );
-      }
+          "Failed to delete application.",
+      });
     }
-  );
+  }
+);
 
-/* =========================
-   SLICE
-========================= */
+export const optimisticStageUpdate = (payload) => ({
+  type: "applications/optimisticStageUpdate",
+  payload,
+});
 
-const applicationSlice =
-  createSlice({
+export const setSearchQuery = (query) => ({
+  type: "applications/setSearchQuery",
+  payload: query,
+});
 
-    name: "applications",
+export const clearMessages = () => ({
+  type: "applications/clearMessages",
+});
 
-    initialState,
+const applicationSlice = createSlice({
+  name: "applications",
 
-    reducers: {
+  initialState,
 
-      clearMessages(state) {
+  reducers: {
+    optimisticStageUpdate: (state, action) => {
+      const { id, stage } = action.payload || {};
 
-        state.error = null;
+      const item = state.items.find(
+        (application) =>
+          String(application.id) === String(id) ||
+          String(application.applicationId) === String(id)
+      );
 
-        state.successMessage = null;
-
-        state.warningMessage = null;
-      },
-
-      setBanner(
-        state,
-        action
-      ) {
-
-        state.successMessage =
-          action.payload;
-      },
-
-      setSearchQuery(
-        state,
-        action
-      ) {
-
-        state.searchQuery =
-          action.payload;
-      },
-
-      optimisticStageUpdate(
-        state,
-        action
-      ) {
-
-        const {
-          id,
-          stage
-        } = action.payload;
-
-        const application =
-          state.items.find(
-            (item) =>
-              item.id === id
-          );
-
-        if (application) {
-
-          application.currentStage =
-            stage;
-        }
+      if (item) {
+        item.currentStage = stage;
+        item.stage = stage;
       }
     },
 
-    extraReducers: (builder) => {
+    setSearchQuery: (state, action) => {
+      state.searchQuery = action.payload || "";
+    },
 
-      builder
+    clearMessages: (state) => {
+      state.error = null;
+      state.success = null;
+    },
+  },
 
-        /* FETCH */
+  extraReducers: (builder) => {
+    builder
 
-        .addCase(
-          fetchApplications.pending,
-          (state) => {
+      // FETCH ALL
+      .addCase(fetchApplications.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-            state.loading = true;
-            state.error = null;
-          }
-        )
+      .addCase(fetchApplications.fulfilled, (state, action) => {
+        state.loading = false;
 
-        .addCase(
-          fetchApplications.fulfilled,
-          (state, action) => {
+        const data = action.payload || {};
 
-            state.loading = false;
+        if (Array.isArray(data)) {
+          state.items = data;
+          state.totalPages = 1;
+          state.totalElements = data.length;
+        } else {
+          state.items = data.content || [];
+          state.totalPages = data.totalPages ?? 1;
+          state.totalElements =
+            data.totalElements ?? state.items.length;
 
-            const data =
-              action.payload || {};
+          state.currentPage = data.number ?? state.currentPage;
+          state.size = data.size ?? state.size;
+        }
+      })
 
-            state.items =
-              data.content || [];
+      .addCase(fetchApplications.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload?.message ||
+          "Failed to load applications.";
+      })
 
-            state.totalPages =
-              data.totalPages ?? 0;
+      // FETCH MY APPLICATIONS
+      .addCase(fetchMyApplications.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-            state.totalElements =
-              data.totalElements ?? 0;
+      .addCase(fetchMyApplications.fulfilled, (state, action) => {
+        state.loading = false;
 
-            state.currentPage =
-              data.number ?? 0;
+        const data = action.payload;
 
-            state.number =
-              data.number ?? 0;
+        if (Array.isArray(data)) {
+          state.items = data;
+          state.totalPages = 1;
+          state.totalElements = data.length;
+        } else {
+          state.items = data?.content || [];
+          state.totalPages = data?.totalPages ?? 1;
+          state.totalElements =
+            data?.totalElements ??
+            state.items.length;
+        }
+      })
 
-            state.size =
-              data.size ?? 5;
-          }
-        )
+      .addCase(fetchMyApplications.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload?.message ||
+          "Failed to load applications.";
+      })
 
-        .addCase(
-          fetchApplications.rejected,
-          (state, action) => {
+      // APPLY
+      .addCase(applyToJob.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-            state.loading = false;
+      .addCase(applyToJob.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success =
+          action.payload?.message ||
+          "Application submitted successfully.";
+      })
 
-            state.error =
-              action.payload ||
-              "Unable to load applications";
-          }
-        )
+      .addCase(applyToJob.rejected, (state, action) => {
+        state.loading = false;
 
-        /* MY APPLICATIONS */
+        state.error =
+          action.payload?.message ||
+          "Failed to submit application.";
+      })
 
-        .addCase(
-          fetchMyApplications.fulfilled,
-          (state, action) => {
+      // UPDATE STAGE
+      .addCase(updateApplicationStage.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-            const data =
-              action.payload || {};
+      .addCase(updateApplicationStage.fulfilled, (state, action) => {
+        state.loading = false;
 
-            state.items =
-              data.content || [];
+        state.success =
+          action.payload?.message ||
+          "Application updated successfully.";
+      })
 
-            state.totalPages =
-              data.totalPages ?? 0;
+      .addCase(updateApplicationStage.rejected, (state, action) => {
+        state.loading = false;
 
-            state.totalElements =
-              data.totalElements ?? 0;
+        state.error =
+          action.payload?.message ||
+          "Failed to update application.";
+      })
 
-            state.currentPage =
-              data.number ?? 0;
+      // DELETE
+      .addCase(deleteApplication.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-            state.number =
-              data.number ?? 0;
+      .addCase(deleteApplication.fulfilled, (state, action) => {
+        state.loading = false;
 
-            state.size =
-              data.size ?? 5;
+        const deletedId =
+          action.meta?.arg;
 
-            state.loading = false;
-          }
-        )
-
-        /* APPLY */
-
-        .addCase(
-          applyToJob.fulfilled,
-          (state, action) => {
-
-            state.successMessage =
-              action.payload?.message ||
-              CRUD_CREATE_MSG;
-
-            state.warningMessage =
-              null;
-          }
-        )
-
-        .addCase(
-          applyToJob.rejected,
-          (state, action) => {
-
-            const message =
-              action.payload ||
-              "Unable to submit application";
-
-            state.error = message;
-
-            if (
-              String(message)
-                .toLowerCase()
-                .includes("capacity")
-            ) {
-
-              state.warningMessage =
-                CAPACITY_WARNING_MSG;
-            }
-          }
-        )
-
-        /* UPDATE */
-
-        .addCase(
-          updateApplicationStage.fulfilled,
-          (state, action) => {
-
-            const data =
-              action.payload || {};
-
-            state.successMessage =
-              data.message ||
-              CRUD_UPDATE_MSG;
-
-            if (data.id) {
-
-              const item =
-                state.items.find(
-                  (application) =>
-                    application.id ===
-                    data.id
-                );
-
-              if (item) {
-
-                Object.assign(
-                  item,
-                  data
-                );
-              }
-            }
-          }
-        )
-
-        .addCase(
-          updateApplicationStage.rejected,
-          (state, action) => {
-
-            state.error =
-              action.payload ||
-              "Unable to update application";
-          }
-        )
-
-        /* DELETE */
-
-        .addCase(
-          deleteApplication.fulfilled,
-          (state, action) => {
-
-            state.items =
-              state.items.filter(
-                (item) =>
-                  item.id !==
-                  action.payload
-              );
-
-            state.successMessage =
-              CRUD_DELETE_MSG;
-          }
-        )
-
-        .addCase(
-          deleteApplication.rejected,
-          (state, action) => {
-
-            state.error =
-              action.payload ||
-              "Unable to delete application";
-          }
+        state.items = state.items.filter(
+          (item) =>
+            String(item.id) !== String(deletedId) &&
+            String(item.applicationId) !== String(deletedId)
         );
-    }
-  });
+
+        state.success =
+          action.payload?.message ||
+          "Application deleted successfully.";
+      })
+
+      .addCase(deleteApplication.rejected, (state, action) => {
+        state.loading = false;
+
+        state.error =
+          action.payload?.message ||
+          "Failed to delete application.";
+      });
+  },
+});
 
 export const {
-  clearMessages,
-  setBanner,
-  setSearchQuery,
-  optimisticStageUpdate
+  clearMessages: clearApplicationMessages,
 } = applicationSlice.actions;
 
 export default applicationSlice.reducer;
