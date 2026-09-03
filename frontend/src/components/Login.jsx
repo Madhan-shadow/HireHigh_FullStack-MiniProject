@@ -1,179 +1,105 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, Link } from 'react-router-dom';
+import { login, clearAuthError } from '../store/slices/authSlice';
+import AuthRail from './common/AuthRail';
 
-import {
-  useDispatch,
-  useSelector,
-} from "react-redux";
-
-import {
-  Link,
-  useNavigate,
-} from "react-router-dom";
-
-import {
-  login,
-  clearAuthError,
-} from "../store/slices/authSlice";
-
-export default function Login() {
+const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
 
-  const {
-    loading,
-    error,
-  } = useSelector(
-    (state) => state.auth || {}
-  );
+  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const [username, setUsername] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [validationError, setValidationError] =
-    useState("");
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!username.trim()) {
-      setValidationError(
-        "Username is required."
-      );
-      return;
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/jobs');
     }
+  }, [isAuthenticated, navigate]);
 
-    if (!password.trim()) {
-      setValidationError(
-        "Password is required."
-      );
-      return;
-    }
+  React.useEffect(() => {
+    return () => dispatch(clearAuthError());
+  }, [dispatch]);
 
-    setValidationError("");
-    dispatch(clearAuthError());
+  const validate = (name, value) => {
+    if (name === 'username' && !value.trim()) return 'Enter your username.';
+    if (name === 'password' && value.length < 1) return 'Enter your password.';
+    return '';
+  };
 
-    const result = await dispatch(
-      login({
-        username: username.trim(),
-        password,
-      })
-    );
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => ({ ...prev, [name]: validate(name, value) }));
+  };
 
-    if (
-      login.fulfilled.match(result)
-    ) {
-      navigate("/jobs");
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errors = {
+      username: validate('username', formData.username),
+      password: validate('password', formData.password),
+    };
+    setFieldErrors(errors);
+    if (errors.username || errors.password) return;
+    dispatch(login(formData));
   };
 
   return (
-    <section className="auth-page">
-
-      <div className="auth-card">
-
-        <div className="auth-brand">
-          <span className="brand-mark">
-            H
-          </span>
-
-          HireHigh
+    <div className="auth-shell">
+      <div className="auth-brand-panel">
+        <div className="auth-brand-content">
+          <h1 className="auth-brand-headline">Find who's next.</h1>
+          <p className="auth-brand-sub">
+            One pipeline for every open role, from the first application to the
+            signed offer.
+          </p>
+          <AuthRail activeStage="Hired" />
         </div>
-
-        <p className="eyebrow">
-          TALENT ACQUISITION PLATFORM
-        </p>
-
-        <h1>
-          HireHigh Login
-        </h1>
-
-        <p className="muted">
-          Sign in to manage your
-          recruitment workflow.
-        </p>
-
-        {(validationError ||
-          error) && (
-          <div
-            className="error-banner"
-            role="alert"
-          >
-            {validationError ||
-              error}
-          </div>
-        )}
-
-        <form
-          onSubmit={handleSubmit}
-          className="form-stack"
-        >
-
-          <div className="form-group">
-
-            <label htmlFor="username">
-              Username
-            </label>
-
-            <input
-              id="username"
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) =>
-                setUsername(
-                  e.target.value
-                )
-              }
-              autoComplete="username"
-            />
-
-          </div>
-
-          <div className="form-group">
-
-            <label htmlFor="password">
-              Password
-            </label>
-
-            <input
-              id="password"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) =>
-                setPassword(
-                  e.target.value
-                )
-              }
-              autoComplete="current-password"
-            />
-
-          </div>
-
-          <button
-            type="submit"
-            className="primary-btn wide"
-            disabled={loading}
-          >
-            {loading
-              ? "Signing in..."
-              : "Login"}
-          </button>
-
-        </form>
-
-        <p className="auth-footer">
-          Don't have an account?{" "}
-          <Link to="/register">
-            Register
-          </Link>
-        </p>
-
       </div>
 
-    </section>
+      <div className="auth-form-panel">
+        <form className="auth-card" onSubmit={handleSubmit} noValidate>
+          <h1 className="auth-title">Welcome back</h1>
+          <p className="auth-subtitle">Log in to HireHigh</p>
+
+          {error && <div className="error-banner">{error}</div>}
+
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+            className={fieldErrors.username ? 'input-error' : ''}
+          />
+          {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
+
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className={fieldErrors.password ? 'input-error' : ''}
+          />
+          {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Logging in…' : 'Login'}
+          </button>
+
+          <p className="auth-switch">
+            Don&apos;t have an account? <Link to="/register">Register here</Link>
+          </p>
+        </form>
+      </div>
+    </div>
   );
-}
+};
+
+export default Login;
