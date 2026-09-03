@@ -1,164 +1,185 @@
 /* =========================================================
-   ALERTS — flat, no icon glyphs baked into ::before,
-   left border as the only signal device
+   TOKENS — gold pushed more saturated for contrast against ink
    ========================================================= */
 
-.success-banner,
-.warning-banner,
-.error-banner {
-  border-radius: var(--radius-sm);
-  padding: 13px 16px;
-  margin-bottom: 14px;
-  font-size: 13px;
-  font-weight: 500;
-  border-left: 3px solid transparent;
-  animation: slideDown 0.25s ease;
-}
+:root {
+  --ink: #14181A;
+  --ink-soft: #2B322E;
 
-.success-banner {
-  background: var(--pine-soft);
-  color: var(--pine-deep);
-  border-left-color: var(--pine);
-}
+  --pine: #1F5E4A;
+  --pine-deep: #163F32;
+  --pine-soft: #E6EFEA;
 
-.warning-banner {
-  background: var(--amber-soft);
-  color: var(--amber);
-  border-left-color: var(--gold);
-}
+  --gold: #C9922A;
+  --gold-bright: #E8AE3D;
+  --gold-soft: #F3E7CB;
 
-.error-banner {
-  background: var(--red-soft);
-  color: var(--red);
-  border-left-color: var(--red);
-}
+  --paper: #EEF0EA;
+  --surface: #FFFFFF;
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+  --text: #1B1F1D;
+  --text-secondary: #4B534E;
+  --muted: #6B746E;
 
-.alert-stack {
-  position: fixed;
-  top: 84px;
-  right: 22px;
-  z-index: 3000;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 340px;
-  max-width: calc(100vw - 40px);
+  --border: #E1DFD3;
+  --border-light: #EAE8DD;
+
+  --red: #B3261E;
+  --red-soft: #FBEAE8;
+
+  --amber: #9C6B12;
+  --amber-soft: #F7EDD9;
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(20, 24, 26, 0.06);
+  --shadow: 0 4px 14px rgba(20, 24, 26, 0.07);
+  --shadow-lg: 0 14px 32px rgba(20, 24, 26, 0.12);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* =========================================================
-   TABLE / ROW LIST
+   NAVBAR — heavier weight, taller
    ========================================================= */
 
-.row-list {
+.navbar {
+  height: 74px;
+  padding: 0 42px;
+}
+
+.navbar-brand-word {
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.navbar-links a {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   BUTTONS — heavier weight, more room
+   ========================================================= */
+
+.btn {
+  padding: 12px 20px;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+}
+
+/* =========================================================
+   STAT CARDS — the number is the content, let it dominate
+   ========================================================= */
+
+.stat-value {
+  font-size: 52px;
+  font-weight: 600;
+  letter-spacing: -1.5px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.stat-card {
+  padding: 26px 24px;
+  min-height: 140px;
+}
+
+.stat-card::after {
+  width: 110px;
+  height: 110px;
+  background: var(--gold-soft);
+}
+
+/* =========================================================
+   CAPACITY BAR — turns gold and glows when a role fills up
+   ========================================================= */
+
+.capacity-bar-track {
+  height: 8px;
+}
+
+.capacity-bar-fill {
+  background: var(--pine);
+}
+
+.capacity-bar-fill.is-full {
+  background: var(--gold-bright);
+  box-shadow: 0 0 10px rgba(232, 174, 61, 0.55);
+}
+
+.capacity-bar-label {
+  font-weight: 600;
+}
+
+/* =========================================================
+   AUTH SHELL — the one extreme move: a giant ghost wordmark
+   ========================================================= */
+
+.auth-brand-panel {
+  position: relative;
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  padding: 80px 64px;
 }
 
-.row-list-head {
-  min-height: 44px;
-  padding: 13px 20px;
-  background: var(--paper);
-  color: var(--muted);
-  font-size: 11px;
+.auth-brand-panel::before {
+  content: 'NEXT';
+  position: absolute;
+  right: -0.12em;
+  bottom: -0.28em;
+  font-family: var(--font-display);
+  font-size: 340px;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  border-bottom: 1px solid var(--border);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.05);
+  letter-spacing: -0.04em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
 }
 
-.row-list-row {
-  min-height: 72px;
-  padding: 15px 20px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border-light);
-  font-size: 14px;
-  transition: background 0.15s ease;
+.auth-brand-content {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
 }
 
-.row-list-row:hover {
-  background: var(--paper);
-}
-
-.row-list-row:last-child {
-  border-bottom: none;
-}
-
-.cell-title {
-  color: var(--text);
+.auth-brand-headline {
+  font-size: clamp(52px, 7vw, 96px);
+  line-height: 0.98;
+  letter-spacing: -3px;
   font-weight: 600;
+  margin-bottom: 20px;
 }
 
-.cell-muted {
-  color: var(--text-secondary);
+.auth-brand-sub {
+  font-size: 16px;
+  line-height: 1.7;
+  margin-bottom: 48px;
 }
 
-.cell-mono {
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  font-size: 13px;
+.auth-title {
+  font-size: 30px;
+  letter-spacing: -0.5px;
 }
 
-.cell-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+@media (max-width: 1100px) {
+  .auth-brand-panel::before {
+    font-size: 220px;
+  }
 }
 
-.applications-grid.no-actions {
-  grid-template-columns: 1.6fr 1.6fr 1.4fr 1fr;
-}
-
-/* =========================================================
-   PAGINATION
-   ========================================================= */
-
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 18px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.pagination button {
-  min-width: 36px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text);
-  font-weight: 500;
-}
-
-.pagination button:hover:not(:disabled) {
-  background: var(--pine-soft);
-  border-color: var(--pine);
-}
-
-.pagination button:disabled {
-  opacity: 0.4;
-}
-
-/* =========================================================
-   LOADING TEXT
-   ========================================================= */
-
-.page-container > p {
-  color: var(--muted);
-  font-size: 14px;
+@media (max-width: 860px) {
+  .auth-brand-panel {
+    display: none;
+  }
 }
