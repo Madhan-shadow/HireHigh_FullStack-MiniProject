@@ -31,7 +31,7 @@ public class CandidateController {
         SystemUser user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        CandidateProfile profile = candidateProfileRepository.findByUserId(user.getId())
+        CandidateProfile profile = candidateProfileRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("Candidate profile not found"));
 
         return ResponseEntity.ok(profile);
@@ -46,7 +46,7 @@ public class CandidateController {
         SystemUser user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        CandidateProfile profile = candidateProfileRepository.findByUserId(user.getId())
+        CandidateProfile profile = candidateProfileRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("Candidate profile not found"));
 
         profile.setResumeUrl(dto.getResumeUrl());

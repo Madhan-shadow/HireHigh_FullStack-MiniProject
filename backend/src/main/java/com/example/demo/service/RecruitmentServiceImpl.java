@@ -43,7 +43,7 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         SystemUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        CandidateProfile candidate = candidateRepository.findByUser(user)
+        CandidateProfile candidate = candidateRepository.findById(user)
                 .orElseThrow(() -> new RuntimeException("Candidate Not Found"));
 
         JobPosting job = jobRepository.findById(jobId)
