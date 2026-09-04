@@ -55,6 +55,13 @@ public class AuthServiceImpl implements AuthService {
 
             CandidateProfile profile = new CandidateProfile();
             profile.setUser(user);
+            profile.setResumeUrl(dto.getResumeUrl());
+            profile.setPrimarySkill(dto.getPrimarySkill());
+            profile.setYearsExperience(dto.getYearsExperience());
+
+            // Uncomment the line below once you've added a `photoUrl`
+            // field (with getter/setter) to CandidateProfile.java:
+            // profile.setPhotoUrl(dto.getPhotoUrl());
 
             candidateRepository.save(profile);
         }
@@ -82,8 +89,6 @@ public class AuthServiceImpl implements AuthService {
 
         response.setMessage("Login Successful");
         response.setToken(token);
-
-        // IMPORTANT FOR T26
         response.setRole(user.getRole().name());
 
         return response;
