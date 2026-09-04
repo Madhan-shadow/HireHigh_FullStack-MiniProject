@@ -58,10 +58,7 @@ public class AuthServiceImpl implements AuthService {
             profile.setResumeUrl(dto.getResumeUrl());
             profile.setPrimarySkill(dto.getPrimarySkill());
             profile.setYearsExperience(dto.getYearsExperience());
-
-            // Uncomment the line below once you've added a `photoUrl`
-            // field (with getter/setter) to CandidateProfile.java:
-            // profile.setPhotoUrl(dto.getPhotoUrl());
+            profile.setPhotoUrl(dto.getPhotoUrl());
 
             candidateRepository.save(profile);
         }
