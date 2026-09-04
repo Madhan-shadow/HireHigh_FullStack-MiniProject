@@ -12,6 +12,7 @@ import com.example.demo.entity.JobPosting;
 import com.example.demo.entity.SystemUser;
 import com.example.demo.exception.ApplicationCapacityExceededException;
 import com.example.demo.exception.DuplicateApplicationException;
+import com.example.demo.repository.CandidateProfileRepository;
 import com.example.demo.repository.JobApplicationRepository;
 import com.example.demo.repository.JobPostingRepository;
 import com.example.demo.repository.SystemUserRepository;
@@ -42,7 +43,10 @@ public class RecruitmentServiceImpl implements RecruitmentService {
         SystemUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        CandidateProfile candidate = candidateRepository.findById(user)
+        // findByUserId looks up the CandidateProfile linked to this user's
+        // account — findById would need the profile's own primary key,
+        // which we don't have here, only the SystemUser's id.
+        CandidateProfile candidate = candidateRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Candidate Not Found"));
 
         JobPosting job = jobRepository.findById(jobId)
