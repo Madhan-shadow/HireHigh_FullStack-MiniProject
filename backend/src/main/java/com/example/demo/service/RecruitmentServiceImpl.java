@@ -12,7 +12,6 @@ import com.example.demo.entity.JobPosting;
 import com.example.demo.entity.SystemUser;
 import com.example.demo.exception.ApplicationCapacityExceededException;
 import com.example.demo.exception.DuplicateApplicationException;
-import com.example.demo.repository.CandidateProfileRepository;
 import com.example.demo.repository.JobApplicationRepository;
 import com.example.demo.repository.JobPostingRepository;
 import com.example.demo.repository.SystemUserRepository;

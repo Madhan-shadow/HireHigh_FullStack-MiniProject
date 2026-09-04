@@ -18,7 +18,15 @@ public class CandidateProfile {
 
     private Integer yearsExperience;
 
+private String photoUrl;
 
+public String getPhotoUrl() {
+    return photoUrl;
+}
+
+public void setPhotoUrl(String photoUrl) {
+    this.photoUrl = photoUrl;
+}
     public Long getId() {
         return id;
     }

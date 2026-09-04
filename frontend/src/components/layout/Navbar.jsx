@@ -39,9 +39,14 @@ const Navbar = () => {
           </NavLink>
         )}
         {isAuthenticated && role === 'CANDIDATE' && (
-          <NavLink to="/applications" className={linkClass}>
-            My applications
-          </NavLink>
+          <>
+            <NavLink to="/applications" className={linkClass}>
+              My applications
+            </NavLink>
+            <NavLink to="/profile" className={linkClass}>
+              My profile
+            </NavLink>
+          </>
         )}
       </div>
       <div className="navbar-user">

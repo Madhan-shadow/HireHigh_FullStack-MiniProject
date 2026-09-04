@@ -17,9 +17,15 @@ const Register = () => {
     username: '',
     role: 'CANDIDATE',
     password: '',
+    resumeUrl: '',
+    primarySkill: '',
+    yearsExperience: '',
+    photoUrl: '',
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState(null);
+
+  const isCandidate = formData.role === 'CANDIDATE';
 
   const validate = (name, value) => {
     switch (name) {
@@ -39,7 +45,7 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (name !== 'role') {
+    if (['fullName', 'email', 'username', 'password'].includes(name)) {
       setFieldErrors((prev) => ({ ...prev, [name]: validate(name, value) }));
     }
   };
@@ -56,7 +62,23 @@ const Register = () => {
     setFieldErrors(errors);
     if (Object.values(errors).some(Boolean)) return;
 
-    const result = await dispatch(register(formData));
+    const payload = {
+      fullName: formData.fullName,
+      email: formData.email,
+      username: formData.username,
+      role: formData.role,
+      password: formData.password,
+    };
+
+    if (isCandidate) {
+      payload.resumeUrl = formData.resumeUrl.trim() || null;
+      payload.primarySkill = formData.primarySkill.trim() || null;
+      payload.yearsExperience =
+        formData.yearsExperience === '' ? null : Number(formData.yearsExperience);
+      payload.photoUrl = formData.photoUrl.trim() || null;
+    }
+
+    const result = await dispatch(register(payload));
     if (register.fulfilled.match(result)) {
       setSuccessMessage('Account created. Redirecting to login…');
       setTimeout(() => navigate('/login'), 1500);
@@ -120,7 +142,9 @@ const Register = () => {
                 onChange={handleChange}
                 className={fieldErrors.username ? 'input-error' : ''}
               />
-              {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
+              {fieldErrors.username && (
+                <span className="field-error">{fieldErrors.username}</span>
+              )}
             </div>
             <div className="form-col">
               <label htmlFor="role">Role</label>
@@ -145,6 +169,60 @@ const Register = () => {
             className={fieldErrors.password ? 'input-error' : ''}
           />
           {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+
+          {isCandidate && (
+            <>
+              <div className="form-divider">
+                <span>Candidate details (optional — you can add these later too)</span>
+              </div>
+
+              <label htmlFor="photoUrl">Photo link</label>
+              <input
+                id="photoUrl"
+                name="photoUrl"
+                type="url"
+                placeholder="https://drive.google.com/your-photo"
+                value={formData.photoUrl}
+                onChange={handleChange}
+              />
+
+              <label htmlFor="resumeUrl">Resume link</label>
+              <input
+                id="resumeUrl"
+                name="resumeUrl"
+                type="url"
+                placeholder="https://drive.google.com/your-resume"
+                value={formData.resumeUrl}
+                onChange={handleChange}
+              />
+
+              <div className="form-row">
+                <div className="form-col">
+                  <label htmlFor="primarySkill">Primary skill</label>
+                  <input
+                    id="primarySkill"
+                    name="primarySkill"
+                    type="text"
+                    placeholder="e.g. Java, React"
+                    value={formData.primarySkill}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="form-col">
+                  <label htmlFor="yearsExperience">Years of experience</label>
+                  <input
+                    id="yearsExperience"
+                    name="yearsExperience"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 3"
+                    value={formData.yearsExperience}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Creating account…' : 'Register'}
