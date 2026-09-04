@@ -129,12 +129,22 @@ const applicationSlice = createSlice({
       })
       .addCase(fetchApplications.fulfilled, (state, action) => {
         state.loading = false;
-        const { content, totalPages, totalElements, number, size } = action.payload || {};
-        state.items = content || [];
-        state.totalPages = totalPages ?? 0;
-        state.totalElements = totalElements ?? 0;
-        state.currentPage = number ?? 0;
-        state.size = size ?? state.size;
+
+        // Backend currently returns a plain array (List<JobApplication>),
+        // not a Page object — support both so this keeps working either way.
+        if (Array.isArray(action.payload)) {
+          state.items = action.payload;
+          state.currentPage = 0;
+          state.totalPages = 1;
+          state.totalElements = action.payload.length;
+        } else {
+          const { content, totalPages, totalElements, number, size } = action.payload || {};
+          state.items = content || [];
+          state.totalPages = totalPages ?? 0;
+          state.totalElements = totalElements ?? 0;
+          state.currentPage = number ?? 0;
+          state.size = size ?? state.size;
+        }
       })
       .addCase(fetchApplications.rejected, (state, action) => {
         state.loading = false;
