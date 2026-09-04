@@ -7,7 +7,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
-import CandidateProfile from './components/CandidateProfile';
+import ProfilePage from './components/ProfilePage';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -53,7 +53,7 @@ function AppRoutes() {
           path="/profile"
           element={
             <ProtectedRoute>
-              <CandidateProfile />
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

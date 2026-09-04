@@ -57,14 +57,9 @@ const Navbar = () => {
           </NavLink>
         )}
         {isAuthenticated && role === 'CANDIDATE' && (
-          <>
-            <NavLink to="/applications" className={linkClass}>
-              My applications
-            </NavLink>
-            <NavLink to="/profile" className={linkClass}>
-              My profile
-            </NavLink>
-          </>
+          <NavLink to="/applications" className={linkClass}>
+            My applications
+          </NavLink>
         )}
       </div>
       <div className="navbar-user">
@@ -84,6 +79,13 @@ const Navbar = () => {
                   <span className="profile-menu-name">{displayName}</span>
                   <span className="profile-menu-role">{(role || '').toLowerCase()}</span>
                 </div>
+                <Link
+                  to="/profile"
+                  className="profile-menu-item"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  View profile
+                </Link>
                 <button
                   className="profile-menu-item"
                   onClick={() => {
