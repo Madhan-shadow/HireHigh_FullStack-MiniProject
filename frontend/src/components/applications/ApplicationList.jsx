@@ -12,6 +12,7 @@ import {
 import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
 import ApplicationProgress from '../common/ApplicationProgress';
+import CandidateProfileModal from '../common/CandidateProfileModal';
 
 const STAGES = ['APPLIED', 'SCREENING', 'INTERVIEW', 'OFFER', 'HIRED', 'REJECTED'];
 const PAGE_SIZE = 5;
@@ -70,6 +71,7 @@ const ApplicationList = () => {
   const [candidateFilter, setCandidateFilter] = useState('');
   const [editingApplication, setEditingApplication] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [viewingApplication, setViewingApplication] = useState(null);
 
   const isCandidate = role === 'CANDIDATE';
   const canEditStage = role === 'RECRUITER' || role === 'TA_LEAD';
@@ -89,9 +91,6 @@ const ApplicationList = () => {
     }
   }, [successMessage, warningMessage, error, dispatch]);
 
-  // Client-side filtering as a safety net: the backend currently returns
-  // every application and ignores the stage query param, so we enforce
-  // both filters here regardless of what the API actually applied.
   const filteredItems = items.filter((app) => {
     const matchesCandidate =
       !candidateFilter ||
@@ -178,6 +177,7 @@ const ApplicationList = () => {
               </span>
               {canEditStage && (
                 <div className="cell-actions">
+                  <button className="btn btn-link" onClick={() => setViewingApplication(app)}>View</button>
                   <button className="btn btn-link" onClick={() => setEditingApplication(app)}>Edit</button>
                   <button className="btn btn-danger" onClick={() => setConfirmDeleteId(app.id)}>Delete</button>
                 </div>
@@ -205,6 +205,13 @@ const ApplicationList = () => {
             Next
           </button>
         </div>
+      )}
+
+      {viewingApplication && (
+        <CandidateProfileModal
+          application={viewingApplication}
+          onClose={() => setViewingApplication(null)}
+        />
       )}
 
       {editingApplication && (
