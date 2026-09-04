@@ -25,7 +25,11 @@ const getById = async (id) => {
 };
 
 const updateStage = async (id, stage) => {
-  const response = await api.put(`/applications/${id}/stage`, { stage });
+  // Backend reads this via @RequestParam, not a JSON body — must go
+  // on the query string, with no request body at all.
+  const response = await api.put(`/applications/${id}/stage`, null, {
+    params: { stage },
+  });
   return unwrap(response);
 };
 
