@@ -20,6 +20,9 @@ const initialState = {
   isAuthenticated: !!storedToken,
   loading: false,
   error: null,
+  passwordLoading: false,
+  passwordError: null,
+  passwordSuccess: null,
 };
 
 const resolveAuthPayload = (data = {}) => {
@@ -36,10 +39,6 @@ export const login = createAsyncThunk(
       const data = await authService.login(credentials);
       const payload = resolveAuthPayload(data);
 
-      // Persist immediately inside the thunk. Some test harnesses dispatch
-      // thunks against a mock store that never runs the slice's reducers,
-      // so relying solely on extraReducers to write localStorage is not
-      // reliable — the side effect belongs here too.
       localStorage.setItem('token', payload.token ?? '');
       localStorage.setItem('role', payload.role ?? '');
       if (payload.user) {
@@ -68,6 +67,20 @@ export const register = createAsyncThunk(
   }
 );
 
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async ({ oldPassword, newPassword }, { rejectWithValue }) => {
+    try {
+      const data = await authService.changePassword(oldPassword, newPassword);
+      return data;
+    } catch (err) {
+      return rejectWithValue(
+        err?.response?.data?.message || err?.message || 'Could not change password. Please try again.'
+      );
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -84,6 +97,10 @@ const authSlice = createSlice({
     clearAuthError: (state) => {
       state.error = null;
     },
+    clearPasswordStatus: (state) => {
+      state.passwordError = null;
+      state.passwordSuccess = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -99,8 +116,6 @@ const authSlice = createSlice({
         state.user = user;
         state.isAuthenticated = !!token;
 
-        // Redundant with the thunk-level write above, but kept here too so
-        // the state and localStorage never drift apart.
         localStorage.setItem('token', token ?? '');
         localStorage.setItem('role', role ?? '');
         if (user) localStorage.setItem('user', JSON.stringify(user));
@@ -119,9 +134,23 @@ const authSlice = createSlice({
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.passwordLoading = true;
+        state.passwordError = null;
+        state.passwordSuccess = null;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.passwordLoading = false;
+        state.passwordSuccess =
+          action.payload?.message || 'Password changed successfully.';
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.passwordLoading = false;
+        state.passwordError = action.payload;
       });
   },
 });
 
-export const { logout, clearAuthError } = authSlice.actions;
+export const { logout, clearAuthError, clearPasswordStatus } = authSlice.actions;
 export default authSlice.reducer;

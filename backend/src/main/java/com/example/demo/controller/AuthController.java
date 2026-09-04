@@ -1,12 +1,17 @@
 package com.example.demo.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.dto.AuthRequestDto;
 import com.example.demo.dto.AuthResponseDto;
+import com.example.demo.dto.ChangePasswordDto;
 import com.example.demo.dto.RegisterDto;
 import com.example.demo.service.AuthService;
 
@@ -36,5 +41,19 @@ public class AuthController {
             @Valid @RequestBody AuthRequestDto dto) {
 
         return ResponseEntity.ok(authService.login(dto));
+    }
+
+    // Requires a valid JWT — must NOT be listed under permitAll() in
+    // SecurityConfig, unlike /register and /login.
+    @PutMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(
+            @Valid @RequestBody ChangePasswordDto dto,
+            Authentication authentication) {
+
+        authService.changePassword(authentication.getName(), dto);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Password changed successfully.");
+        return ResponseEntity.ok(response);
     }
 }

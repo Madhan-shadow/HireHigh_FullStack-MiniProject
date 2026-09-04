@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.AuthRequestDto;
 import com.example.demo.dto.AuthResponseDto;
+import com.example.demo.dto.ChangePasswordDto;
 import com.example.demo.dto.RegisterDto;
 import com.example.demo.entity.CandidateProfile;
 import com.example.demo.entity.Role;
@@ -89,5 +90,19 @@ public class AuthServiceImpl implements AuthService {
         response.setRole(user.getRole().name());
 
         return response;
+    }
+
+    @Override
+    public void changePassword(String username, ChangePasswordDto dto) {
+
+        SystemUser user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
     }
 }
