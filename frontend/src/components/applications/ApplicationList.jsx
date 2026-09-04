@@ -89,10 +89,15 @@ const ApplicationList = () => {
     }
   }, [successMessage, warningMessage, error, dispatch]);
 
+  // Client-side filtering as a safety net: the backend currently returns
+  // every application and ignores the stage query param, so we enforce
+  // both filters here regardless of what the API actually applied.
   const filteredItems = items.filter((app) => {
-    if (!candidateFilter) return true;
-    const q = candidateFilter.toLowerCase();
-    return app.candidate?.user?.fullName?.toLowerCase().includes(q);
+    const matchesCandidate =
+      !candidateFilter ||
+      app.candidate?.user?.fullName?.toLowerCase().includes(candidateFilter.toLowerCase());
+    const matchesStage = !stageFilter || app.currentStage === stageFilter;
+    return matchesCandidate && matchesStage;
   });
 
   const handleStageFilterChange = (e) => {
