@@ -10,5 +10,5 @@ import com.example.demo.entity.SystemUser;
 
 @Repository
 public interface CandidateProfileRepository extends  JpaRepository<CandidateProfile, Long>{
-    Optional<CandidateProfile> findByUser(SystemUser user);
+    Optional<CandidateProfile> findByUser(Long user);
 }
