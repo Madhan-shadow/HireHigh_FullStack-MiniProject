@@ -8,11 +8,18 @@ import {
   setSearchQuery,
   selectFilteredJobs,
 } from '../../store/slices/jobSlice';
-import { applyToJob, clearMessages } from '../../store/slices/applicationSlice';
+import {
+  applyToJob,
+  applyToJobWithDetails,
+  fetchMyApplications,
+  clearMessages,
+} from '../../store/slices/applicationSlice';
 import JobCreateModal from './JobCreateModal';
+import ApplyDetailsModal from './ApplyDetailsModal';
 import ConfirmModal from '../common/ConfirmModal';
 import SearchFilterBar from '../common/SearchFilterBar';
 import CapacityBar from '../common/CapacityBar';
+import ApplicationProgress from '../common/ApplicationProgress';
 import EmptyState from '../common/EmptyState';
 
 const DEPT_COLORS = ['#3B6FA0', '#C1592E', '#6B4F9E', '#1F5E4A', '#B8862F'];
@@ -30,13 +37,18 @@ const JobList = () => {
   const jobs = useSelector(selectFilteredJobs);
   const { loading, error: jobError } = useSelector((state) => state.jobs);
   const { role } = useSelector((state) => state.auth);
-  const { successMessage, warningMessage, error: appError } = useSelector(
-    (state) => state.applications
-  );
+  const {
+    successMessage,
+    warningMessage,
+    error: appError,
+    items: myApplications,
+  } = useSelector((state) => state.applications);
 
   const [showModal, setShowModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [applyingJob, setApplyingJob] = useState(null);
+  const [applySubmitting, setApplySubmitting] = useState(false);
 
   const isRecruiter = role === 'RECRUITER' || role === 'TA_LEAD';
   const isCandidate = role === 'CANDIDATE';
@@ -46,11 +58,28 @@ const JobList = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    if (isCandidate) {
+      dispatch(fetchMyApplications());
+    }
+  }, [dispatch, isCandidate]);
+
+  useEffect(() => {
     if (successMessage || warningMessage || appError) {
       const timer = setTimeout(() => dispatch(clearMessages()), 3000);
       return () => clearTimeout(timer);
     }
   }, [successMessage, warningMessage, appError, dispatch]);
+
+  // Map of jobId -> currentStage for jobs this candidate has already applied to.
+  const appliedStageByJobId = {};
+  if (isCandidate && Array.isArray(myApplications)) {
+    myApplications.forEach((app) => {
+      const jobId = app.job?.id;
+      if (jobId != null) {
+        appliedStageByJobId[jobId] = app.currentStage;
+      }
+    });
+  }
 
   const handleOpenCreate = () => {
     setEditingJob(null);
@@ -71,8 +100,24 @@ const JobList = () => {
     setShowModal(false);
   };
 
-  const handleApply = (jobId) => {
-    dispatch(applyToJob(jobId));
+  const handleOpenApply = (job) => {
+    setApplyingJob(job);
+  };
+
+  const handleApplySubmit = async (profile) => {
+    if (!applyingJob) return;
+    setApplySubmitting(true);
+    await dispatch(applyToJobWithDetails({ jobId: applyingJob.id, profile }));
+    setApplySubmitting(false);
+    setApplyingJob(null);
+  };
+
+  const handleApplySkip = async () => {
+    if (!applyingJob) return;
+    setApplySubmitting(true);
+    await dispatch(applyToJob(applyingJob.id));
+    setApplySubmitting(false);
+    setApplyingJob(null);
   };
 
   const handleDeleteRequest = (jobId) => {
@@ -134,46 +179,54 @@ const JobList = () => {
             <span>Status</span>
             <span></span>
           </div>
-          {jobs.map((job) => (
-            <div className="row-list-row jobs-grid" key={job.id}>
-              <span className="cell-title">{job.title}</span>
-              <span className="cell-muted dept-tag">
-                <span
-                  className="dept-dot"
-                  style={{ background: deptColor(job.department) }}
-                />
-                {job.department}
-              </span>
-              <CapacityBar currentFills={job.currentFills} hiringGoal={job.hiringGoal} />
-              <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
-                {job.status}
-              </span>
-              <div className="cell-actions">
-                {isRecruiter && (
-                  <>
-                    <button className="btn btn-link" onClick={() => handleOpenEdit(job)}>
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDeleteRequest(job.id)}
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
-                {isCandidate && (
-                  <button
-                    className="btn btn-success"
-                    data-testid={`apply-button-${job.id}`}
-                    onClick={() => handleApply(job.id)}
-                  >
-                    Apply Now
-                  </button>
-                )}
+          {jobs.map((job) => {
+            const appliedStage = appliedStageByJobId[job.id];
+
+            return (
+              <div className="row-list-row jobs-grid" key={job.id}>
+                <span className="cell-title">{job.title}</span>
+                <span className="cell-muted dept-tag">
+                  <span
+                    className="dept-dot"
+                    style={{ background: deptColor(job.department) }}
+                  />
+                  {job.department}
+                </span>
+                <CapacityBar currentFills={job.currentFills} hiringGoal={job.hiringGoal} />
+                <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
+                  {job.status}
+                </span>
+                <div className="cell-actions">
+                  {isRecruiter && (
+                    <>
+                      <button className="btn btn-link" onClick={() => handleOpenEdit(job)}>
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDeleteRequest(job.id)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {isCandidate && (
+                    appliedStage ? (
+                      <ApplicationProgress stage={appliedStage} />
+                    ) : (
+                      <button
+                        className="btn btn-success"
+                        data-testid={`apply-button-${job.id}`}
+                        onClick={() => handleOpenApply(job)}
+                      >
+                        Apply Now
+                      </button>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -182,6 +235,16 @@ const JobList = () => {
           job={editingJob}
           onClose={() => setShowModal(false)}
           onSubmit={handleModalSubmit}
+        />
+      )}
+
+      {applyingJob && (
+        <ApplyDetailsModal
+          jobTitle={applyingJob.title}
+          onClose={() => setApplyingJob(null)}
+          onSubmit={handleApplySubmit}
+          onSkip={handleApplySkip}
+          submitting={applySubmitting}
         />
       )}
 

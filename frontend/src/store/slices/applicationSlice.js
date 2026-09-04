@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, isAnyOf } from '@reduxjs/toolkit';
 import applicationService from '../../services/applicationService';
+import candidateService from '../../services/candidateService';
 
 const initialState = {
   items: [],
@@ -42,6 +43,17 @@ const extractMessage = (payload, fallback) => {
   return fallback;
 };
 
+const handleApplyError = (err) => {
+  if (is401(err)) clearSession();
+  const rawMessage = extractMessage(err, '');
+
+  if (is409(err) || /duplicate|already applied|capacity/i.test(rawMessage)) {
+    return { conflict: true, message: 'Application capacity exceeded' };
+  }
+
+  return { conflict: false, message: rawMessage || 'Failed to submit application.' };
+};
+
 export const fetchApplications = createAsyncThunk(
   'applications/fetchApplications',
   async ({ page = 0, size = 5, stage } = {}, { rejectWithValue }) => {
@@ -73,14 +85,32 @@ export const applyToJob = createAsyncThunk(
       const data = await applicationService.apply(jobId);
       return data;
     } catch (err) {
-      if (is401(err)) clearSession();
-      const rawMessage = extractMessage(err, '');
+      return rejectWithValue(handleApplyError(err));
+    }
+  }
+);
 
-      if (is409(err) || /duplicate|already applied|capacity/i.test(rawMessage)) {
-        return rejectWithValue({ conflict: true, message: 'Application capacity exceeded' });
+// Same as applyToJob, but first saves resume/skill/experience to the
+// candidate's profile. If the profile save fails, we still proceed to
+// apply — profile details are a nice-to-have, not a hard requirement.
+export const applyToJobWithDetails = createAsyncThunk(
+  'applications/applyToJobWithDetails',
+  async ({ jobId, profile }, { rejectWithValue }) => {
+    try {
+      if (profile) {
+        try {
+          await candidateService.updateMyProfile(profile);
+        } catch (profileErr) {
+          // Non-fatal: continue to apply even if the profile save failed.
+          // eslint-disable-next-line no-console
+          console.warn('Could not save candidate profile before applying:', profileErr);
+        }
       }
 
-      return rejectWithValue({ conflict: false, message: rawMessage || 'Failed to submit application.' });
+      const data = await applicationService.apply(jobId);
+      return data;
+    } catch (err) {
+      return rejectWithValue(handleApplyError(err));
     }
   }
 );
@@ -129,9 +159,6 @@ const applicationSlice = createSlice({
       })
       .addCase(fetchApplications.fulfilled, (state, action) => {
         state.loading = false;
-
-        // Backend currently returns a plain array (List<JobApplication>),
-        // not a Page object — support both so this keeps working either way.
         if (Array.isArray(action.payload)) {
           state.items = action.payload;
           state.currentPage = 0;
@@ -174,21 +201,6 @@ const applicationSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Failed to load your applications. Please try again.';
       })
-      .addCase(applyToJob.fulfilled, (state, action) => {
-        state.successMessage = extractMessage(action.payload, 'Application submitted successfully.');
-        state.warningMessage = null;
-        state.error = null;
-      })
-      .addCase(applyToJob.rejected, (state, action) => {
-        const payload = action.payload;
-        if (payload && typeof payload === 'object' && payload.conflict) {
-          state.warningMessage = payload.message || 'Application capacity exceeded';
-          state.error = null;
-        } else {
-          state.error = extractMessage(payload, 'Failed to submit application.');
-          state.warningMessage = null;
-        }
-      })
       .addCase(updateStage.pending, (state, action) => {
         const { id, stage } = action.meta.arg;
         const item = state.items.find((a) => a.id === id);
@@ -206,6 +218,21 @@ const applicationSlice = createSlice({
       })
       .addCase(deleteApplication.rejected, (state, action) => {
         state.error = action.payload;
+      })
+      .addMatcher(isAnyOf(applyToJob.fulfilled, applyToJobWithDetails.fulfilled), (state, action) => {
+        state.successMessage = extractMessage(action.payload, 'Application submitted successfully.');
+        state.warningMessage = null;
+        state.error = null;
+      })
+      .addMatcher(isAnyOf(applyToJob.rejected, applyToJobWithDetails.rejected), (state, action) => {
+        const payload = action.payload;
+        if (payload && typeof payload === 'object' && payload.conflict) {
+          state.warningMessage = payload.message || 'Application capacity exceeded';
+          state.error = null;
+        } else {
+          state.error = extractMessage(payload, 'Failed to submit application.');
+          state.warningMessage = null;
+        }
       });
   },
 });
