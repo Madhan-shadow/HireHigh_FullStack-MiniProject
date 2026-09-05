@@ -48,7 +48,15 @@
 /* =========================================================
    ROW AVATAR — small candidate photo/initial in list rows
    ========================================================= */
-
+.btn-link-inline {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
 .cell-candidate {
   display: flex;
   align-items: center;
