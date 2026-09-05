@@ -1,28 +1,30 @@
 import React from 'react';
 import { openBase64Pdf } from '../../utils/openBase64Pdf';
 
-const CandidateProfileModal = ({ application, onClose }) => {
-  const candidate = application.candidate || {};
-  const user = candidate.user || {};
-  const initial = (user.fullName || '?').charAt(0).toUpperCase();
+function CandidateProfileModal(props) {
+  var application = props.application;
+  var onClose = props.onClose;
+  var candidate = application.candidate || {};
+  var user = candidate.user || {};
+  var initial = (user.fullName || '?').charAt(0).toUpperCase();
 
-  const handleOverlayClick = (e) => {
+  function handleOverlayClick(e) {
     if (e.target === e.currentTarget) onClose();
-  };
+  }
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal">
         <div className="modal-header">
           <h2>Applicant profile</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+          <button className="modal-close" onClick={onClose} aria-label="Close">x</button>
         </div>
 
         <div className="candidate-profile-view">
-          {candidate.photoUrl ? (
+          {user.photoUrl ? (
             <img
-              src={candidate.photoUrl}
-              alt={`${user.fullName || 'Candidate'}'s photo`}
+              src={user.photoUrl}
+              alt="Candidate"
               className="candidate-profile-photo"
             />
           ) : (
@@ -33,23 +35,23 @@ const CandidateProfileModal = ({ application, onClose }) => {
 
           <div className="candidate-profile-field">
             <span className="candidate-profile-label">Full name</span>
-            <span className="candidate-profile-value">{user.fullName || '—'}</span>
+            <span className="candidate-profile-value">{user.fullName || '-'}</span>
           </div>
 
           <div className="candidate-profile-field">
             <span className="candidate-profile-label">Email</span>
-            <span className="candidate-profile-value">{user.email || '—'}</span>
+            <span className="candidate-profile-value">{user.email || '-'}</span>
           </div>
 
           <div className="candidate-profile-field">
             <span className="candidate-profile-label">Primary skill</span>
-            <span className="candidate-profile-value">{candidate.primarySkill || '—'}</span>
+            <span className="candidate-profile-value">{candidate.primarySkill || '-'}</span>
           </div>
 
           <div className="candidate-profile-field">
             <span className="candidate-profile-label">Years of experience</span>
             <span className="candidate-profile-value">
-              {candidate.yearsExperience != null ? candidate.yearsExperience : '—'}
+              {candidate.yearsExperience != null ? candidate.yearsExperience : '-'}
             </span>
           </div>
 
@@ -60,12 +62,12 @@ const CandidateProfileModal = ({ application, onClose }) => {
                 <button
                   type="button"
                   className="btn-link-inline"
-                  onClick={() => openBase64Pdf(candidate.resumeUrl)}
+                  onClick={function () { openBase64Pdf(candidate.resumeUrl); }}
                 >
-                  {candidate.resumeFileName ? `View ${candidate.resumeFileName}` : 'View resume'}
+                  {candidate.resumeFileName ? ('View ' + candidate.resumeFileName) : 'View resume'}
                 </button>
               ) : (
-                '—'
+                '-'
               )}
             </span>
           </div>
@@ -77,6 +79,6 @@ const CandidateProfileModal = ({ application, onClose }) => {
       </div>
     </div>
   );
-};
+}
 
 export default CandidateProfileModal;
