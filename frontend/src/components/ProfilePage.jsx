@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import userService from '../services/userService';
 import candidateService from '../services/candidateService';
+import ChangePasswordModal from './common/ChangePasswordModal';
 
 const ProfilePage = () => {
   const { role } = useSelector((state) => state.auth);
@@ -22,6 +23,8 @@ const ProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(null);
+
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,7 +127,12 @@ const ProfilePage = () => {
       </div>
 
       <div className="profile-section">
-        <h2 className="profile-section-title">Account details</h2>
+        <div className="profile-section-header">
+          <h2 className="profile-section-title">Account details</h2>
+          <button className="btn btn-link" onClick={() => setShowPasswordModal(true)}>
+            Change password
+          </button>
+        </div>
         <div className="profile-info-grid">
           <div className="profile-info-field">
             <span className="profile-info-label">Username</span>
@@ -242,6 +250,10 @@ const ProfilePage = () => {
             </div>
           )}
         </div>
+      )}
+
+      {showPasswordModal && (
+        <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
       )}
     </div>
   );

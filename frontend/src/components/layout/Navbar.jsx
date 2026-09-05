@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import ChangePasswordModal from '../common/ChangePasswordModal';
+import userService from '../../services/userService';
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -11,6 +12,7 @@ const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [accountInfo, setAccountInfo] = useState(null);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -23,6 +25,29 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Pull the real account record so the navbar shows the person's actual
+  // name rather than falling back to their role label.
+  useEffect(() => {
+    let cancelled = false;
+
+    if (isAuthenticated) {
+      userService
+        .getMyAccount()
+        .then((data) => {
+          if (!cancelled) setAccountInfo(data);
+        })
+        .catch(() => {
+          // Non-fatal — we just keep using whatever we already have.
+        });
+    } else {
+      setAccountInfo(null);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
   const handleLogout = () => {
     setMenuOpen(false);
     dispatch(logout());
@@ -33,14 +58,19 @@ const Navbar = () => {
     role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
 
   const linkClass = ({ isActive }) => (isActive ? 'active' : undefined);
-  const displayName = user?.fullName || role || 'user';
+
+  const displayName = accountInfo?.fullName || user?.fullName || role || 'user';
   const initial = displayName.charAt(0).toUpperCase();
+
+  // Brand mark: shows the signed-in user's role initial (C for candidate,
+  // R for recruiter, T for TA lead, etc). Logged-out visitors see "H".
+  const brandMark = isAuthenticated && role ? role.charAt(0).toUpperCase() : 'H';
 
   return (
     <nav className="navbar">
       <div className="navbar-brand">
         <Link to="/">
-          <span className="navbar-brand-mark">H</span>
+          <span className="navbar-brand-mark">{brandMark}</span>
           <span className="navbar-brand-word">HireHigh</span>
         </Link>
       </div>
