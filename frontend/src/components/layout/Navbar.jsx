@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
-import ChangePasswordModal from '../common/ChangePasswordModal';
 import userService from '../../services/userService';
 
 const Navbar = () => {
@@ -11,7 +10,6 @@ const Navbar = () => {
   const { isAuthenticated, role, user } = useSelector((state) => state.auth);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
   const menuRef = useRef(null);
 
@@ -116,15 +114,6 @@ const Navbar = () => {
                 >
                   View profile
                 </Link>
-                <button
-                  className="profile-menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setShowPasswordModal(true);
-                  }}
-                >
-                  Change password
-                </button>
                 <button className="profile-menu-item profile-menu-item--danger" onClick={handleLogout}>
                   Logout
                 </button>
@@ -137,10 +126,6 @@ const Navbar = () => {
           </Link>
         )}
       </div>
-
-      {showPasswordModal && (
-        <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
-      )}
     </nav>
   );
 };
