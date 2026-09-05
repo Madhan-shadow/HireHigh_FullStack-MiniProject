@@ -67,6 +67,7 @@ const Navbar = () => {
   const displayName = accountInfo?.fullName || user?.fullName || role || 'user';
   const initial = displayName.charAt(0).toUpperCase();
   const roleLabel = ROLE_LABELS[role] || (role ? role.toLowerCase() : '');
+  const roleInitial = role ? role.charAt(0).toUpperCase() : '';
 
   return (
     <nav className="navbar">
@@ -76,7 +77,10 @@ const Navbar = () => {
           <span className="navbar-brand-word">HireHigh</span>
         </Link>
         {isAuthenticated && roleLabel && (
-          <span className="navbar-role-badge">{roleLabel}</span>
+          <span className="navbar-role-badge">
+            <span className="navbar-role-badge-icon">{roleInitial}</span>
+            {roleLabel}
+          </span>
         )}
       </div>
       <div className="navbar-links">

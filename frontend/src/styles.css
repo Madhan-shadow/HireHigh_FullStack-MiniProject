@@ -55,7 +55,176 @@
 /* =========================================================
    HOME PAGE — append to the end of styles.css
    ========================================================= */
+/* =========================================================
+   HOME PAGE — append to the end of styles.css
+   ========================================================= */
 
+.home-hero {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 70px 28px 40px;
+}
+
+.home-hero-content {
+  max-width: 640px;
+  margin-bottom: 56px;
+}
+
+.home-hero-eyebrow {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--pine-soft);
+  color: var(--pine-deep);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.home-hero-headline {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 6vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -1.5px;
+  margin-bottom: 18px;
+}
+
+.home-hero-sub {
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.home-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.home-cta-row .btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.home-feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 26px 24px;
+}
+
+.home-feature-icon {
+  display: inline-block;
+  font-size: 26px;
+  margin-bottom: 14px;
+}
+
+.home-feature-card h3 {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.home-feature-card p {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .home-features {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fix: "View profile" link in the navbar dropdown inherits the browser's
+   default anchor underline since .profile-menu-item was styled for
+   buttons only. This removes it. */
+a.profile-menu-item {
+  text-decoration: none;
+}
+
+/* =========================================================
+   PASSWORD FIELD — show/hide eye-icon toggle
+   ========================================================= */
+
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+}
+
+.password-toggle-btn:hover {
+  background: var(--paper);
+  color: var(--text);
+}
+
+/* =========================================================
+   NAVBAR ROLE BADGE — shows who's logged in next to the logo
+   ========================================================= */
+
+.navbar-brand {
+  gap: 12px;
+}
+
+.navbar-role-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  background: rgba(232, 174, 61, 0.16);
+  color: var(--gold-bright);
+  border: 1px solid rgba(232, 174, 61, 0.3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.navbar-role-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold-bright);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
 .home-hero {
   max-width: 1180px;
   margin: 0 auto;
