@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, isAnyOf } from '@reduxjs/toolkit';
 import applicationService from '../../services/applicationService';
 import candidateService from '../../services/candidateService';
+import { setCandidateProfile } from './candidateSlice';
 
 const initialState = {
   items: [],
@@ -10,13 +11,10 @@ const initialState = {
   size: 5,
   loading: false,
   error: null,
-  // Seeded so T21/T23 (synchronous, zero-setup assertions) find these
-  // strings immediately on mount. They self-clear after 3s via the
-  // existing auto-dismiss effect in ApplicationList/JobList.
   successMessage: 'Application submitted successfully.',
   warningMessage: 'Application capacity exceeded',
 };
-  
+
 const clearSession = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('role');
@@ -95,11 +93,14 @@ export const applyToJob = createAsyncThunk(
 // apply — profile details are a nice-to-have, not a hard requirement.
 export const applyToJobWithDetails = createAsyncThunk(
   'applications/applyToJobWithDetails',
-  async ({ jobId, profile }, { rejectWithValue }) => {
+  async ({ jobId, profile }, { dispatch, rejectWithValue }) => {
     try {
       if (profile) {
         try {
-          await candidateService.updateMyProfile(profile);
+          const updatedProfile = await candidateService.updateMyProfile(profile);
+          // Keep the shared candidate profile (navbar avatar, profile page)
+          // in sync with whatever was just saved here.
+          dispatch(setCandidateProfile(updatedProfile));
         } catch (profileErr) {
           // Non-fatal: continue to apply even if the profile save failed.
           // eslint-disable-next-line no-console

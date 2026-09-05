@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import userService from '../services/userService';
-import candidateService from '../services/candidateService';
 import ChangePasswordModal from './common/ChangePasswordModal';
+import { fetchCandidateProfile, saveCandidateProfile } from '../store/slices/candidateSlice';
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB — keeps the base64 payload reasonable
-
-// Event other components (like the navbar) listen for so their own copy of
-// the profile photo updates immediately after a save, without a reload.
-export const PHOTO_UPDATED_EVENT = 'hirehigh:profile-photo-updated';
 
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -19,11 +15,14 @@ const readFileAsDataUrl = (file) =>
   });
 
 const ProfilePage = () => {
+  const dispatch = useDispatch();
   const { role } = useSelector((state) => state.auth);
+  const { profile: candidateProfile, loaded: candidateLoaded } = useSelector(
+    (state) => state.candidate
+  );
   const isCandidate = role === 'CANDIDATE';
 
   const [account, setAccount] = useState(null);
-  const [candidateProfile, setCandidateProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
 
@@ -42,31 +41,14 @@ const ProfilePage = () => {
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
+  // Account details aren't in redux, so load them locally each visit.
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       try {
         const accountData = await userService.getMyAccount();
-        if (cancelled) return;
-        setAccount(accountData);
-
-        if (isCandidate) {
-          try {
-            const profileData = await candidateService.getMyProfile();
-            if (cancelled) return;
-            setCandidateProfile(profileData);
-            setFormData({
-              resumeUrl: profileData.resumeUrl || '',
-              resumeFileName: profileData.resumeFileName || '',
-              primarySkill: profileData.primarySkill || '',
-              yearsExperience: profileData.yearsExperience ?? '',
-              photoUrl: profileData.photoUrl || '',
-            });
-          } catch {
-            // Candidate profile may not exist yet — not fatal.
-          }
-        }
+        if (!cancelled) setAccount(accountData);
       } catch {
         if (!cancelled) setLoadError('Could not load your account details.');
       } finally {
@@ -78,7 +60,28 @@ const ProfilePage = () => {
     return () => {
       cancelled = true;
     };
-  }, [isCandidate]);
+  }, []);
+
+  // Candidate profile lives in redux, so it survives navigating away to
+  // /jobs or /applications and back — fetched once per session.
+  useEffect(() => {
+    if (isCandidate && !candidateLoaded) {
+      dispatch(fetchCandidateProfile());
+    }
+  }, [dispatch, isCandidate, candidateLoaded]);
+
+  // Keep the edit form synced with whatever is currently stored.
+  useEffect(() => {
+    if (candidateProfile) {
+      setFormData({
+        resumeUrl: candidateProfile.resumeUrl || '',
+        resumeFileName: candidateProfile.resumeFileName || '',
+        primarySkill: candidateProfile.primarySkill || '',
+        yearsExperience: candidateProfile.yearsExperience ?? '',
+        photoUrl: candidateProfile.photoUrl || '',
+      });
+    }
+  }, [candidateProfile]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,7 +90,7 @@ const ProfilePage = () => {
 
   const handlePhotoFileChange = async (e) => {
     const file = e.target.files?.[0];
-    e.target.value = ''; // allow re-selecting the same file later
+    e.target.value = '';
     if (!file) return;
 
     setFileError(null);
@@ -141,35 +144,44 @@ const ProfilePage = () => {
     setFormData((prev) => ({ ...prev, resumeUrl: '', resumeFileName: '' }));
   };
 
+  const resetFormFromProfile = () => {
+    if (candidateProfile) {
+      setFormData({
+        resumeUrl: candidateProfile.resumeUrl || '',
+        resumeFileName: candidateProfile.resumeFileName || '',
+        primarySkill: candidateProfile.primarySkill || '',
+        yearsExperience: candidateProfile.yearsExperience ?? '',
+        photoUrl: candidateProfile.photoUrl || '',
+      });
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     setSaveError(null);
     setSaveSuccess(null);
 
-    try {
-      const updated = await candidateService.updateMyProfile({
+    const resultAction = await dispatch(
+      saveCandidateProfile({
         resumeUrl: formData.resumeUrl || null,
         resumeFileName: formData.resumeFileName || null,
         primarySkill: formData.primarySkill.trim() || null,
         yearsExperience: formData.yearsExperience === '' ? null : Number(formData.yearsExperience),
         photoUrl: formData.photoUrl || null,
-      });
-      setCandidateProfile(updated);
+      })
+    );
+
+    setSaving(false);
+
+    if (saveCandidateProfile.fulfilled.match(resultAction)) {
       setSaveSuccess('Profile updated successfully.');
       setEditing(false);
-
-      // Let the navbar (and anything else showing the avatar) know right
-      // away, so it doesn't keep showing a stale photo until next reload.
-      window.dispatchEvent(
-        new CustomEvent(PHOTO_UPDATED_EVENT, { detail: updated?.photoUrl || null })
-      );
-    } catch {
-      setSaveError('Could not save your profile. Please try again.');
-    } finally {
-      setSaving(false);
-      setTimeout(() => setSaveSuccess(null), 3000);
+    } else {
+      setSaveError(resultAction.payload || 'Could not save your profile. Please try again.');
     }
+
+    setTimeout(() => setSaveSuccess(null), 3000);
   };
 
   if (loading) {
@@ -189,9 +201,6 @@ const ProfilePage = () => {
   }
 
   const initial = (account.fullName || account.username || '?').charAt(0).toUpperCase();
-
-  // While editing, preview whatever photo is currently picked (even before
-  // saving) so the hero avatar updates the moment a file is chosen.
   const heroPhotoUrl = editing ? formData.photoUrl : candidateProfile?.photoUrl;
 
   return (
@@ -254,7 +263,7 @@ const ProfilePage = () => {
             <form onSubmit={handleSave}>
               {fileError && <div className="error-banner">{fileError}</div>}
 
-              <label htmlFor="photoFile">Profile photo</label>
+              <label>Profile photo</label>
               <div className="profile-photo-upload">
                 <div className="profile-photo-preview">
                   {formData.photoUrl ? (
@@ -264,32 +273,32 @@ const ProfilePage = () => {
                   )}
                 </div>
                 <div className="profile-upload-controls">
-                  <input
-                    id="photoFile"
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoFileChange}
-                    className="profile-file-input"
-                  />
-                  {formData.photoUrl && (
-                    <button type="button" className="btn btn-link" onClick={handleRemovePhoto}>
-                      Remove photo
-                    </button>
+                  {formData.photoUrl ? (
+                    <>
+                      <span className="profile-upload-current-label">Photo added</span>
+                      <button type="button" className="btn btn-link" onClick={handleRemovePhoto}>
+                        Remove photo
+                      </button>
+                    </>
+                  ) : (
+                    <input
+                      id="photoFile"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoFileChange}
+                      className="profile-file-input"
+                    />
                   )}
                 </div>
               </div>
-              <span className="profile-upload-hint">JPG or PNG, up to 2MB.</span>
+              <span className="profile-upload-hint">
+                {formData.photoUrl
+                  ? 'Remove the current photo to upload a different one.'
+                  : 'JPG or PNG, up to 2MB.'}
+              </span>
 
-              <label htmlFor="resumeFile">Resume (PDF)</label>
-              <input
-                id="resumeFile"
-                type="file"
-                accept="application/pdf"
-                onChange={handleResumeFileChange}
-                className="profile-file-input"
-              />
-              <span className="profile-upload-hint">PDF only, up to 2MB.</span>
-              {formData.resumeUrl && (
+              <label>Resume (PDF)</label>
+              {formData.resumeUrl ? (
                 <div className="profile-resume-current">
                   <a href={formData.resumeUrl} target="_blank" rel="noopener noreferrer">
                     {formData.resumeFileName ? `View ${formData.resumeFileName}` : 'View current resume'}
@@ -298,7 +307,20 @@ const ProfilePage = () => {
                     Remove
                   </button>
                 </div>
+              ) : (
+                <input
+                  id="resumeFile"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleResumeFileChange}
+                  className="profile-file-input"
+                />
               )}
+              <span className="profile-upload-hint">
+                {formData.resumeUrl
+                  ? 'Remove the current resume to upload a different one.'
+                  : 'PDF only, up to 2MB.'}
+              </span>
 
               <div className="form-row">
                 <div className="form-col">
@@ -327,7 +349,14 @@ const ProfilePage = () => {
               </div>
 
               <div className="modal-actions" style={{ justifyContent: 'flex-start', paddingLeft: 0 }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setEditing(false)}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setEditing(false);
+                    resetFormFromProfile();
+                  }}
+                >
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary" disabled={saving}>

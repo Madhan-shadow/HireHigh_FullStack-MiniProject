@@ -53,6 +53,17 @@ const StageEditModal = ({ application, onClose, onSubmit }) => {
   );
 };
 
+const CandidateAvatar = ({ candidate }) => {
+  const name = candidate?.user?.fullName || '?';
+  const initial = name.charAt(0).toUpperCase();
+
+  return (
+    <span className="row-avatar">
+      {candidate?.photoUrl ? <img src={candidate.photoUrl} alt="" /> : initial}
+    </span>
+  );
+};
+
 const ApplicationList = () => {
   const dispatch = useDispatch();
   const { role } = useSelector((state) => state.auth);
@@ -169,7 +180,10 @@ const ApplicationList = () => {
 
           {filteredItems.map((app) => (
             <div className={`row-list-row applications-grid${canEditStage ? '' : ' no-actions'}`} key={app.id}>
-              <span className="cell-title">{app.candidate?.user?.fullName || '—'}</span>
+              <span className="cell-title cell-candidate">
+                <CandidateAvatar candidate={app.candidate} />
+                {app.candidate?.user?.fullName || '—'}
+              </span>
               <span className="cell-muted">{app.job?.title || '—'}</span>
               <ApplicationProgress stage={app.currentStage} />
               <span className="cell-mono">
@@ -178,6 +192,16 @@ const ApplicationList = () => {
               {canEditStage && (
                 <div className="cell-actions">
                   <button className="btn btn-link" onClick={() => setViewingApplication(app)}>View</button>
+                  {app.candidate?.resumeUrl && (
+                    
+                      className="btn btn-link"
+                      href={app.candidate.resumeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Resume
+                    </a>
+                  )}
                   <button className="btn btn-link" onClick={() => setEditingApplication(app)}>Edit</button>
                   <button className="btn btn-danger" onClick={() => setConfirmDeleteId(app.id)}>Delete</button>
                 </div>
@@ -200,42 +224,4 @@ const ApplicationList = () => {
           <button
             className="btn btn-secondary"
             disabled={currentPage >= totalPages - 1}
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-          >
-            Next
-          </button>
-        </div>
-      )}
-
-      {viewingApplication && (
-        <CandidateProfileModal
-          application={viewingApplication}
-          onClose={() => setViewingApplication(null)}
-        />
-      )}
-
-      {editingApplication && (
-        <StageEditModal
-          application={editingApplication}
-          onClose={() => setEditingApplication(null)}
-          onSubmit={handleStageSave}
-        />
-      )}
-
-      {confirmDeleteId != null && (
-        <div className="modal-overlay" onClick={() => setConfirmDeleteId(null)}>
-          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Delete this application?</h3>
-            <p>This action cannot be undone.</p>
-            <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
-              <button className="btn btn-danger" onClick={handleDeleteConfirm}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default ApplicationList;
+            onClick={()

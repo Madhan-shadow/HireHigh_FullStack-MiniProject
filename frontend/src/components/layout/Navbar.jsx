@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
+import { fetchCandidateProfile } from '../../store/slices/candidateSlice';
 import userService from '../../services/userService';
-import candidateService from '../../services/candidateService';
-import { PHOTO_UPDATED_EVENT } from '../ProfilePage';
 
 const ROLE_ABBR = {
   CANDIDATE: 'C',
@@ -24,10 +23,12 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, role, user } = useSelector((state) => state.auth);
+  const { profile: candidateProfile, loaded: candidateLoaded } = useSelector(
+    (state) => state.candidate
+  );
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
-  const [photoUrl, setPhotoUrl] = useState(null);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -51,9 +52,7 @@ const Navbar = () => {
         .then((data) => {
           if (!cancelled) setAccountInfo(data);
         })
-        .catch(() => {
-          // Non-fatal — we just keep using whatever we already have.
-        });
+        .catch(() => {});
     } else {
       setAccountInfo(null);
     }
@@ -63,38 +62,15 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
-  // Candidates can upload a profile photo — show it in the avatar circle
-  // once it's set, instead of always falling back to the initial letter.
+  // Candidate photo now lives in redux (shared with ProfilePage), so it
+  // stays in sync the instant a save happens — no reload, no extra fetch.
   useEffect(() => {
-    let cancelled = false;
-
-    if (isAuthenticated && role === 'CANDIDATE') {
-      candidateService
-        .getMyProfile()
-        .then((data) => {
-          if (!cancelled) setPhotoUrl(data?.photoUrl || null);
-        })
-        .catch(() => {
-          if (!cancelled) setPhotoUrl(null);
-        });
-    } else {
-      setPhotoUrl(null);
+    if (isAuthenticated && role === 'CANDIDATE' && !candidateLoaded) {
+      dispatch(fetchCandidateProfile());
     }
+  }, [dispatch, isAuthenticated, role, candidateLoaded]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated, role]);
-
-  // Stay in sync the instant the profile page saves a new photo, instead of
-  // only picking it up on the next full page load.
-  useEffect(() => {
-    const handlePhotoUpdated = (e) => {
-      setPhotoUrl(e.detail || null);
-    };
-    window.addEventListener(PHOTO_UPDATED_EVENT, handlePhotoUpdated);
-    return () => window.removeEventListener(PHOTO_UPDATED_EVENT, handlePhotoUpdated);
-  }, []);
+  const photoUrl = role === 'CANDIDATE' ? candidateProfile?.photoUrl : null;
 
   const handleLogout = () => {
     setMenuOpen(false);
