@@ -9,4 +9,4 @@ const getMyAccount = async () => {
 
 const userService = { getMyAccount };
 
-export default userService;
+export default userService; 
