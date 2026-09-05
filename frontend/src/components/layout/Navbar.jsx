@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import { clearCandidateProfile } from '../../store/slices/candidateSlice';
 import userService from '../../services/userService';
+import { useTheme } from '../../context/ThemeContext';
 
 const ROLE_ABBR = {
   CANDIDATE: 'C',
@@ -26,6 +27,10 @@ const Navbar = () => {
   const isAuthenticated = auth.isAuthenticated;
   const role = auth.role;
   const user = auth.user;
+
+  const themeCtx = useTheme();
+  const theme = themeCtx ? themeCtx.theme : 'light';
+  const toggleTheme = themeCtx ? themeCtx.toggleTheme : function () {};
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
@@ -60,7 +65,6 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
-  // Account photo now works for every role (not candidate-only).
   const photoUrl = accountInfo && accountInfo.photoUrl ? accountInfo.photoUrl : null;
 
   const handleLogout = () => {
@@ -115,6 +119,16 @@ const Navbar = () => {
         )}
       </div>
       <div className="navbar-user">
+        <button
+          type="button"
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? '☀' : '☾'}
+        </button>
+
         {isAuthenticated ? (
           <div className="profile-menu" ref={menuRef}>
             <button
