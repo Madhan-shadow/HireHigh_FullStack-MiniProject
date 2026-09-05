@@ -7,6 +7,7 @@ public class UserProfileResponseDto {
     private String fullName;
     private String email;
     private String role;
+    private String photoUrl;
 
     public UserProfileResponseDto() {
     }
@@ -17,6 +18,15 @@ public class UserProfileResponseDto {
         this.fullName = fullName;
         this.email = email;
         this.role = role;
+    }
+
+    public UserProfileResponseDto(Long id, String username, String fullName, String email, String role, String photoUrl) {
+        this.id = id;
+        this.username = username;
+        this.fullName = fullName;
+        this.email = email;
+        this.role = role;
+        this.photoUrl = photoUrl;
     }
 
     public Long getId() {
@@ -57,5 +67,13 @@ public class UserProfileResponseDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 }
