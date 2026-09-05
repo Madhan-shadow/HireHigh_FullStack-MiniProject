@@ -16,6 +16,8 @@ public class CandidateProfile {
     @Column(columnDefinition = "LONGTEXT")
     private String resumeUrl;
 
+    private String resumeFileName;
+
     private String primarySkill;
 
     private Integer yearsExperience;
@@ -56,6 +58,14 @@ public class CandidateProfile {
         this.resumeUrl = resumeUrl;
     }
 
+    public String getResumeFileName() {
+        return resumeFileName;
+    }
+
+    public void setResumeFileName(String resumeFileName) {
+        this.resumeFileName = resumeFileName;
+    }
+
     public String getPrimarySkill() {
         return primarySkill;
     }
@@ -82,5 +92,4 @@ public class CandidateProfile {
         this.primarySkill = primarySkill;
         this.yearsExperience = yearsExperience;
     }
-
 }
