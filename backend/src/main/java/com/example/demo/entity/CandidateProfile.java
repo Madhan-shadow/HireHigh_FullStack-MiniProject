@@ -1,32 +1,39 @@
-package com.example.demo.entity;
+package com.hirehigh.entity; // <-- change this to match your actual package
 
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="CandidateProfile")
+@Table(name = "candidate_profile")
 public class CandidateProfile {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    private SystemUser user;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user; // <-- change 'User' to your actual user entity class name if different
 
+    @Lob
+    @Column(name = "photo_url", columnDefinition = "LONGTEXT")
+    private String photoUrl;
+
+    @Lob
+    @Column(name = "resume_url", columnDefinition = "LONGTEXT")
     private String resumeUrl;
 
+    @Column(name = "resume_file_name")
+    private String resumeFileName;
+
+    @Column(name = "primary_skill")
     private String primarySkill;
 
+    @Column(name = "years_experience")
     private Integer yearsExperience;
 
-private String photoUrl;
+    public CandidateProfile() {
+    }
 
-public String getPhotoUrl() {
-    return photoUrl;
-}
-
-public void setPhotoUrl(String photoUrl) {
-    this.photoUrl = photoUrl;
-}
     public Long getId() {
         return id;
     }
@@ -35,12 +42,20 @@ public void setPhotoUrl(String photoUrl) {
         this.id = id;
     }
 
-    public SystemUser getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(SystemUser user) {
+    public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 
     public String getResumeUrl() {
@@ -49,6 +64,14 @@ public void setPhotoUrl(String photoUrl) {
 
     public void setResumeUrl(String resumeUrl) {
         this.resumeUrl = resumeUrl;
+    }
+
+    public String getResumeFileName() {
+        return resumeFileName;
+    }
+
+    public void setResumeFileName(String resumeFileName) {
+        this.resumeFileName = resumeFileName;
     }
 
     public String getPrimarySkill() {
@@ -66,18 +89,4 @@ public void setPhotoUrl(String photoUrl) {
     public void setYearsExperience(Integer yearsExperience) {
         this.yearsExperience = yearsExperience;
     }
-
-    public CandidateProfile() {
-    }
-
-    public CandidateProfile(Long id, SystemUser user, String resumeUrl, String primarySkill, Integer yearsExperience) {
-        this.id = id;
-        this.user = user;
-        this.resumeUrl = resumeUrl;
-        this.primarySkill = primarySkill;
-        this.yearsExperience = yearsExperience;
-    }
-
-    
-    
 }
