@@ -33,7 +33,6 @@ const ProfilePage = () => {
     resumeFileName: '',
     primarySkill: '',
     yearsExperience: '',
-    photoUrl: '',
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
@@ -42,8 +41,8 @@ const ProfilePage = () => {
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  // Account-level photo (every role) — separate from candidate-only
-  // resume/skill data below.
+  // Account-level photo — shared everywhere (navbar, hero, and now
+  // also what recruiters see when reviewing this person's applications).
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState(null);
 
@@ -82,7 +81,6 @@ const ProfilePage = () => {
         resumeFileName: candidateProfile.resumeFileName || '',
         primarySkill: candidateProfile.primarySkill || '',
         yearsExperience: candidateProfile.yearsExperience != null ? candidateProfile.yearsExperience : '',
-        photoUrl: candidateProfile.photoUrl || '',
       });
     }
   }, [candidateProfile]);
@@ -97,7 +95,7 @@ const ProfilePage = () => {
     });
   };
 
-  // ----- Account avatar (any role) -----
+  // ----- Account avatar (any role, shown everywhere including to recruiters) -----
   const handleAvatarFileChange = function (e) {
     var file = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -147,34 +145,7 @@ const ProfilePage = () => {
       });
   };
 
-  // ----- Candidate resume/photo (candidate role only, kept separate) -----
-  const handlePhotoFileChange = function (e) {
-    var file = e.target.files && e.target.files[0];
-    e.target.value = '';
-    if (!file) return;
-
-    setFileError(null);
-
-    if (!file.type.startsWith('image/')) {
-      setFileError('Please choose an image file (JPG, PNG, etc).');
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      setFileError('That image is too large - please choose one under 2MB.');
-      return;
-    }
-
-    readFileAsDataUrl(file)
-      .then(function (dataUrl) {
-        setFormData(function (prev) {
-          return Object.assign({}, prev, { photoUrl: dataUrl });
-        });
-      })
-      .catch(function () {
-        setFileError('Could not read that image. Please try another file.');
-      });
-  };
-
+  // ----- Candidate resume (still candidate-only) -----
   const handleResumeFileChange = function (e) {
     var file = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -202,12 +173,6 @@ const ProfilePage = () => {
       });
   };
 
-  const handleRemovePhoto = function () {
-    setFormData(function (prev) {
-      return Object.assign({}, prev, { photoUrl: '' });
-    });
-  };
-
   const handleRemoveResume = function () {
     setFormData(function (prev) {
       return Object.assign({}, prev, { resumeUrl: '', resumeFileName: '' });
@@ -221,7 +186,6 @@ const ProfilePage = () => {
         resumeFileName: candidateProfile.resumeFileName || '',
         primarySkill: candidateProfile.primarySkill || '',
         yearsExperience: candidateProfile.yearsExperience != null ? candidateProfile.yearsExperience : '',
-        photoUrl: candidateProfile.photoUrl || '',
       });
     }
   };
@@ -237,7 +201,6 @@ const ProfilePage = () => {
       resumeFileName: formData.resumeFileName || null,
       primarySkill: formData.primarySkill.trim() || null,
       yearsExperience: formData.yearsExperience === '' ? null : Number(formData.yearsExperience),
-      photoUrl: formData.photoUrl || null,
     };
 
     dispatch(saveCandidateProfile(payload)).then(function (resultAction) {
@@ -355,36 +318,6 @@ const ProfilePage = () => {
           {editing ? (
             <form onSubmit={handleSave}>
               {fileError && <div className="error-banner">{fileError}</div>}
-
-              <label>Profile photo (used on job applications)</label>
-              <div className="profile-photo-upload">
-                <div className="profile-photo-preview">
-                  {formData.photoUrl ? <img src={formData.photoUrl} alt="Preview" /> : <span>{initial}</span>}
-                </div>
-                <div className="profile-upload-controls">
-                  {formData.photoUrl ? (
-                    <React.Fragment>
-                      <span className="profile-upload-current-label">Photo added</span>
-                      <button type="button" className="btn btn-link" onClick={handleRemovePhoto}>
-                        Remove photo
-                      </button>
-                    </React.Fragment>
-                  ) : (
-                    <input
-                      id="photoFile"
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoFileChange}
-                      className="profile-file-input"
-                    />
-                  )}
-                </div>
-              </div>
-              <span className="profile-upload-hint">
-                {formData.photoUrl
-                  ? 'Remove the current photo to upload a different one.'
-                  : 'JPG or PNG, up to 2MB.'}
-              </span>
 
               <label>Resume (PDF)</label>
               {formData.resumeUrl ? (
