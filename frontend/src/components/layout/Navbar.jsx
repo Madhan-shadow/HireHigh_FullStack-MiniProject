@@ -4,6 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import userService from '../../services/userService';
 
+const ROLE_LABELS = {
+  CANDIDATE: 'Candidate',
+  RECRUITER: 'Recruiter',
+  TA_LEAD: 'TA Lead',
+  HIRING_MANAGER: 'Hiring Manager',
+};
+
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -59,18 +66,18 @@ const Navbar = () => {
 
   const displayName = accountInfo?.fullName || user?.fullName || role || 'user';
   const initial = displayName.charAt(0).toUpperCase();
-
-  // Brand mark: shows the signed-in user's role initial (C for candidate,
-  // R for recruiter, T for TA lead, etc). Logged-out visitors see "H".
-  const brandMark = isAuthenticated && role ? role.charAt(0).toUpperCase() : 'H';
+  const roleLabel = ROLE_LABELS[role] || (role ? role.toLowerCase() : '');
 
   return (
     <nav className="navbar">
       <div className="navbar-brand">
         <Link to="/">
-          <span className="navbar-brand-mark">{brandMark}</span>
+          <span className="navbar-brand-mark">H</span>
           <span className="navbar-brand-word">HireHigh</span>
         </Link>
+        {isAuthenticated && roleLabel && (
+          <span className="navbar-role-badge">{roleLabel}</span>
+        )}
       </div>
       <div className="navbar-links">
         <NavLink to="/" end className={linkClass}>
