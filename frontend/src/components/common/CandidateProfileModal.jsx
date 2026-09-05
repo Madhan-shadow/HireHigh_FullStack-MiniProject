@@ -57,19 +57,25 @@ function CandidateProfileModal(props) {
 
           <div className="candidate-profile-field">
             <span className="candidate-profile-label">Resume</span>
-            <span className="candidate-profile-value">
-              {candidate.resumeUrl ? (
-                <button
-                  type="button"
-                  className="btn-link-inline"
-                  onClick={function () { openBase64Pdf(candidate.resumeUrl); }}
-                >
-                  {candidate.resumeFileName ? ('View ' + candidate.resumeFileName) : 'View resume'}
-                </button>
-              ) : (
-                '-'
-              )}
-            </span>
+            {candidate.resumeUrl ? (
+              <div className="resume-card resume-card--compact">
+                <div className="resume-card-icon">PDF</div>
+                <div className="resume-card-info">
+                  <span className="resume-card-name">
+                    {candidate.resumeFileName || 'Resume.pdf'}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn-link-inline"
+                    onClick={function () { openBase64Pdf(candidate.resumeUrl); }}
+                  >
+                    View file
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <span className="candidate-profile-value">-</span>
+            )}
           </div>
         </div>
 
