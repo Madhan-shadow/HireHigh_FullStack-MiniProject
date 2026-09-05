@@ -45,7 +45,61 @@
 }/* =========================================================
    HOME PAGE — append to the end of styles.css
    ========================================================= */
+/* =========================================================
+   ROW AVATAR — small candidate photo/initial in list rows
+   ========================================================= */
 
+.cell-candidate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--gold);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.row-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =========================================================
+   PROFILE UPLOAD — "remove before replace" state label
+   ========================================================= */
+
+.profile-upload-current-label {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+/* =========================================================
+   CANDIDATE MODAL — placeholder avatar when no photo on file
+   ========================================================= */
+
+.candidate-profile-photo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+}
 .home-hero {
   max-width: 1180px;
   margin: 0 auto;

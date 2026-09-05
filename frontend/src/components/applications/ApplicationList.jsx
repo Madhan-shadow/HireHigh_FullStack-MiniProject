@@ -224,4 +224,42 @@ const ApplicationList = () => {
           <button
             className="btn btn-secondary"
             disabled={currentPage >= totalPages - 1}
-            onClick={()
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {viewingApplication && (
+        <CandidateProfileModal
+          application={viewingApplication}
+          onClose={() => setViewingApplication(null)}
+        />
+      )}
+
+      {editingApplication && (
+        <StageEditModal
+          application={editingApplication}
+          onClose={() => setEditingApplication(null)}
+          onSubmit={handleStageSave}
+        />
+      )}
+
+      {confirmDeleteId != null && (
+        <div className="modal-overlay" onClick={() => setConfirmDeleteId(null)}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete this application?</h3>
+            <p>This action cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+              <button className="btn btn-danger" onClick={handleDeleteConfirm}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ApplicationList;

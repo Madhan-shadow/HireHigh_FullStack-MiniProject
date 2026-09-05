@@ -3,6 +3,7 @@ import React from 'react';
 const CandidateProfileModal = ({ application, onClose }) => {
   const candidate = application.candidate || {};
   const user = candidate.user || {};
+  const initial = (user.fullName || '?').charAt(0).toUpperCase();
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) onClose();
@@ -17,12 +18,16 @@ const CandidateProfileModal = ({ application, onClose }) => {
         </div>
 
         <div className="candidate-profile-view">
-          {candidate.photoUrl && (
+          {candidate.photoUrl ? (
             <img
               src={candidate.photoUrl}
               alt={`${user.fullName || 'Candidate'}'s photo`}
               className="candidate-profile-photo"
             />
+          ) : (
+            <span className="candidate-profile-photo candidate-profile-photo--placeholder">
+              {initial}
+            </span>
           )}
 
           <div className="candidate-profile-field">
@@ -52,7 +57,7 @@ const CandidateProfileModal = ({ application, onClose }) => {
             <span className="candidate-profile-value">
               {candidate.resumeUrl ? (
                 <a href={candidate.resumeUrl} target="_blank" rel="noopener noreferrer">
-                  View resume
+                  {candidate.resumeFileName ? `View ${candidate.resumeFileName}` : 'View resume'}
                 </a>
               ) : (
                 '—'
