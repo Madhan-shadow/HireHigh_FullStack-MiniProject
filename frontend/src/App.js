@@ -19,46 +19,100 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const Home = () => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const auth = useSelector((state) => state.auth);
+  const isAuthenticated = auth.isAuthenticated;
+  const role = auth.role;
+
+  const isRecruiterSide =
+    role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
+  const isCandidate = role === 'CANDIDATE';
 
   return (
-    <div className="home-hero">
-      <div className="home-hero-content">
-        <span className="home-hero-eyebrow">Talent Acquisition, Simplified</span>
-        <h1 className="home-hero-headline">Find who's next.</h1>
-        <p className="home-hero-sub">
-          HireHigh brings recruiters, hiring leads, and candidates onto one
-          pipeline — from the first application to the signed offer.
-        </p>
-        <div className="home-cta-row">
-          <Link to="/jobs" className="btn btn-primary">
-            {isAuthenticated ? 'Browse open roles' : 'View open roles'}
-          </Link>
+    <div className="home-page">
+      <section className="home-hero">
+        <div className="home-hero-content">
+          <span className="home-eyebrow">HireHigh</span>
+
+          {isRecruiterSide && (
+            <React.Fragment>
+              <h1 className="home-title">Your pipeline, at a glance.</h1>
+              <p className="home-subtitle">
+                Review applications, move candidates through stages, and
+                close roles faster — all from one dashboard built for
+                hiring teams.
+              </p>
+              <div className="home-actions">
+                <Link to="/applications" className="btn btn-primary">
+                  View applications
+                </Link>
+                <Link to="/jobs" className="btn btn-secondary">
+                  Manage jobs
+                </Link>
+              </div>
+            </React.Fragment>
+          )}
+
+          {isCandidate && (
+            <React.Fragment>
+              <h1 className="home-title">Your next role starts here.</h1>
+              <p className="home-subtitle">
+                Browse open positions, apply in a click, and track every
+                application's status in real time.
+              </p>
+              <div className="home-actions">
+                <Link to="/jobs" className="btn btn-primary">
+                  Browse open roles
+                </Link>
+                <Link to="/applications" className="btn btn-secondary">
+                  My applications
+                </Link>
+              </div>
+            </React.Fragment>
+          )}
+
           {!isAuthenticated && (
-            <Link to="/register" className="btn btn-secondary">
-              Create an account
-            </Link>
+            <React.Fragment>
+              <h1 className="home-title">Hiring, without the mess.</h1>
+              <p className="home-subtitle">
+                HireHigh connects recruiters and candidates on one clear
+                pipeline — from first application to signed offer.
+              </p>
+              <div className="home-actions">
+                <Link to="/jobs" className="btn btn-primary">
+                  Browse open roles
+                </Link>
+                <Link to="/login" className="btn btn-secondary">
+                  Sign in
+                </Link>
+                <Link to="/register" className="btn btn-secondary">
+                  Create an account
+                </Link>
+              </div>
+            </React.Fragment>
           )}
         </div>
-      </div>
+      </section>
 
-      <div className="home-features">
-        <div className="home-feature-card">
-          <span className="home-feature-icon" aria-hidden="true">🎯</span>
-          <h3>One pipeline, every stage</h3>
-          <p>Track candidates from Applied through Hired without leaving the app.</p>
+      <section className="home-stats">
+        <div className="home-stat">
+          <span className="home-stat-value">01</span>
+          <span className="home-stat-label">
+            Post a role and set a hiring goal
+          </span>
         </div>
-        <div className="home-feature-card">
-          <span className="home-feature-icon" aria-hidden="true">⚡</span>
-          <h3>Built for recruiters</h3>
-          <p>Post roles, set hiring goals, and move candidates forward in a click.</p>
+        <div className="home-stat">
+          <span className="home-stat-value">02</span>
+          <span className="home-stat-label">
+            Candidates apply with resume and details
+          </span>
         </div>
-        <div className="home-feature-card">
-          <span className="home-feature-icon" aria-hidden="true">📄</span>
-          <h3>Simple for candidates</h3>
-          <p>Apply once, attach a resume link, and track your status in real time.</p>
+        <div className="home-stat">
+          <span className="home-stat-value">03</span>
+          <span className="home-stat-label">
+            Track every stage until hired
+          </span>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
