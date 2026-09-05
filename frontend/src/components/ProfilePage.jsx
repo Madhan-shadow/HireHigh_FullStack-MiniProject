@@ -4,6 +4,16 @@ import userService from '../services/userService';
 import candidateService from '../services/candidateService';
 import ChangePasswordModal from './common/ChangePasswordModal';
 
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB — keeps the base64 payload reasonable
+
+const readFileAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Could not read file.'));
+    reader.readAsDataURL(file);
+  });
+
 const ProfilePage = () => {
   const { role } = useSelector((state) => state.auth);
   const isCandidate = role === 'CANDIDATE';
@@ -16,6 +26,7 @@ const ProfilePage = () => {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
     resumeUrl: '',
+    resumeFileName: '',
     primarySkill: '',
     yearsExperience: '',
     photoUrl: '',
@@ -23,6 +34,7 @@ const ProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(null);
+  const [fileError, setFileError] = useState(null);
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
@@ -42,6 +54,7 @@ const ProfilePage = () => {
             setCandidateProfile(profileData);
             setFormData({
               resumeUrl: profileData.resumeUrl || '',
+              resumeFileName: profileData.resumeFileName || '',
               primarySkill: profileData.primarySkill || '',
               yearsExperience: profileData.yearsExperience ?? '',
               photoUrl: profileData.photoUrl || '',
@@ -68,6 +81,62 @@ const ProfilePage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handlePhotoFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+
+    setFileError(null);
+
+    if (!file.type.startsWith('image/')) {
+      setFileError('Please choose an image file (JPG, PNG, etc).');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError('That image is too large — please choose one under 2MB.');
+      return;
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setFormData((prev) => ({ ...prev, photoUrl: dataUrl }));
+    } catch {
+      setFileError('Could not read that image. Please try another file.');
+    }
+  };
+
+  const handleResumeFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setFileError(null);
+
+    if (file.type !== 'application/pdf') {
+      setFileError('Please upload your resume as a PDF file.');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError('That file is too large — please choose a PDF under 2MB.');
+      return;
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setFormData((prev) => ({ ...prev, resumeUrl: dataUrl, resumeFileName: file.name }));
+    } catch {
+      setFileError('Could not read that file. Please try another PDF.');
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setFormData((prev) => ({ ...prev, photoUrl: '' }));
+  };
+
+  const handleRemoveResume = () => {
+    setFormData((prev) => ({ ...prev, resumeUrl: '', resumeFileName: '' }));
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -76,10 +145,11 @@ const ProfilePage = () => {
 
     try {
       const updated = await candidateService.updateMyProfile({
-        resumeUrl: formData.resumeUrl.trim() || null,
+        resumeUrl: formData.resumeUrl || null,
+        resumeFileName: formData.resumeFileName || null,
         primarySkill: formData.primarySkill.trim() || null,
         yearsExperience: formData.yearsExperience === '' ? null : Number(formData.yearsExperience),
-        photoUrl: formData.photoUrl.trim() || null,
+        photoUrl: formData.photoUrl || null,
       });
       setCandidateProfile(updated);
       setSaveSuccess('Profile updated successfully.');
@@ -168,25 +238,53 @@ const ProfilePage = () => {
 
           {editing ? (
             <form onSubmit={handleSave}>
-              <label htmlFor="photoUrl">Photo link</label>
-              <input
-                id="photoUrl"
-                name="photoUrl"
-                type="url"
-                placeholder="https://drive.google.com/your-photo"
-                value={formData.photoUrl}
-                onChange={handleChange}
-              />
+              {fileError && <div className="error-banner">{fileError}</div>}
 
-              <label htmlFor="resumeUrl">Resume link</label>
+              <label htmlFor="photoFile">Profile photo</label>
+              <div className="profile-photo-upload">
+                <div className="profile-photo-preview">
+                  {formData.photoUrl ? (
+                    <img src={formData.photoUrl} alt="Preview" />
+                  ) : (
+                    <span>{initial}</span>
+                  )}
+                </div>
+                <div className="profile-upload-controls">
+                  <input
+                    id="photoFile"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoFileChange}
+                    className="profile-file-input"
+                  />
+                  {formData.photoUrl && (
+                    <button type="button" className="btn btn-link" onClick={handleRemovePhoto}>
+                      Remove photo
+                    </button>
+                  )}
+                </div>
+              </div>
+              <span className="profile-upload-hint">JPG or PNG, up to 2MB.</span>
+
+              <label htmlFor="resumeFile">Resume (PDF)</label>
               <input
-                id="resumeUrl"
-                name="resumeUrl"
-                type="url"
-                placeholder="https://drive.google.com/your-resume"
-                value={formData.resumeUrl}
-                onChange={handleChange}
+                id="resumeFile"
+                type="file"
+                accept="application/pdf"
+                onChange={handleResumeFileChange}
+                className="profile-file-input"
               />
+              <span className="profile-upload-hint">PDF only, up to 2MB.</span>
+              {formData.resumeUrl && (
+                <div className="profile-resume-current">
+                  <a href={formData.resumeUrl} target="_blank" rel="noopener noreferrer">
+                    {formData.resumeFileName ? `View ${formData.resumeFileName}` : 'View current resume'}
+                  </a>
+                  <button type="button" className="btn btn-link" onClick={handleRemoveResume}>
+                    Remove
+                  </button>
+                </div>
+              )}
 
               <div className="form-row">
                 <div className="form-col">
@@ -240,7 +338,7 @@ const ProfilePage = () => {
                 <span className="profile-info-value">
                   {candidateProfile?.resumeUrl ? (
                     <a href={candidateProfile.resumeUrl} target="_blank" rel="noopener noreferrer">
-                      View resume
+                      {candidateProfile.resumeFileName ? `View ${candidateProfile.resumeFileName}` : 'View resume'}
                     </a>
                   ) : (
                     '—'
