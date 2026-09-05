@@ -52,6 +52,7 @@ public class CandidateController {
         profile.setResumeUrl(dto.getResumeUrl());
         profile.setPrimarySkill(dto.getPrimarySkill());
         profile.setYearsExperience(dto.getYearsExperience());
+        profile.setPhotoUrl(dto.getPhotoUrl());
 
         candidateProfileRepository.save(profile);
 
