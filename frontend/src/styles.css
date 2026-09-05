@@ -64,7 +64,267 @@
 /* =========================================================
    HOME PAGE — append to the end of styles.css
    ========================================================= */
+/* =========================================================
+   HOME PAGE — append to the end of styles.css
+   ========================================================= */
 
+.home-hero {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 70px 28px 40px;
+}
+
+.home-hero-content {
+  max-width: 640px;
+  margin-bottom: 56px;
+}
+
+.home-hero-eyebrow {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--pine-soft);
+  color: var(--pine-deep);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.home-hero-headline {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 6vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -1.5px;
+  margin-bottom: 18px;
+}
+
+.home-hero-sub {
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.home-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.home-cta-row .btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.home-feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 26px 24px;
+}
+
+.home-feature-icon {
+  display: inline-block;
+  font-size: 26px;
+  margin-bottom: 14px;
+}
+
+.home-feature-card h3 {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.home-feature-card p {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .home-features {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fix: "View profile" link in the navbar dropdown inherits the browser's
+   default anchor underline since .profile-menu-item was styled for
+   buttons only. This removes it. */
+a.profile-menu-item {
+  text-decoration: none;
+}
+
+/* =========================================================
+   PASSWORD FIELD — show/hide eye-icon toggle
+   ========================================================= */
+
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+}
+
+.password-toggle-btn:hover {
+  background: var(--paper);
+  color: var(--text);
+}
+
+/* =========================================================
+   NAVBAR ROLE BADGE — shows who's logged in next to the logo
+   ========================================================= */
+
+.navbar-brand {
+  gap: 12px;
+}
+
+/* =========================================================
+   NAVBAR ROLE MARK — replaces the "H" logo mark when logged in:
+   role abbreviation on top, full role name underneath
+   ========================================================= */
+
+.navbar-role-mark {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 34px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--gold);
+  color: var(--ink);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.navbar-role-mark-abbr {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.navbar-role-mark-full {
+  margin-top: 2px;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   PROFILE PHOTO / RESUME UPLOAD
+   ========================================================= */
+
+.profile-photo-upload {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.profile-photo-preview {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.profile-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-upload-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.profile-file-input {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.profile-upload-hint {
+  display: block;
+  margin: 2px 0 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.profile-resume-current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 2px;
+  font-size: 12.5px;
+}
+
+.profile-resume-current a {
+  color: var(--pine);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.profile-resume-current a:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   NAVBAR AVATAR — clip an uploaded photo into the circle
+   ========================================================= */
+
+.profile-menu-avatar {
+  overflow: hidden;
+}
+
+.profile-menu-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .home-hero {
   max-width: 1180px;
   margin: 0 auto;

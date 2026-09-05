@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import userService from '../../services/userService';
+import candidateService from '../../services/candidateService';
 
 const ROLE_ABBR = {
   CANDIDATE: 'C',
@@ -25,6 +26,7 @@ const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
+  const [photoUrl, setPhotoUrl] = useState(null);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -59,6 +61,29 @@ const Navbar = () => {
       cancelled = true;
     };
   }, [isAuthenticated]);
+
+  // Candidates can upload a profile photo — show it in the avatar circle
+  // once it's set, instead of always falling back to the initial letter.
+  useEffect(() => {
+    let cancelled = false;
+
+    if (isAuthenticated && role === 'CANDIDATE') {
+      candidateService
+        .getMyProfile()
+        .then((data) => {
+          if (!cancelled) setPhotoUrl(data?.photoUrl || null);
+        })
+        .catch(() => {
+          if (!cancelled) setPhotoUrl(null);
+        });
+    } else {
+      setPhotoUrl(null);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, role]);
 
   const handleLogout = () => {
     setMenuOpen(false);
@@ -117,7 +142,13 @@ const Navbar = () => {
               className="profile-menu-trigger"
               onClick={() => setMenuOpen((prev) => !prev)}
             >
-              <span className="profile-menu-avatar">{initial}</span>
+              <span className="profile-menu-avatar">
+                {photoUrl ? (
+                  <img src={photoUrl} alt={`${displayName}'s photo`} />
+                ) : (
+                  initial
+                )}
+              </span>
               <span className="welcome-text">{displayName.toLowerCase()}</span>
             </button>
 
