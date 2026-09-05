@@ -13,6 +13,7 @@ import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
 import ApplicationProgress from '../common/ApplicationProgress';
 import CandidateProfileModal from '../common/CandidateProfileModal';
+import { openBase64Pdf } from '../../utils/openBase64Pdf';
 
 const STAGES = ['APPLIED', 'SCREENING', 'INTERVIEW', 'OFFER', 'HIRED', 'REJECTED'];
 const PAGE_SIZE = 5;
@@ -37,7 +38,7 @@ const StageEditModal = (props) => {
       <div className="modal">
         <div className="modal-header">
           <h2>Update application stage</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close">x</button>
+          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
         </div>
         <form onSubmit={handleSubmit}>
           <label htmlFor="edit-stage">Current stage</label>
@@ -206,9 +207,13 @@ const ApplicationList = () => {
                   <div className="cell-actions">
                     <button className="btn btn-link" onClick={() => setViewingApplication(app)}>View</button>
                     {resumeUrl ? (
-                      <a className="btn btn-link" href={resumeUrl} target="_blank" rel="noopener noreferrer">
+                      <button
+                        type="button"
+                        className="btn btn-link"
+                        onClick={() => openBase64Pdf(resumeUrl)}
+                      >
                         Resume
-                      </a>
+                      </button>
                     ) : null}
                     <button className="btn btn-link" onClick={() => setEditingApplication(app)}>Edit</button>
                     <button className="btn btn-danger" onClick={() => setConfirmDeleteId(app.id)}>Delete</button>

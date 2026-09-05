@@ -1,4 +1,5 @@
 import React from 'react';
+import { openBase64Pdf } from '../../utils/openBase64Pdf';
 
 const CandidateProfileModal = ({ application, onClose }) => {
   const candidate = application.candidate || {};
@@ -56,9 +57,13 @@ const CandidateProfileModal = ({ application, onClose }) => {
             <span className="candidate-profile-label">Resume</span>
             <span className="candidate-profile-value">
               {candidate.resumeUrl ? (
-                <a href={candidate.resumeUrl} target="_blank" rel="noopener noreferrer">
+                <button
+                  type="button"
+                  className="btn-link-inline"
+                  onClick={() => openBase64Pdf(candidate.resumeUrl)}
+                >
                   {candidate.resumeFileName ? `View ${candidate.resumeFileName}` : 'View resume'}
-                </a>
+                </button>
               ) : (
                 '—'
               )}
