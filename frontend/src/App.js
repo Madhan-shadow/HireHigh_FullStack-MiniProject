@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Provider, useSelector } from 'react-redux';
 import store from './store';
 import Navbar from './components/layout/Navbar';
@@ -18,12 +18,50 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const Home = () => (
-  <div className="page-container">
-    <h1>Welcome to HireHigh</h1>
-    <p>Talent acquisition pipeline management, end to end.</p>
-  </div>
-);
+const Home = () => {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  return (
+    <div className="home-hero">
+      <div className="home-hero-content">
+        <span className="home-hero-eyebrow">Talent Acquisition, Simplified</span>
+        <h1 className="home-hero-headline">Find who's next.</h1>
+        <p className="home-hero-sub">
+          HireHigh brings recruiters, hiring leads, and candidates onto one
+          pipeline — from the first application to the signed offer.
+        </p>
+        <div className="home-cta-row">
+          <Link to="/jobs" className="btn btn-primary">
+            {isAuthenticated ? 'Browse open roles' : 'View open roles'}
+          </Link>
+          {!isAuthenticated && (
+            <Link to="/register" className="btn btn-secondary">
+              Create an account
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <div className="home-features">
+        <div className="home-feature-card">
+          <span className="home-feature-icon" aria-hidden="true">🎯</span>
+          <h3>One pipeline, every stage</h3>
+          <p>Track candidates from Applied through Hired without leaving the app.</p>
+        </div>
+        <div className="home-feature-card">
+          <span className="home-feature-icon" aria-hidden="true">⚡</span>
+          <h3>Built for recruiters</h3>
+          <p>Post roles, set hiring goals, and move candidates forward in a click.</p>
+        </div>
+        <div className="home-feature-card">
+          <span className="home-feature-icon" aria-hidden="true">📄</span>
+          <h3>Simple for candidates</h3>
+          <p>Apply once, attach a resume link, and track your status in real time.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function AppRoutes() {
   return (
