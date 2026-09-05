@@ -22,10 +22,14 @@ const ROLE_LABELS = {
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, role, user } = useSelector((state) => state.auth);
-  const { profile: candidateProfile, loaded: candidateLoaded } = useSelector(
-    (state) => state.candidate
-  );
+  const auth = useSelector((state) => state.auth);
+  const isAuthenticated = auth.isAuthenticated;
+  const role = auth.role;
+  const user = auth.user;
+
+  const candidateState = useSelector((state) => state.candidate);
+  const candidateProfile = candidateState.profile;
+  const candidateLoaded = candidateState.loaded;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
@@ -41,8 +45,6 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Pull the real account record so the navbar shows the person's actual
-  // name rather than falling back to their role label.
   useEffect(() => {
     let cancelled = false;
 
@@ -62,15 +64,13 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
-  // Candidate photo now lives in redux (shared with ProfilePage), so it
-  // stays in sync the instant a save happens — no reload, no extra fetch.
   useEffect(() => {
     if (isAuthenticated && role === 'CANDIDATE' && !candidateLoaded) {
       dispatch(fetchCandidateProfile());
     }
   }, [dispatch, isAuthenticated, role, candidateLoaded]);
 
-  const photoUrl = role === 'CANDIDATE' ? candidateProfile?.photoUrl : null;
+  const photoUrl = role === 'CANDIDATE' && candidateProfile ? candidateProfile.photoUrl : null;
 
   const handleLogout = () => {
     setMenuOpen(false);
@@ -81,9 +81,9 @@ const Navbar = () => {
   const canSeePipeline =
     role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
 
-  const linkClass = ({ isActive }) => (isActive ? 'active' : undefined);
+  const linkClass = (props) => (props.isActive ? 'active' : undefined);
 
-  const displayName = accountInfo?.fullName || user?.fullName || role || 'user';
+  const displayName = (accountInfo && accountInfo.fullName) || (user && user.fullName) || role || 'user';
   const initial = displayName.charAt(0).toUpperCase();
 
   const roleAbbr = ROLE_ABBR[role] || (role ? role.charAt(0).toUpperCase() : '');
@@ -130,11 +130,7 @@ const Navbar = () => {
               onClick={() => setMenuOpen((prev) => !prev)}
             >
               <span className="profile-menu-avatar">
-                {photoUrl ? (
-                  <img src={photoUrl} alt={`${displayName}'s photo`} />
-                ) : (
-                  initial
-                )}
+                {photoUrl ? <img src={photoUrl} alt="Profile" /> : initial}
               </span>
               <span className="welcome-text">{displayName.toLowerCase()}</span>
             </button>

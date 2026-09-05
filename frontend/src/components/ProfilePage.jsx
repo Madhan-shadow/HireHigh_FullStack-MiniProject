@@ -4,7 +4,7 @@ import userService from '../services/userService';
 import ChangePasswordModal from './common/ChangePasswordModal';
 import { fetchCandidateProfile, saveCandidateProfile } from '../store/slices/candidateSlice';
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB — keeps the base64 payload reasonable
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -41,7 +41,6 @@ const ProfilePage = () => {
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  // Account details aren't in redux, so load them locally each visit.
   useEffect(() => {
     let cancelled = false;
 
@@ -62,34 +61,32 @@ const ProfilePage = () => {
     };
   }, []);
 
-  // Candidate profile lives in redux, so it survives navigating away to
-  // /jobs or /applications and back — fetched once per session.
   useEffect(() => {
     if (isCandidate && !candidateLoaded) {
       dispatch(fetchCandidateProfile());
     }
   }, [dispatch, isCandidate, candidateLoaded]);
 
-  // Keep the edit form synced with whatever is currently stored.
   useEffect(() => {
     if (candidateProfile) {
       setFormData({
         resumeUrl: candidateProfile.resumeUrl || '',
         resumeFileName: candidateProfile.resumeFileName || '',
         primarySkill: candidateProfile.primarySkill || '',
-        yearsExperience: candidateProfile.yearsExperience ?? '',
+        yearsExperience: candidateProfile.yearsExperience != null ? candidateProfile.yearsExperience : '',
         photoUrl: candidateProfile.photoUrl || '',
       });
     }
   }, [candidateProfile]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const name = e.target.name;
+    const value = e.target.value;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePhotoFileChange = async (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
 
@@ -100,7 +97,7 @@ const ProfilePage = () => {
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      setFileError('That image is too large — please choose one under 2MB.');
+      setFileError('That image is too large - please choose one under 2MB.');
       return;
     }
 
@@ -113,7 +110,7 @@ const ProfilePage = () => {
   };
 
   const handleResumeFileChange = async (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
 
@@ -124,7 +121,7 @@ const ProfilePage = () => {
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      setFileError('That file is too large — please choose a PDF under 2MB.');
+      setFileError('That file is too large - please choose a PDF under 2MB.');
       return;
     }
 
@@ -150,7 +147,7 @@ const ProfilePage = () => {
         resumeUrl: candidateProfile.resumeUrl || '',
         resumeFileName: candidateProfile.resumeFileName || '',
         primarySkill: candidateProfile.primarySkill || '',
-        yearsExperience: candidateProfile.yearsExperience ?? '',
+        yearsExperience: candidateProfile.yearsExperience != null ? candidateProfile.yearsExperience : '',
         photoUrl: candidateProfile.photoUrl || '',
       });
     }
@@ -162,15 +159,15 @@ const ProfilePage = () => {
     setSaveError(null);
     setSaveSuccess(null);
 
-    const resultAction = await dispatch(
-      saveCandidateProfile({
-        resumeUrl: formData.resumeUrl || null,
-        resumeFileName: formData.resumeFileName || null,
-        primarySkill: formData.primarySkill.trim() || null,
-        yearsExperience: formData.yearsExperience === '' ? null : Number(formData.yearsExperience),
-        photoUrl: formData.photoUrl || null,
-      })
-    );
+    const payload = {
+      resumeUrl: formData.resumeUrl || null,
+      resumeFileName: formData.resumeFileName || null,
+      primarySkill: formData.primarySkill.trim() || null,
+      yearsExperience: formData.yearsExperience === '' ? null : Number(formData.yearsExperience),
+      photoUrl: formData.photoUrl || null,
+    };
+
+    const resultAction = await dispatch(saveCandidateProfile(payload));
 
     setSaving(false);
 
@@ -201,14 +198,14 @@ const ProfilePage = () => {
   }
 
   const initial = (account.fullName || account.username || '?').charAt(0).toUpperCase();
-  const heroPhotoUrl = editing ? formData.photoUrl : candidateProfile?.photoUrl;
+  const heroPhotoUrl = editing ? formData.photoUrl : (candidateProfile ? candidateProfile.photoUrl : null);
 
   return (
     <div className="page-container">
       <div className="profile-hero">
         <div className="profile-hero-avatar">
           {heroPhotoUrl ? (
-            <img src={heroPhotoUrl} alt={`${account.fullName}'s photo`} />
+            <img src={heroPhotoUrl} alt="Profile" />
           ) : (
             <span>{initial}</span>
           )}
@@ -274,12 +271,12 @@ const ProfilePage = () => {
                 </div>
                 <div className="profile-upload-controls">
                   {formData.photoUrl ? (
-                    <>
+                    <React.Fragment>
                       <span className="profile-upload-current-label">Photo added</span>
                       <button type="button" className="btn btn-link" onClick={handleRemovePhoto}>
                         Remove photo
                       </button>
-                    </>
+                    </React.Fragment>
                   ) : (
                     <input
                       id="photoFile"
@@ -301,7 +298,7 @@ const ProfilePage = () => {
               {formData.resumeUrl ? (
                 <div className="profile-resume-current">
                   <a href={formData.resumeUrl} target="_blank" rel="noopener noreferrer">
-                    {formData.resumeFileName ? `View ${formData.resumeFileName}` : 'View current resume'}
+                    {formData.resumeFileName ? ('View ' + formData.resumeFileName) : 'View current resume'}
                   </a>
                   <button type="button" className="btn btn-link" onClick={handleRemoveResume}>
                     Remove
@@ -368,23 +365,25 @@ const ProfilePage = () => {
             <div className="profile-info-grid">
               <div className="profile-info-field">
                 <span className="profile-info-label">Primary skill</span>
-                <span className="profile-info-value">{candidateProfile?.primarySkill || '—'}</span>
+                <span className="profile-info-value">
+                  {candidateProfile && candidateProfile.primarySkill ? candidateProfile.primarySkill : '-'}
+                </span>
               </div>
               <div className="profile-info-field">
                 <span className="profile-info-label">Years of experience</span>
                 <span className="profile-info-value">
-                  {candidateProfile?.yearsExperience != null ? candidateProfile.yearsExperience : '—'}
+                  {candidateProfile && candidateProfile.yearsExperience != null ? candidateProfile.yearsExperience : '-'}
                 </span>
               </div>
               <div className="profile-info-field">
                 <span className="profile-info-label">Resume</span>
                 <span className="profile-info-value">
-                  {candidateProfile?.resumeUrl ? (
+                  {candidateProfile && candidateProfile.resumeUrl ? (
                     <a href={candidateProfile.resumeUrl} target="_blank" rel="noopener noreferrer">
-                      {candidateProfile.resumeFileName ? `View ${candidateProfile.resumeFileName}` : 'View resume'}
+                      {candidateProfile.resumeFileName ? ('View ' + candidateProfile.resumeFileName) : 'View resume'}
                     </a>
                   ) : (
-                    '—'
+                    '-'
                   )}
                 </span>
               </div>

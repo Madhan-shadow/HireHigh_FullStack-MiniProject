@@ -17,7 +17,10 @@ import CandidateProfileModal from '../common/CandidateProfileModal';
 const STAGES = ['APPLIED', 'SCREENING', 'INTERVIEW', 'OFFER', 'HIRED', 'REJECTED'];
 const PAGE_SIZE = 5;
 
-const StageEditModal = ({ application, onClose, onSubmit }) => {
+const StageEditModal = (props) => {
+  const application = props.application;
+  const onClose = props.onClose;
+  const onSubmit = props.onSubmit;
   const [stage, setStage] = useState(application.currentStage);
 
   const handleOverlayClick = (e) => {
@@ -34,7 +37,7 @@ const StageEditModal = ({ application, onClose, onSubmit }) => {
       <div className="modal">
         <div className="modal-header">
           <h2>Update application stage</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+          <button className="modal-close" onClick={onClose} aria-label="Close">x</button>
         </div>
         <form onSubmit={handleSubmit}>
           <label htmlFor="edit-stage">Current stage</label>
@@ -53,29 +56,33 @@ const StageEditModal = ({ application, onClose, onSubmit }) => {
   );
 };
 
-const CandidateAvatar = ({ candidate }) => {
-  const name = candidate?.user?.fullName || '?';
+const CandidateAvatar = (props) => {
+  const candidate = props.candidate || {};
+  const user = candidate.user || {};
+  const name = user.fullName || '?';
   const initial = name.charAt(0).toUpperCase();
+  const photoUrl = candidate.photoUrl;
 
   return (
     <span className="row-avatar">
-      {candidate?.photoUrl ? <img src={candidate.photoUrl} alt="" /> : initial}
+      {photoUrl ? <img src={photoUrl} alt="" /> : initial}
     </span>
   );
 };
 
 const ApplicationList = () => {
   const dispatch = useDispatch();
-  const { role } = useSelector((state) => state.auth);
-  const {
-    items,
-    currentPage,
-    totalPages,
-    loading,
-    successMessage,
-    warningMessage,
-    error,
-  } = useSelector((state) => state.applications);
+  const auth = useSelector((state) => state.auth);
+  const role = auth.role;
+
+  const appsState = useSelector((state) => state.applications);
+  const items = appsState.items;
+  const currentPage = appsState.currentPage;
+  const totalPages = appsState.totalPages;
+  const loading = appsState.loading;
+  const successMessage = appsState.successMessage;
+  const warningMessage = appsState.warningMessage;
+  const error = appsState.error;
 
   const [page, setPage] = useState(0);
   const [stageFilter, setStageFilter] = useState('');
@@ -91,7 +98,7 @@ const ApplicationList = () => {
     if (isCandidate) {
       dispatch(fetchMyApplications());
     } else {
-      dispatch(fetchApplications({ page, size: PAGE_SIZE, stage: stageFilter || undefined }));
+      dispatch(fetchApplications({ page: page, size: PAGE_SIZE, stage: stageFilter || undefined }));
     }
   }, [dispatch, isCandidate, page, stageFilter]);
 
@@ -103,9 +110,10 @@ const ApplicationList = () => {
   }, [successMessage, warningMessage, error, dispatch]);
 
   const filteredItems = items.filter((app) => {
+    const fullName = app.candidate && app.candidate.user ? app.candidate.user.fullName : null;
     const matchesCandidate =
       !candidateFilter ||
-      app.candidate?.user?.fullName?.toLowerCase().includes(candidateFilter.toLowerCase());
+      (fullName && fullName.toLowerCase().indexOf(candidateFilter.toLowerCase()) !== -1);
     const matchesStage = !stageFilter || app.currentStage === stageFilter;
     return matchesCandidate && matchesStage;
   });
@@ -116,7 +124,7 @@ const ApplicationList = () => {
   };
 
   const handleStageSave = (id, stage) => {
-    dispatch(updateStage({ id, stage }));
+    dispatch(updateStage({ id: id, stage: stage }));
     setEditingApplication(null);
   };
 
@@ -170,7 +178,7 @@ const ApplicationList = () => {
         <EmptyState title="No applications found" message="There are no applications matching this view." />
       ) : (
         <div className="row-list">
-          <div className={`row-list-head applications-grid${canEditStage ? '' : ' no-actions'}`}>
+          <div className={'row-list-head applications-grid' + (canEditStage ? '' : ' no-actions')}>
             <span>Candidate</span>
             <span>Job title</span>
             <span>Progress</span>
@@ -178,36 +186,37 @@ const ApplicationList = () => {
             {canEditStage && <span></span>}
           </div>
 
-          {filteredItems.map((app) => (
-            <div className={`row-list-row applications-grid${canEditStage ? '' : ' no-actions'}`} key={app.id}>
-              <span className="cell-title cell-candidate">
-                <CandidateAvatar candidate={app.candidate} />
-                {app.candidate?.user?.fullName || '—'}
-              </span>
-              <span className="cell-muted">{app.job?.title || '—'}</span>
-              <ApplicationProgress stage={app.currentStage} />
-              <span className="cell-mono">
-                {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}
-              </span>
-              {canEditStage && (
-                <div className="cell-actions">
-                  <button className="btn btn-link" onClick={() => setViewingApplication(app)}>View</button>
-                  {app.candidate?.resumeUrl && (
-                    
-                      className="btn btn-link"
-                      href={app.candidate.resumeUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Resume
-                    </a>
-                  )}
-                  <button className="btn btn-link" onClick={() => setEditingApplication(app)}>Edit</button>
-                  <button className="btn btn-danger" onClick={() => setConfirmDeleteId(app.id)}>Delete</button>
-                </div>
-              )}
-            </div>
-          ))}
+          {filteredItems.map((app) => {
+            const candidate = app.candidate || {};
+            const user = candidate.user || {};
+            const jobTitle = app.job ? app.job.title : null;
+            const appliedDate = app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '-';
+            const resumeUrl = candidate.resumeUrl;
+
+            return (
+              <div className={'row-list-row applications-grid' + (canEditStage ? '' : ' no-actions')} key={app.id}>
+                <span className="cell-title cell-candidate">
+                  <CandidateAvatar candidate={candidate} />
+                  {user.fullName || '-'}
+                </span>
+                <span className="cell-muted">{jobTitle || '-'}</span>
+                <ApplicationProgress stage={app.currentStage} />
+                <span className="cell-mono">{appliedDate}</span>
+                {canEditStage && (
+                  <div className="cell-actions">
+                    <button className="btn btn-link" onClick={() => setViewingApplication(app)}>View</button>
+                    {resumeUrl ? (
+                      <a className="btn btn-link" href={resumeUrl} target="_blank" rel="noopener noreferrer">
+                        Resume
+                      </a>
+                    ) : null}
+                    <button className="btn btn-link" onClick={() => setEditingApplication(app)}>Edit</button>
+                    <button className="btn btn-danger" onClick={() => setConfirmDeleteId(app.id)}>Delete</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
