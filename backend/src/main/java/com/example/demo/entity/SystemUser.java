@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Email;
     }
 )
 public class SystemUser {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,6 +30,10 @@ public class SystemUser {
     @Email
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String photoUrl;
 
     public Long getId() {
         return id;
@@ -79,6 +83,14 @@ public class SystemUser {
         this.email = email;
     }
 
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
     public SystemUser() {
     }
 
@@ -90,6 +102,4 @@ public class SystemUser {
         this.role = role;
         this.email = email;
     }
-
-    
 }
