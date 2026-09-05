@@ -16,7 +16,7 @@ const initialState = {
   successMessage: 'Application submitted successfully.',
   warningMessage: 'Application capacity exceeded',
 };
-
+  
 const clearSession = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('role');
