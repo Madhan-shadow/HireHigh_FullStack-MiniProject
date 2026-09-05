@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
-import { fetchCandidateProfile, clearCandidateProfile } from '../../store/slices/candidateSlice';
+import { clearCandidateProfile } from '../../store/slices/candidateSlice';
 import userService from '../../services/userService';
 
 const ROLE_ABBR = {
@@ -26,10 +26,6 @@ const Navbar = () => {
   const isAuthenticated = auth.isAuthenticated;
   const role = auth.role;
   const user = auth.user;
-
-  const candidateState = useSelector((state) => state.candidate);
-  const candidateProfile = candidateState.profile;
-  const candidateLoaded = candidateState.loaded;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
@@ -64,22 +60,12 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    if (isAuthenticated && role === 'CANDIDATE' && !candidateLoaded) {
-      dispatch(fetchCandidateProfile());
-    }
-  }, [dispatch, isAuthenticated, role, candidateLoaded]);
-
-  // Only candidates ever show a photo in the navbar avatar, even if
-  // stale candidate data is still sitting in the redux store.
-  const photoUrl = role === 'CANDIDATE' && candidateProfile ? candidateProfile.photoUrl : null;
+  // Account photo now works for every role (not candidate-only).
+  const photoUrl = accountInfo && accountInfo.photoUrl ? accountInfo.photoUrl : null;
 
   const handleLogout = () => {
     setMenuOpen(false);
     dispatch(logout());
-    // Wipe any candidate profile data (photo, resume, skills) from
-    // memory on logout, so the next login (even a different role)
-    // never inherits stale data from the previous session.
     dispatch(clearCandidateProfile());
     navigate('/login');
   };

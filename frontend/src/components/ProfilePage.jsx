@@ -42,6 +42,11 @@ const ProfilePage = () => {
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
+  // Account-level photo (every role) — separate from candidate-only
+  // resume/skill data below.
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState(null);
+
   useEffect(function () {
     var cancelled = false;
 
@@ -92,6 +97,57 @@ const ProfilePage = () => {
     });
   };
 
+  // ----- Account avatar (any role) -----
+  const handleAvatarFileChange = function (e) {
+    var file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setAvatarError(null);
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('Please choose an image file (JPG, PNG, etc).');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setAvatarError('That image is too large - please choose one under 2MB.');
+      return;
+    }
+
+    setAvatarUploading(true);
+
+    readFileAsDataUrl(file)
+      .then(function (dataUrl) {
+        return userService.updateMyPhoto(dataUrl);
+      })
+      .then(function (updatedAccount) {
+        setAccount(updatedAccount);
+      })
+      .catch(function () {
+        setAvatarError('Could not save your photo. Please try again.');
+      })
+      .finally(function () {
+        setAvatarUploading(false);
+      });
+  };
+
+  const handleRemoveAvatar = function () {
+    setAvatarUploading(true);
+    setAvatarError(null);
+
+    userService.updateMyPhoto(null)
+      .then(function (updatedAccount) {
+        setAccount(updatedAccount);
+      })
+      .catch(function () {
+        setAvatarError('Could not remove your photo. Please try again.');
+      })
+      .finally(function () {
+        setAvatarUploading(false);
+      });
+  };
+
+  // ----- Candidate resume/photo (candidate role only, kept separate) -----
   const handlePhotoFileChange = function (e) {
     var file = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -217,23 +273,42 @@ const ProfilePage = () => {
   }
 
   var initial = (account.fullName || account.username || '?').charAt(0).toUpperCase();
-
-  // Only candidates ever show a photo here. Other roles (TA Lead,
-  // Recruiter, Hiring Manager) never render candidate photo data,
-  // even if something stale is still sitting in the candidate slice.
-  var heroPhotoUrl = isCandidate
-    ? (editing ? formData.photoUrl : (candidateProfile ? candidateProfile.photoUrl : null))
-    : null;
+  var accountPhotoUrl = account.photoUrl || null;
 
   return (
     <div className="page-container">
       <div className="profile-hero">
-        <div className="profile-hero-avatar">
-          {heroPhotoUrl ? <img src={heroPhotoUrl} alt="Profile" /> : <span>{initial}</span>}
+        <div className="profile-hero-avatar profile-hero-avatar--editable">
+          {accountPhotoUrl ? <img src={accountPhotoUrl} alt="Profile" /> : <span>{initial}</span>}
+
+          <label className="avatar-edit-btn" htmlFor="accountAvatarFile" title="Change photo">
+            {avatarUploading ? '...' : '✎'}
+          </label>
+          <input
+            id="accountAvatarFile"
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarFileChange}
+            disabled={avatarUploading}
+            style={{ display: 'none' }}
+          />
         </div>
         <div>
           <h1 className="profile-hero-name">{account.fullName}</h1>
           <span className="profile-hero-role">{(account.role || '').toLowerCase()}</span>
+          {accountPhotoUrl && (
+            <div>
+              <button
+                type="button"
+                className="btn btn-link"
+                onClick={handleRemoveAvatar}
+                disabled={avatarUploading}
+              >
+                Remove photo
+              </button>
+            </div>
+          )}
+          {avatarError && <div className="error-banner">{avatarError}</div>}
         </div>
       </div>
 
@@ -281,7 +356,7 @@ const ProfilePage = () => {
             <form onSubmit={handleSave}>
               {fileError && <div className="error-banner">{fileError}</div>}
 
-              <label>Profile photo</label>
+              <label>Profile photo (used on job applications)</label>
               <div className="profile-photo-upload">
                 <div className="profile-photo-preview">
                   {formData.photoUrl ? <img src={formData.photoUrl} alt="Preview" /> : <span>{initial}</span>}

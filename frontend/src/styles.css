@@ -48,6 +48,30 @@
 /* =========================================================
    ROW AVATAR — small candidate photo/initial in list rows
    ========================================================= */
+   .profile-hero-avatar--editable {
+  position: relative;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ink, #1a1a1a);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  border: 2px solid #fff;
+}
+
+.avatar-edit-btn:hover {
+  opacity: 0.85;
+}
 .btn-link-inline {
   background: none;
   border: none;

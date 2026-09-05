@@ -7,6 +7,11 @@ const getMyAccount = async () => {
   return unwrap(response);
 };
 
-const userService = { getMyAccount };
+const updateMyPhoto = async (photoUrl) => {
+  const response = await api.put('/users/photo', { photoUrl });
+  return unwrap(response);
+};
 
-export default userService; 
+const userService = { getMyAccount, updateMyPhoto };
+
+export default userService;
