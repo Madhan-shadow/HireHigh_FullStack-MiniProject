@@ -50,6 +50,7 @@ public class CandidateController {
                 .orElseThrow(() -> new RuntimeException("Candidate profile not found"));
 
         profile.setResumeUrl(dto.getResumeUrl());
+        profile.setResumeFileName(dto.getResumeFileName());
         profile.setPrimarySkill(dto.getPrimarySkill());
         profile.setYearsExperience(dto.getYearsExperience());
         profile.setPhotoUrl(dto.getPhotoUrl());
