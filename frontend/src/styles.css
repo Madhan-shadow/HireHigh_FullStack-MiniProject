@@ -151,7 +151,46 @@
   color: var(--text-secondary, #555);
   line-height: 1.5;
 }
+/* Fix button links losing proper button styling (underline/bold bleeding
+   through from default <a> tag appearance since these are React Router
+   <Link> components, not real buttons) */
+.home-actions .btn,
+.btn-primary,
+.btn-secondary {
+  text-decoration: none !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 26px;
+  border-radius: 8px;
+  font-size: 14.5px;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  border: 1px solid transparent;
+}
 
+.btn-primary {
+  background: var(--ink, #1c3d34);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--ink, #1a1a1a);
+  border: 1px solid #d8d8d0;
+}
+
+.btn-secondary:hover {
+  background: #f5f5f0;
+}
+
+.home-actions .btn:active {
+  transform: translateY(1px);
+}
 @media (max-width: 768px) {
   .home-hero { padding: 56px 24px 48px; }
   .home-title { font-size: 36px; }
