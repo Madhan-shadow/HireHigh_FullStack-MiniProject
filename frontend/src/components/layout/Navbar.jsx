@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import userService from '../../services/userService';
 import candidateService from '../../services/candidateService';
+import { PHOTO_UPDATED_EVENT } from '../ProfilePage';
 
 const ROLE_ABBR = {
   CANDIDATE: 'C',
@@ -84,6 +85,16 @@ const Navbar = () => {
       cancelled = true;
     };
   }, [isAuthenticated, role]);
+
+  // Stay in sync the instant the profile page saves a new photo, instead of
+  // only picking it up on the next full page load.
+  useEffect(() => {
+    const handlePhotoUpdated = (e) => {
+      setPhotoUrl(e.detail || null);
+    };
+    window.addEventListener(PHOTO_UPDATED_EVENT, handlePhotoUpdated);
+    return () => window.removeEventListener(PHOTO_UPDATED_EVENT, handlePhotoUpdated);
+  }, []);
 
   const handleLogout = () => {
     setMenuOpen(false);

@@ -6,6 +6,10 @@ import ChangePasswordModal from './common/ChangePasswordModal';
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB — keeps the base64 payload reasonable
 
+// Event other components (like the navbar) listen for so their own copy of
+// the profile photo updates immediately after a save, without a reload.
+export const PHOTO_UPDATED_EVENT = 'hirehigh:profile-photo-updated';
+
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -154,6 +158,12 @@ const ProfilePage = () => {
       setCandidateProfile(updated);
       setSaveSuccess('Profile updated successfully.');
       setEditing(false);
+
+      // Let the navbar (and anything else showing the avatar) know right
+      // away, so it doesn't keep showing a stale photo until next reload.
+      window.dispatchEvent(
+        new CustomEvent(PHOTO_UPDATED_EVENT, { detail: updated?.photoUrl || null })
+      );
     } catch {
       setSaveError('Could not save your profile. Please try again.');
     } finally {
@@ -180,12 +190,16 @@ const ProfilePage = () => {
 
   const initial = (account.fullName || account.username || '?').charAt(0).toUpperCase();
 
+  // While editing, preview whatever photo is currently picked (even before
+  // saving) so the hero avatar updates the moment a file is chosen.
+  const heroPhotoUrl = editing ? formData.photoUrl : candidateProfile?.photoUrl;
+
   return (
     <div className="page-container">
       <div className="profile-hero">
         <div className="profile-hero-avatar">
-          {candidateProfile?.photoUrl ? (
-            <img src={candidateProfile.photoUrl} alt={`${account.fullName}'s photo`} />
+          {heroPhotoUrl ? (
+            <img src={heroPhotoUrl} alt={`${account.fullName}'s photo`} />
           ) : (
             <span>{initial}</span>
           )}
