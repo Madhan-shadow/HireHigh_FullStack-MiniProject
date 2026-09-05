@@ -41,8 +41,6 @@ const ProfilePage = () => {
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  // Account-level photo — shared everywhere (navbar, hero, and now
-  // also what recruiters see when reviewing this person's applications).
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState(null);
 
@@ -95,7 +93,6 @@ const ProfilePage = () => {
     });
   };
 
-  // ----- Account avatar (any role, shown everywhere including to recruiters) -----
   const handleAvatarFileChange = function (e) {
     var file = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -145,7 +142,6 @@ const ProfilePage = () => {
       });
   };
 
-  // ----- Candidate resume (still candidate-only) -----
   const handleResumeFileChange = function (e) {
     var file = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -321,15 +317,21 @@ const ProfilePage = () => {
 
               <label>Resume (PDF)</label>
               {formData.resumeUrl ? (
-                <div className="profile-resume-current">
-                  <button
-                    type="button"
-                    className="btn-link-inline"
-                    onClick={function () { openBase64Pdf(formData.resumeUrl); }}
-                  >
-                    {formData.resumeFileName ? ('View ' + formData.resumeFileName) : 'View current resume'}
-                  </button>
-                  <button type="button" className="btn btn-link" onClick={handleRemoveResume}>
+                <div className="resume-card">
+                  <div className="resume-card-icon">PDF</div>
+                  <div className="resume-card-info">
+                    <span className="resume-card-name">
+                      {formData.resumeFileName || 'Resume.pdf'}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn-link-inline"
+                      onClick={function () { openBase64Pdf(formData.resumeUrl); }}
+                    >
+                      View file
+                    </button>
+                  </div>
+                  <button type="button" className="btn btn-link resume-card-remove" onClick={handleRemoveResume}>
                     Remove
                   </button>
                 </div>
@@ -406,19 +408,25 @@ const ProfilePage = () => {
               </div>
               <div className="profile-info-field">
                 <span className="profile-info-label">Resume</span>
-                <span className="profile-info-value">
-                  {candidateProfile && candidateProfile.resumeUrl ? (
-                    <button
-                      type="button"
-                      className="btn-link-inline"
-                      onClick={function () { openBase64Pdf(candidateProfile.resumeUrl); }}
-                    >
-                      {candidateProfile.resumeFileName ? ('View ' + candidateProfile.resumeFileName) : 'View resume'}
-                    </button>
-                  ) : (
-                    '-'
-                  )}
-                </span>
+                {candidateProfile && candidateProfile.resumeUrl ? (
+                  <div className="resume-card resume-card--compact">
+                    <div className="resume-card-icon">PDF</div>
+                    <div className="resume-card-info">
+                      <span className="resume-card-name">
+                        {candidateProfile.resumeFileName || 'Resume.pdf'}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn-link-inline"
+                        onClick={function () { openBase64Pdf(candidateProfile.resumeUrl); }}
+                      >
+                        View file
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="profile-info-value">-</span>
+                )}
               </div>
             </div>
           )}
