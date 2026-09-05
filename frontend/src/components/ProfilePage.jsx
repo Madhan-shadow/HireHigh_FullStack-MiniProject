@@ -42,33 +42,35 @@ const ProfilePage = () => {
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  useEffect(function () {
+    var cancelled = false;
 
-    const load = async () => {
-      try {
-        const accountData = await userService.getMyAccount();
-        if (!cancelled) setAccount(accountData);
-      } catch {
-        if (!cancelled) setLoadError('Could not load your account details.');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
+    function load() {
+      userService.getMyAccount()
+        .then(function (accountData) {
+          if (!cancelled) setAccount(accountData);
+        })
+        .catch(function () {
+          if (!cancelled) setLoadError('Could not load your account details.');
+        })
+        .finally(function () {
+          if (!cancelled) setLoading(false);
+        });
+    }
 
     load();
-    return () => {
+    return function () {
       cancelled = true;
     };
   }, []);
 
-  useEffect(() => {
+  useEffect(function () {
     if (isCandidate && !candidateLoaded) {
       dispatch(fetchCandidateProfile());
     }
   }, [dispatch, isCandidate, candidateLoaded]);
 
-  useEffect(() => {
+  useEffect(function () {
     if (candidateProfile) {
       setFormData({
         resumeUrl: candidateProfile.resumeUrl || '',
@@ -80,14 +82,18 @@ const ProfilePage = () => {
     }
   }, [candidateProfile]);
 
-  const handleChange = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleChange = function (e) {
+    var name = e.target.name;
+    var value = e.target.value;
+    setFormData(function (prev) {
+      var next = Object.assign({}, prev);
+      next[name] = value;
+      return next;
+    });
   };
 
-  const handlePhotoFileChange = async (e) => {
-    const file = e.target.files && e.target.files[0];
+  const handlePhotoFileChange = function (e) {
+    var file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
 
@@ -102,16 +108,19 @@ const ProfilePage = () => {
       return;
     }
 
-    try {
-      const dataUrl = await readFileAsDataUrl(file);
-      setFormData((prev) => ({ ...prev, photoUrl: dataUrl }));
-    } catch {
-      setFileError('Could not read that image. Please try another file.');
-    }
+    readFileAsDataUrl(file)
+      .then(function (dataUrl) {
+        setFormData(function (prev) {
+          return Object.assign({}, prev, { photoUrl: dataUrl });
+        });
+      })
+      .catch(function () {
+        setFileError('Could not read that image. Please try another file.');
+      });
   };
 
-  const handleResumeFileChange = async (e) => {
-    const file = e.target.files && e.target.files[0];
+  const handleResumeFileChange = function (e) {
+    var file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
 
@@ -126,23 +135,30 @@ const ProfilePage = () => {
       return;
     }
 
-    try {
-      const dataUrl = await readFileAsDataUrl(file);
-      setFormData((prev) => ({ ...prev, resumeUrl: dataUrl, resumeFileName: file.name }));
-    } catch {
-      setFileError('Could not read that file. Please try another PDF.');
-    }
+    readFileAsDataUrl(file)
+      .then(function (dataUrl) {
+        setFormData(function (prev) {
+          return Object.assign({}, prev, { resumeUrl: dataUrl, resumeFileName: file.name });
+        });
+      })
+      .catch(function () {
+        setFileError('Could not read that file. Please try another PDF.');
+      });
   };
 
-  const handleRemovePhoto = () => {
-    setFormData((prev) => ({ ...prev, photoUrl: '' }));
+  const handleRemovePhoto = function () {
+    setFormData(function (prev) {
+      return Object.assign({}, prev, { photoUrl: '' });
+    });
   };
 
-  const handleRemoveResume = () => {
-    setFormData((prev) => ({ ...prev, resumeUrl: '', resumeFileName: '' }));
+  const handleRemoveResume = function () {
+    setFormData(function (prev) {
+      return Object.assign({}, prev, { resumeUrl: '', resumeFileName: '' });
+    });
   };
 
-  const resetFormFromProfile = () => {
+  const resetFormFromProfile = function () {
     if (candidateProfile) {
       setFormData({
         resumeUrl: candidateProfile.resumeUrl || '',
@@ -154,13 +170,13 @@ const ProfilePage = () => {
     }
   };
 
-  const handleSave = async (e) => {
+  const handleSave = function (e) {
     e.preventDefault();
     setSaving(true);
     setSaveError(null);
     setSaveSuccess(null);
 
-    const payload = {
+    var payload = {
       resumeUrl: formData.resumeUrl || null,
       resumeFileName: formData.resumeFileName || null,
       primarySkill: formData.primarySkill.trim() || null,
@@ -168,18 +184,20 @@ const ProfilePage = () => {
       photoUrl: formData.photoUrl || null,
     };
 
-    const resultAction = await dispatch(saveCandidateProfile(payload));
+    dispatch(saveCandidateProfile(payload)).then(function (resultAction) {
+      setSaving(false);
 
-    setSaving(false);
+      if (saveCandidateProfile.fulfilled.match(resultAction)) {
+        setSaveSuccess('Profile updated successfully.');
+        setEditing(false);
+      } else {
+        setSaveError(resultAction.payload || 'Could not save your profile. Please try again.');
+      }
 
-    if (saveCandidateProfile.fulfilled.match(resultAction)) {
-      setSaveSuccess('Profile updated successfully.');
-      setEditing(false);
-    } else {
-      setSaveError(resultAction.payload || 'Could not save your profile. Please try again.');
-    }
-
-    setTimeout(() => setSaveSuccess(null), 3000);
+      setTimeout(function () {
+        setSaveSuccess(null);
+      }, 3000);
+    });
   };
 
   if (loading) {
@@ -198,18 +216,20 @@ const ProfilePage = () => {
     );
   }
 
-  const initial = (account.fullName || account.username || '?').charAt(0).toUpperCase();
-  const heroPhotoUrl = editing ? formData.photoUrl : (candidateProfile ? candidateProfile.photoUrl : null);
+  var initial = (account.fullName || account.username || '?').charAt(0).toUpperCase();
+
+  // Only candidates ever show a photo here. Other roles (TA Lead,
+  // Recruiter, Hiring Manager) never render candidate photo data,
+  // even if something stale is still sitting in the candidate slice.
+  var heroPhotoUrl = isCandidate
+    ? (editing ? formData.photoUrl : (candidateProfile ? candidateProfile.photoUrl : null))
+    : null;
 
   return (
     <div className="page-container">
       <div className="profile-hero">
         <div className="profile-hero-avatar">
-          {heroPhotoUrl ? (
-            <img src={heroPhotoUrl} alt="Profile" />
-          ) : (
-            <span>{initial}</span>
-          )}
+          {heroPhotoUrl ? <img src={heroPhotoUrl} alt="Profile" /> : <span>{initial}</span>}
         </div>
         <div>
           <h1 className="profile-hero-name">{account.fullName}</h1>
@@ -220,7 +240,7 @@ const ProfilePage = () => {
       <div className="profile-section">
         <div className="profile-section-header">
           <h2 className="profile-section-title">Account details</h2>
-          <button className="btn btn-link" onClick={() => setShowPasswordModal(true)}>
+          <button className="btn btn-link" onClick={function () { setShowPasswordModal(true); }}>
             Change password
           </button>
         </div>
@@ -248,7 +268,7 @@ const ProfilePage = () => {
           <div className="profile-section-header">
             <h2 className="profile-section-title">Candidate details</h2>
             {!editing && (
-              <button className="btn btn-link" onClick={() => setEditing(true)}>
+              <button className="btn btn-link" onClick={function () { setEditing(true); }}>
                 Edit
               </button>
             )}
@@ -264,11 +284,7 @@ const ProfilePage = () => {
               <label>Profile photo</label>
               <div className="profile-photo-upload">
                 <div className="profile-photo-preview">
-                  {formData.photoUrl ? (
-                    <img src={formData.photoUrl} alt="Preview" />
-                  ) : (
-                    <span>{initial}</span>
-                  )}
+                  {formData.photoUrl ? <img src={formData.photoUrl} alt="Preview" /> : <span>{initial}</span>}
                 </div>
                 <div className="profile-upload-controls">
                   {formData.photoUrl ? (
@@ -301,7 +317,7 @@ const ProfilePage = () => {
                   <button
                     type="button"
                     className="btn-link-inline"
-                    onClick={() => openBase64Pdf(formData.resumeUrl)}
+                    onClick={function () { openBase64Pdf(formData.resumeUrl); }}
                   >
                     {formData.resumeFileName ? ('View ' + formData.resumeFileName) : 'View current resume'}
                   </button>
@@ -354,7 +370,7 @@ const ProfilePage = () => {
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => {
+                  onClick={function () {
                     setEditing(false);
                     resetFormFromProfile();
                   }}
@@ -387,7 +403,7 @@ const ProfilePage = () => {
                     <button
                       type="button"
                       className="btn-link-inline"
-                      onClick={() => openBase64Pdf(candidateProfile.resumeUrl)}
+                      onClick={function () { openBase64Pdf(candidateProfile.resumeUrl); }}
                     >
                       {candidateProfile.resumeFileName ? ('View ' + candidateProfile.resumeFileName) : 'View resume'}
                     </button>
@@ -402,7 +418,7 @@ const ProfilePage = () => {
       )}
 
       {showPasswordModal && (
-        <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
+        <ChangePasswordModal onClose={function () { setShowPasswordModal(false); }} />
       )}
     </div>
   );
