@@ -4,6 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import userService from '../../services/userService';
 
+const ROLE_ABBR = {
+  CANDIDATE: 'C',
+  RECRUITER: 'R',
+  TA_LEAD: 'TA',
+  HIRING_MANAGER: 'HM',
+};
+
 const ROLE_LABELS = {
   CANDIDATE: 'Candidate',
   RECRUITER: 'Recruiter',
@@ -66,22 +73,24 @@ const Navbar = () => {
 
   const displayName = accountInfo?.fullName || user?.fullName || role || 'user';
   const initial = displayName.charAt(0).toUpperCase();
+
+  const roleAbbr = ROLE_ABBR[role] || (role ? role.charAt(0).toUpperCase() : '');
   const roleLabel = ROLE_LABELS[role] || (role ? role.toLowerCase() : '');
-  const roleInitial = role ? role.charAt(0).toUpperCase() : '';
 
   return (
     <nav className="navbar">
       <div className="navbar-brand">
         <Link to="/">
-          <span className="navbar-brand-mark">H</span>
+          {isAuthenticated && roleAbbr ? (
+            <span className="navbar-role-mark">
+              <span className="navbar-role-mark-abbr">{roleAbbr}</span>
+              <span className="navbar-role-mark-full">{roleLabel}</span>
+            </span>
+          ) : (
+            <span className="navbar-brand-mark">H</span>
+          )}
           <span className="navbar-brand-word">HireHigh</span>
         </Link>
-        {isAuthenticated && roleLabel && (
-          <span className="navbar-role-badge">
-            <span className="navbar-role-badge-icon">{roleInitial}</span>
-            {roleLabel}
-          </span>
-        )}
       </div>
       <div className="navbar-links">
         <NavLink to="/" end className={linkClass}>
