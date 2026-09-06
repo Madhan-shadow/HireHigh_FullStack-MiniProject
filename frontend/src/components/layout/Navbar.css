@@ -253,38 +253,7 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   border-top: 1px solid var(--sb-panel-border);
 }
 
-/* ---------- Floating rotated login pill, bottom-left corner ---------- */
-.sidebar-login-btn {
-  position: fixed;
-  left: 14px;
-  bottom: 14px;
-  width: 40px;
-  height: 88px;
-  background: var(--sb-pine);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.85rem;
-  border-radius: 10px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  z-index: 50;
-}
-
-.sidebar-login-btn:hover {
-  background: #24705f;
-}
-
-.sidebar-login-btn .sidebar-icon,
-.sidebar-login-btn .sidebar-label {
-  opacity: 1 !important;
-  max-width: none !important;
-}/* ---------- Floating login card, bottom-left corner (not rotated) ---------- */
+/* ---------- Floating login card, bottom-left corner (not rotated) ---------- */
 .sidebar-login-btn {
   position: fixed;
   left: 14px;
@@ -317,6 +286,9 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   max-width: none !important;
 }
 
+.sidebar-login-btn .sidebar-label {
+  order: -1;
+}
 
 .sidebar-profile { position: relative; padding: 0 2px; }
 
