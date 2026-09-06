@@ -6,7 +6,232 @@
 /* =========================================================
    DASHBOARD HOME (logged-in recruiter/candidate)
    ========================================================= */
+/* =========================================================
+   VISITOR SHOWCASE HOMEPAGE
+   ========================================================= */
 
+.showcase {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+}
+
+.showcase-hero {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
+  align-items: center;
+  padding: 64px 0 56px;
+}
+
+.showcase-headline {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5.5vw, 62px);
+  line-height: 1.02;
+  letter-spacing: -1.5px;
+  font-weight: 600;
+  margin: 0 0 18px;
+  color: var(--ink);
+}
+
+.showcase-hero-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.showcase-pipeline-card {
+  width: 100%;
+  max-width: 320px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  box-shadow: var(--shadow-lg);
+}
+
+.showcase-pipeline-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.showcase-pipeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.showcase-pipeline-stage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.showcase-pipeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--border);
+}
+
+.showcase-pipeline-dot.stage-applied { background: var(--stage-applied); }
+.showcase-pipeline-dot.stage-screening { background: var(--stage-screening); }
+.showcase-pipeline-dot.stage-interview { background: var(--stage-interview); }
+.showcase-pipeline-dot.stage-offer { background: var(--stage-offer); }
+.showcase-pipeline-dot.stage-hired { background: var(--stage-hired); }
+
+.showcase-pipeline-stage.is-done {
+  color: var(--text);
+}
+
+.showcase-pipeline-stage.is-active {
+  background: var(--gold-soft);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.showcase-pipeline-count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.showcase-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 32px 0;
+  margin-bottom: 56px;
+}
+
+.showcase-stat {
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+
+.showcase-stat:last-child {
+  border-right: none;
+}
+
+.showcase-stat-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 600;
+  color: var(--pine-deep);
+}
+
+.showcase-stat-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.showcase-section-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0 0 28px;
+  text-align: center;
+}
+
+.showcase-roles {
+  margin-bottom: 56px;
+}
+
+.showcase-role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.showcase-role-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+}
+
+.showcase-role-tag {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.stage-applied-tag {
+  background: var(--stage-applied-soft);
+  color: var(--stage-applied);
+}
+
+.stage-offer-tag {
+  background: var(--stage-offer-soft);
+  color: var(--stage-offer);
+}
+
+.stage-hired-tag {
+  background: var(--stage-hired-soft);
+  color: var(--stage-hired);
+}
+
+.showcase-role-card h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.showcase-role-card p {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.showcase-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 40px;
+}
+
+@media (max-width: 900px) {
+  .showcase-hero {
+    grid-template-columns: 1fr;
+    padding: 40px 0 32px;
+  }
+  .showcase-stats,
+  .showcase-role-grid,
+  .showcase-steps {
+    grid-template-columns: 1fr;
+  }
+  .showcase-stat {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+  }
+  .showcase-stat:last-child {
+    border-bottom: none;
+  }
+}
 .dash-header {
   margin-bottom: 24px;
 }
