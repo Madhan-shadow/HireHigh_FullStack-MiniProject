@@ -31,7 +31,6 @@ body {
   flex-direction: column;
   z-index: 40;
   font-family: 'Inter', system-ui, sans-serif;
-  overflow: hidden;
   transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -49,6 +48,17 @@ body {
 /* Logged-out rail never needs the full 232px — it opens to a slimmer panel */
 .sidebar--rail.sidebar--expanded {
   width: 200px;
+}
+
+/* ---------- Overflow scoped to the sections that need it for the      ---------- */
+/* ---------- collapse/expand animation, NOT the whole .sidebar,        ---------- */
+/* ---------- so the profile dropdown in .sidebar-bottom is never clipped ------- */
+.sidebar-top {
+  overflow: hidden;
+}
+
+.sidebar-rail-track {
+  overflow: hidden;
 }
 
 /* ---------- Content fade: labels/word only show once expanded ---------- */
@@ -245,6 +255,8 @@ body {
 .sidebar-label { white-space: nowrap; }
 
 /* ---------- Bottom: login / profile ---------- */
+/* Intentionally NO overflow:hidden here — the profile dropdown must be   */
+/* free to render at full size regardless of the sidebar's collapsed width */
 .sidebar-bottom {
   margin-top: auto;
   padding-top: 14px;
@@ -319,17 +331,20 @@ body {
   color: var(--sb-cream);
 }
 
+/* Dropdown: fixed comfortable width, independent of sidebar's own width,   */
+/* so "View profile" / "Logout" always render fully instead of being cut off */
 .sidebar-profile-dropdown {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 0;
-  width: 196px;
+  width: 200px;
   background: #1d1d1a;
   color: var(--sb-cream);
   border: 1px solid var(--sb-panel-border);
   border-radius: 12px;
   padding: 10px;
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
+  white-space: normal;
 }
 
 .sidebar-profile-dropdown-header {
@@ -338,8 +353,20 @@ body {
   margin-bottom: 6px;
 }
 
-.sidebar-profile-name { display: block; font-weight: 600; font-size: 0.85rem; }
-.sidebar-profile-role { display: block; font-size: 0.75rem; color: var(--sb-muted); text-transform: capitalize; }
+.sidebar-profile-name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.sidebar-profile-role {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--sb-muted);
+  text-transform: capitalize;
+}
 
 .sidebar-profile-item {
   display: flex;
@@ -355,6 +382,7 @@ body {
   padding: 8px;
   border-radius: 7px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .sidebar-profile-item:hover { background: var(--sb-hover); }
