@@ -229,6 +229,16 @@ function KebabIcon() {
   );
 }
 
+function HamburgerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M4 7h16" strokeLinecap="round" />
+      <path d="M4 12h16" strokeLinecap="round" />
+      <path d="M4 17h16" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -239,6 +249,7 @@ const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
+  const [expanded, setExpanded] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -301,9 +312,23 @@ const Navbar = () => {
     navItems.push({ to: '/applications', label: 'My applications', Icon: PipelineIcon });
   }
 
+  const sidebarStateClass = isAuthenticated
+    ? (expanded ? ' sidebar--app sidebar--expanded' : ' sidebar--app sidebar--collapsed')
+    : (expanded ? ' sidebar--rail sidebar--expanded' : ' sidebar--rail sidebar--collapsed');
+
   return (
-    <nav className={'sidebar' + (isAuthenticated ? ' sidebar--app' : ' sidebar--rail')}>
+    <nav className={'sidebar' + sidebarStateClass}>
       <div className="sidebar-top">
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={() => setExpanded((prev) => !prev)}
+          aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
+          aria-expanded={expanded}
+        >
+          <HamburgerIcon />
+        </button>
+
         <Link to="/" className="sidebar-brand">
           {isAuthenticated && roleAbbr ? (
             <span className="sidebar-role-badge" title={roleLabel}>
@@ -324,6 +349,7 @@ const Navbar = () => {
             end={item.end}
             className={linkClass}
             title={item.label}
+            onClick={() => setExpanded(false)}
           >
             <span className="sidebar-dot-col">
               <span className="sidebar-dot" />
@@ -349,7 +375,10 @@ const Navbar = () => {
                 <Link
                   to="/profile"
                   className="sidebar-profile-item"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setExpanded(false);
+                  }}
                 >
                   View profile
                 </Link>
@@ -378,7 +407,7 @@ const Navbar = () => {
             </button>
           </div>
         ) : (
-          <Link to="/login" className="sidebar-login-btn">
+          <Link to="/login" className="sidebar-login-btn" onClick={() => setExpanded(false)}>
             Login
           </Link>
         )}

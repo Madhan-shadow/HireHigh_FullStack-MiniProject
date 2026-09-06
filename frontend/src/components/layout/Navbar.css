@@ -9,6 +9,8 @@
   --sb-gold-tint: rgba(217, 164, 65, 0.12);
   --sb-pine: #1c5c4d;
   --sb-hover: rgba(255, 255, 255, 0.05);
+  --sb-collapsed-w: 68px;
+  --sb-expanded-w: 232px;
 }
 
 body {
@@ -29,44 +31,112 @@ body {
   flex-direction: column;
   z-index: 40;
   font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ---------- Logged-out rail ---------- */
-.sidebar--rail {
-  width: 68px;
-  align-items: center;
+/* ---------- Width states ---------- */
+.sidebar--collapsed {
+  width: var(--sb-collapsed-w);
   padding: 18px 0;
 }
 
-.sidebar--rail .sidebar-label { display: none; }
-.sidebar--rail .sidebar-brand-word { display: none; }
-.sidebar--rail .sidebar-rail-track { align-items: center; }
-.sidebar--rail .sidebar-link {
-  justify-content: center;
-  padding: 10px;
-  width: 40px;
-}
-.sidebar--rail .sidebar-dot-col { display: none; }
-
-/* ---------- Logged-in full sidebar ---------- */
-.sidebar--app {
-  width: 232px;
+.sidebar--expanded {
+  width: var(--sb-expanded-w);
   padding: 18px 12px;
 }
 
-/* ---------- Brand ---------- */
+/* Logged-out rail never needs the full 232px — it opens to a slimmer panel */
+.sidebar--rail.sidebar--expanded {
+  width: 200px;
+}
+
+/* ---------- Content fade: labels/word only show once expanded ---------- */
+.sidebar-brand-word,
+.sidebar-label,
+.sidebar-profile-name-inline,
+.sidebar-profile-kebab {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.18s ease, max-width 0.24s ease;
+}
+
+.sidebar--expanded .sidebar-brand-word,
+.sidebar--expanded .sidebar-label,
+.sidebar--expanded .sidebar-profile-name-inline,
+.sidebar--expanded .sidebar-profile-kebab {
+  opacity: 1;
+  max-width: 160px;
+}
+
+.sidebar--collapsed .sidebar-link,
+.sidebar--collapsed .sidebar-profile-trigger {
+  justify-content: center;
+  padding: 10px;
+}
+
+.sidebar--collapsed .sidebar-dot-col {
+  display: none;
+}
+
+.sidebar--collapsed .sidebar-login-btn {
+  padding: 10px 6px;
+  font-size: 0.68rem;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.sidebar--expanded .sidebar-login-btn {
+  padding: 9px 0;
+  font-size: 0.85rem;
+  writing-mode: horizontal-tb;
+}
+
+/* ---------- Toggle (hamburger) ---------- */
 .sidebar-top {
   margin-bottom: 24px;
   padding: 4px 8px 16px;
   border-bottom: 1px solid var(--sb-panel-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
+.sidebar--collapsed .sidebar-top {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--sb-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.sidebar-toggle:hover {
+  background: var(--sb-hover);
+  color: var(--sb-cream);
+}
+
+/* ---------- Brand ---------- */
 .sidebar-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
   color: var(--sb-cream);
+  min-width: 0;
 }
 
 .sidebar-brand-mark {
@@ -136,7 +206,7 @@ body {
   font-weight: 600;
 }
 
-.sidebar-link.active::before {
+.sidebar--expanded .sidebar-link.active::before {
   content: '';
   position: absolute;
   left: -12px;
@@ -188,16 +258,12 @@ body {
   color: #fff;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 9px 0;
   border-radius: 9px;
+  margin: 0 8px;
 }
 
-.sidebar--rail .sidebar-login-btn {
-  padding: 10px 6px;
-  font-size: 0.68rem;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
+.sidebar--collapsed .sidebar-login-btn {
+  margin: 0;
 }
 
 .sidebar-profile { position: relative; }
@@ -238,9 +304,6 @@ body {
   text-align: left;
   font-size: 0.83rem;
   text-transform: lowercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   color: var(--sb-cream);
 }
 
@@ -299,10 +362,7 @@ body {
 
 /* ---------- Content offset (apply in App.jsx / layout wrapper) ---------- */
 .app-content {
-  margin-left: 256px; /* 232px sidebar + 12px left margin + 12px gap */
+  margin-left: calc(var(--sb-collapsed-w) + 24px); /* collapsed sidebar + 12px margin + 12px gap */
   padding: 12px 24px 12px 0;
-}
-
-body.logged-out .app-content {
-  margin-left: 92px; /* 68px rail + 12px + 12px */
+  transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
