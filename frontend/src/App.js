@@ -9,6 +9,7 @@ import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
 import ProfilePage from './components/ProfilePage';
 import './App.css';
+import './styles.css';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state) => state.auth);
