@@ -204,27 +204,102 @@ const Home = () => {
   }
 
   // Visitor (not authenticated) — public job count is real, fetched above.
+    // Visitor (not authenticated) — public job count is real, fetched above.
   const openJobsCount = jobs.filter((j) => j.status === 'OPEN').length;
 
   return (
-    <div className="page-container">
-      <div className="visitor-hero">
-        <span className="home-hero-eyebrow">Talent Acquisition, Simplified</span>
-        <h1 className="home-hero-headline">Find who's next.</h1>
-        <p className="home-hero-sub">
-          HireHigh brings recruiters, hiring leads, and candidates onto one
-          pipeline — from the first application to the signed offer.
-        </p>
-        <div className="home-cta-row">
-          <Link to="/jobs" className="btn btn-primary">
-            {openJobsCount > 0 ? `View ${openJobsCount} open role${openJobsCount === 1 ? '' : 's'}` : 'View open roles'}
-          </Link>
-          <Link to="/register" className="btn btn-secondary">Create an account</Link>
-          <Link to="/login" className="btn btn-secondary">Sign in</Link>
+    <div className="showcase">
+      <section className="showcase-hero">
+        <div className="showcase-hero-text">
+          <span className="home-hero-eyebrow">Talent Acquisition, Simplified</span>
+          <h1 className="showcase-headline">
+            One pipeline.<br />Every hire.
+          </h1>
+          <p className="home-hero-sub">
+            HireHigh brings recruiters, hiring leads, and candidates onto a
+            single, live pipeline — from the first application to the signed
+            offer, with nothing lost in spreadsheets or email threads.
+          </p>
+          <div className="home-cta-row">
+            <Link to="/jobs" className="btn btn-primary">
+              {openJobsCount > 0 ? `View ${openJobsCount} open role${openJobsCount === 1 ? '' : 's'}` : 'View open roles'}
+            </Link>
+            <Link to="/register" className="btn btn-secondary">Create an account</Link>
+            <Link to="/login" className="btn btn-secondary">Sign in</Link>
+          </div>
         </div>
-      </div>
 
-      <div className="visitor-steps">
+        <div className="showcase-hero-visual">
+          <div className="showcase-pipeline-card">
+            <span className="showcase-pipeline-title">Live pipeline</span>
+            <ul className="showcase-pipeline-list">
+              <li className="showcase-pipeline-stage is-done">
+                <span className="showcase-pipeline-dot stage-applied" />
+                Applied
+                <span className="showcase-pipeline-count">18</span>
+              </li>
+              <li className="showcase-pipeline-stage is-done">
+                <span className="showcase-pipeline-dot stage-screening" />
+                Screening
+                <span className="showcase-pipeline-count">11</span>
+              </li>
+              <li className="showcase-pipeline-stage is-active">
+                <span className="showcase-pipeline-dot stage-interview" />
+                Interview
+                <span className="showcase-pipeline-count">6</span>
+              </li>
+              <li className="showcase-pipeline-stage">
+                <span className="showcase-pipeline-dot stage-offer" />
+                Offer
+                <span className="showcase-pipeline-count">2</span>
+              </li>
+              <li className="showcase-pipeline-stage">
+                <span className="showcase-pipeline-dot stage-hired" />
+                Hired
+                <span className="showcase-pipeline-count">1</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="showcase-stats">
+        <div className="showcase-stat">
+          <span className="showcase-stat-value">{openJobsCount}</span>
+          <span className="showcase-stat-label">Open roles right now</span>
+        </div>
+        <div className="showcase-stat">
+          <span className="showcase-stat-value">6</span>
+          <span className="showcase-stat-label">Pipeline stages tracked</span>
+        </div>
+        <div className="showcase-stat">
+          <span className="showcase-stat-value">1</span>
+          <span className="showcase-stat-label">Place to manage it all</span>
+        </div>
+      </section>
+
+      <section className="showcase-roles">
+        <h2 className="showcase-section-title">Built for how hiring actually works</h2>
+        <div className="showcase-role-grid">
+          <div className="showcase-role-card">
+            <span className="showcase-role-tag stage-applied-tag">For Recruiters</span>
+            <h3>Post, track, close.</h3>
+            <p>Publish a role with a hiring goal, watch applicants flow in, and move each one through the pipeline without leaving the app.</p>
+          </div>
+          <div className="showcase-role-card">
+            <span className="showcase-role-tag stage-offer-tag">For TA Leads &amp; Managers</span>
+            <h3>See the whole pipeline.</h3>
+            <p>A live view of every open role and every candidate stage — no status meetings needed to know where things stand.</p>
+          </div>
+          <div className="showcase-role-card">
+            <span className="showcase-role-tag stage-hired-tag">For Candidates</span>
+            <h3>Apply once, track always.</h3>
+            <p>Attach your resume and details once, apply to any role in a click, and watch your status update in real time.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="showcase-steps">
         <div className="visitor-step">
           <span className="visitor-step-number">01</span>
           <h3>Post a role</h3>
@@ -240,7 +315,7 @@ const Home = () => {
           <h3>Track every stage</h3>
           <p>Applied, Screening, Interview, Offer, Hired — all in one pipeline.</p>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
