@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+.site-footer {
+  background: #151513;
+  color: #f3f1ea;
+  font-family: 'Inter', system-ui, sans-serif;
+  padding: 48px 40px 24px;
+  margin-top: 60px;
+}
+
+.site-footer-top {
+  max-width: 480px;
+  margin-bottom: 40px;
+}
+
+.site-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.site-footer-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #d9a441;
+  color: #151513;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.site-footer-word {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.site-footer-tagline {
+  color: #85847d;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.site-footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.site-footer-col-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #d9a441;
+  margin-bottom: 4px;
+}
+
+.site-footer-col a {
+  color: #c9c8c1;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color 0.14s ease;
+}
+
+.site-footer-col a:hover {
+  color: #f3f1ea;
+}
+
+.site-footer-bottom {
+  padding-top: 20px;
+  font-size: 0.8rem;
+  color: #6f6e69;
+}
