@@ -42,11 +42,11 @@ const CompanyLogo = ({ company }) => {
 
   return (
     <img
-      className="company-logo"
-      src={`https://logo.clearbit.com/${domain}`}
-      alt=""
-      onError={() => setFailed(true)}
-    />
+  className="company-logo"
+  src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+  alt=""
+  onError={() => setFailed(true)}
+/>
   );
 };
 
