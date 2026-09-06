@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './store';
 import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
 import Login from './components/Login';
 import Register from './components/Register';
 import JobList from './components/jobs/JobList';
