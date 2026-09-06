@@ -1,10 +1,13 @@
 package com.example.demo.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.*;
+
 @Entity
 @Table(name="JobPosting")
 public class JobPosting {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,6 +23,14 @@ public class JobPosting {
     private Integer currentFills;
 
     private String status;
+
+    private String company;
+
+    private LocalDate interviewDate;
+
+    private LocalDate publishedOn;
+
+    private LocalDate lastDateToApply;
 
     public Long getId() {
         return id;
@@ -77,6 +88,38 @@ public class JobPosting {
         this.status = status;
     }
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
+    public LocalDate getInterviewDate() {
+        return interviewDate;
+    }
+
+    public void setInterviewDate(LocalDate interviewDate) {
+        this.interviewDate = interviewDate;
+    }
+
+    public LocalDate getPublishedOn() {
+        return publishedOn;
+    }
+
+    public void setPublishedOn(LocalDate publishedOn) {
+        this.publishedOn = publishedOn;
+    }
+
+    public LocalDate getLastDateToApply() {
+        return lastDateToApply;
+    }
+
+    public void setLastDateToApply(LocalDate lastDateToApply) {
+        this.lastDateToApply = lastDateToApply;
+    }
+
     public JobPosting() {
     }
 
@@ -90,6 +133,4 @@ public class JobPosting {
         this.currentFills = currentFills;
         this.status = status;
     }
-
-    
 }
