@@ -13,6 +13,81 @@
   background: #fafafa;
   max-width: 420px;
   margin-top: 6px;
+}.profile-menu-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--gold, #c99a2e);
+  color: var(--accent, #1c3d34);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.profile-menu-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-hero-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--gold, #c99a2e);
+  color: var(--accent, #1c3d34);
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 32px;
+}
+
+.profile-hero-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.row-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--gold, #c99a2e);
+  color: var(--accent, #1c3d34);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.row-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.candidate-profile-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 20px;
 }
 .home-page {
   display: flex;
