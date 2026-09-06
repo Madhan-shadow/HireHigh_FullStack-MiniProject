@@ -2570,17 +2570,54 @@ a.profile-menu-item {
   .navbar-user {
     margin-left: auto;
   }
+
+  /* Stack brand panel above the login card instead of hiding it */
   .auth-shell {
     grid-template-columns: 1fr;
     min-height: 100vh;
   }
+
   .auth-brand-panel {
-    display: none;
+    display: flex;
+    min-height: auto;
+    padding: 44px 24px 36px;
   }
+
+  .auth-brand-panel::before {
+    font-size: 130px;
+    right: -0.08em;
+    bottom: -0.2em;
+  }
+
+  .auth-brand-content {
+    max-width: 100%;
+  }
+
+  .auth-brand-headline {
+    font-size: clamp(30px, 9vw, 42px);
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+
+  .auth-brand-sub {
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin: 0 0 24px;
+  }
+
+  .auth-rail-step {
+    padding: 6px 0;
+  }
+
+  .auth-rail-label {
+    font-size: 13px;
+  }
+
   .auth-form-panel {
-    min-height: 100vh;
-    padding: 30px 18px;
+    min-height: auto;
+    padding: 30px 18px 50px;
   }
+
   .page-header {
     align-items: flex-start;
     flex-direction: column;
@@ -2599,7 +2636,6 @@ a.profile-menu-item {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 600px) {
   .navbar-brand-word {
     font-size: 18px;
