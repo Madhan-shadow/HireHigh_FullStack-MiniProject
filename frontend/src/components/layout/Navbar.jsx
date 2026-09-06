@@ -182,49 +182,51 @@ const Navbar = () => {
 
   return (
     <nav className={'sidebar ' + variant + ' ' + widthState}>
-      <div className="sidebar-top">
-        <button
-          type="button"
-          className="sidebar-toggle"
-          onClick={() => setExpanded((prev) => !prev)}
-          aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
-          aria-expanded={expanded}
-        >
-          <HamburgerIcon />
-        </button>
-
-        <Link to="/" className="sidebar-brand">
-          {isAuthenticated && roleAbbr ? (
-            <span className="sidebar-role-badge" title={roleLabel}>
-              {roleAbbr}
-            </span>
-          ) : (
-            <span className="sidebar-brand-mark">H</span>
-          )}
-          <span className="sidebar-brand-word">HireHigh</span>
-        </Link>
-      </div>
-
-      <div className="sidebar-rail-track">
-        {navItems.map((item, i) => (
-          <NavLink
-            key={item.label}
-            to={item.to}
-            end={item.end}
-            className={linkClass}
-            title={item.label}
-            onClick={() => setExpanded(false)}
+      <div className="sidebar-clip">
+        <div className="sidebar-top">
+          <button
+            type="button"
+            className="sidebar-toggle"
+            onClick={() => setExpanded((prev) => !prev)}
+            aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
+            aria-expanded={expanded}
           >
-            <span className="sidebar-dot-col">
-              <span className="sidebar-dot" />
-              {i < navItems.length - 1 && <span className="sidebar-dot-line" />}
-            </span>
-            <span className="sidebar-icon">
-              <item.Icon />
-            </span>
-            <span className="sidebar-label">{item.label}</span>
-          </NavLink>
-        ))}
+            <HamburgerIcon />
+          </button>
+
+          <Link to="/" className="sidebar-brand">
+            {isAuthenticated && roleAbbr ? (
+              <span className="sidebar-role-badge" title={roleLabel}>
+                {roleAbbr}
+              </span>
+            ) : (
+              <span className="sidebar-brand-mark">H</span>
+            )}
+            <span className="sidebar-brand-word">HireHigh</span>
+          </Link>
+        </div>
+
+        <div className="sidebar-rail-track">
+          {navItems.map((item, i) => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              end={item.end}
+              className={linkClass}
+              title={item.label}
+              onClick={() => setExpanded(false)}
+            >
+              <span className="sidebar-dot-col">
+                <span className="sidebar-dot" />
+                {i < navItems.length - 1 && <span className="sidebar-dot-line" />}
+              </span>
+              <span className="sidebar-icon">
+                <item.Icon />
+              </span>
+              <span className="sidebar-label">{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
       </div>
 
       <div className="sidebar-bottom">
