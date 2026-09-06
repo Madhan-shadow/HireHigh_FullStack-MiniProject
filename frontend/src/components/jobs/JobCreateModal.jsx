@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 
 const emptyForm = {
   title: '',
+  company: '',
   department: '',
   hiringGoal: 1,
   description: '',
   status: 'OPEN',
+  interviewDate: '',
+  lastDateToApply: '',
 };
 
 const JobCreateModal = ({ job, onClose, onSubmit }) => {
@@ -16,10 +19,13 @@ const JobCreateModal = ({ job, onClose, onSubmit }) => {
     if (job) {
       setFormData({
         title: job.title || '',
+        company: job.company || '',
         department: job.department || '',
         hiringGoal: job.hiringGoal || 1,
         description: job.description || '',
         status: job.status || 'OPEN',
+        interviewDate: job.interviewDate || '',
+        lastDateToApply: job.lastDateToApply || '',
       });
     } else {
       setFormData(emptyForm);
@@ -65,6 +71,17 @@ const JobCreateModal = ({ job, onClose, onSubmit }) => {
             required
           />
 
+          <label htmlFor="company">Company</label>
+          <input
+            id="company"
+            name="company"
+            type="text"
+            placeholder="e.g. Zoho"
+            value={formData.company}
+            onChange={handleChange}
+            required
+          />
+
           <label htmlFor="department">Department</label>
           <input
             id="department"
@@ -86,6 +103,31 @@ const JobCreateModal = ({ job, onClose, onSubmit }) => {
             onChange={handleChange}
             required
           />
+
+          <div className="form-row">
+            <div className="form-col">
+              <label htmlFor="interviewDate">Interview date</label>
+              <input
+                id="interviewDate"
+                name="interviewDate"
+                type="date"
+                value={formData.interviewDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="form-col">
+              <label htmlFor="lastDateToApply">Last date to apply</label>
+              <input
+                id="lastDateToApply"
+                name="lastDateToApply"
+                type="date"
+                value={formData.lastDateToApply}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
           {isEdit && (
             <>
