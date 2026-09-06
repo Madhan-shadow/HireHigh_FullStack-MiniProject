@@ -2,26 +2,64 @@
 
 :root {
   --sb-bg: #151513;
-  --sb-panel-border: rgba(255, 255, 255, 0.06);
+  --sb-panel-border: rgba(255, 255, 255, 0.08);
   --sb-cream: #f3f1ea;
   --sb-muted: #85847d;
   --sb-gold: #d9a441;
   --sb-gold-tint: rgba(217, 164, 65, 0.12);
   --sb-pine: #1c5c4d;
   --sb-hover: rgba(255, 255, 255, 0.05);
-  --sb-collapsed-w: 68px;
-  --sb-expanded-w: 232px;
+  --sb-collapsed-w: 72px;
+  --sb-expanded-w: 236px;
+  --sb-rail-expanded-w: 208px;
+  --sb-margin: 12px;
 }
 
-body {
-  background: #0a0a09; /* the "desk" the floating card sits on */
+/* ---------- Push page content over: managed via body classes set by ---------- */
+/* ---------- Navbar.jsx, so App.jsx never needs to be touched.        ---------- */
+body.has-sidebar {
+  padding-left: calc(var(--sb-collapsed-w) + var(--sb-margin) * 2);
+  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+body.has-sidebar.sidebar-expanded:not(.sidebar-rail-mode) {
+  padding-left: calc(var(--sb-expanded-w) + var(--sb-margin) * 2);
+}
+
+body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
+  padding-left: calc(var(--sb-rail-expanded-w) + var(--sb-margin) * 2);
+}
+
+/* ---------- Backdrop: always full height, always matches sidebar bg, ---------- */
+/* ---------- guarantees nothing behind the floating card can show.    ---------- */
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background: var(--sb-bg);
+  z-index: 39;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-backdrop.sidebar--collapsed {
+  width: calc(var(--sb-collapsed-w) + var(--sb-margin) * 2);
+}
+
+.sidebar-backdrop.sidebar--app.sidebar--expanded {
+  width: calc(var(--sb-expanded-w) + var(--sb-margin) * 2);
+}
+
+.sidebar-backdrop.sidebar--rail.sidebar--expanded {
+  width: calc(var(--sb-rail-expanded-w) + var(--sb-margin) * 2);
+}
+
+/* ---------- The floating card itself ---------- */
 .sidebar {
   position: fixed;
-  top: 12px;
-  left: 12px;
-  height: calc(100vh - 24px);
+  top: var(--sb-margin);
+  left: var(--sb-margin);
+  height: calc(100vh - var(--sb-margin) * 2);
   background: var(--sb-bg);
   border: 1px solid var(--sb-panel-border);
   border-radius: 16px;
@@ -37,22 +75,19 @@ body {
 /* ---------- Width states ---------- */
 .sidebar--collapsed {
   width: var(--sb-collapsed-w);
-  padding: 18px 0;
+  padding: 16px 0 20px;
 }
 
 .sidebar--expanded {
   width: var(--sb-expanded-w);
-  padding: 18px 12px;
+  padding: 16px 14px 20px;
 }
 
-/* Logged-out rail never needs the full 232px — it opens to a slimmer panel */
 .sidebar--rail.sidebar--expanded {
-  width: 200px;
+  width: var(--sb-rail-expanded-w);
 }
 
-/* ---------- Overflow scoped to the sections that need it for the      ---------- */
-/* ---------- collapse/expand animation, NOT the whole .sidebar,        ---------- */
-/* ---------- so the profile dropdown in .sidebar-bottom is never clipped ------- */
+/* ---------- Overflow scoped to sections that need it, never .sidebar-bottom ---------- */
 .sidebar-top {
   overflow: hidden;
 }
@@ -82,32 +117,20 @@ body {
 }
 
 .sidebar--collapsed .sidebar-link,
-.sidebar--collapsed .sidebar-profile-trigger {
+.sidebar--collapsed .sidebar-profile-trigger,
+.sidebar--collapsed .sidebar-login-btn {
   justify-content: center;
-  padding: 10px;
+  padding: 11px;
 }
 
 .sidebar--collapsed .sidebar-dot-col {
   display: none;
 }
 
-.sidebar--collapsed .sidebar-login-btn {
-  padding: 10px 6px;
-  font-size: 0.68rem;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-}
-
-.sidebar--expanded .sidebar-login-btn {
-  padding: 9px 0;
-  font-size: 0.85rem;
-  writing-mode: horizontal-tb;
-}
-
-/* ---------- Toggle (hamburger) ---------- */
+/* ---------- Top: toggle + brand ---------- */
 .sidebar-top {
-  margin-bottom: 24px;
-  padding: 4px 8px 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--sb-panel-border);
   display: flex;
   align-items: center;
@@ -116,15 +139,22 @@ body {
 
 .sidebar--collapsed .sidebar-top {
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar--expanded .sidebar-top {
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .sidebar-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
   background: none;
   border: none;
@@ -150,8 +180,8 @@ body {
 }
 
 .sidebar-brand-mark {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   background: var(--sb-gold);
   color: var(--sb-bg);
@@ -164,8 +194,8 @@ body {
 }
 
 .sidebar-role-badge {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--sb-gold);
   color: var(--sb-bg);
@@ -183,11 +213,11 @@ body {
   font-weight: 600;
 }
 
-/* ---------- Nav rows: floating card highlight style ---------- */
+/* ---------- Nav rows ---------- */
 .sidebar-rail-track {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   flex: 1;
 }
 
@@ -195,9 +225,9 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 10px;
+  gap: 11px;
+  padding: 10px 11px;
+  border-radius: 9px;
   text-decoration: none;
   color: var(--sb-muted);
   font-size: 0.87rem;
@@ -219,7 +249,7 @@ body {
 .sidebar--expanded .sidebar-link.active::before {
   content: '';
   position: absolute;
-  left: -12px;
+  left: -14px;
   top: 8px;
   bottom: 8px;
   width: 3px;
@@ -255,30 +285,33 @@ body {
 .sidebar-label { white-space: nowrap; }
 
 /* ---------- Bottom: login / profile ---------- */
-/* Intentionally NO overflow:hidden here — the profile dropdown must be   */
-/* free to render at full size regardless of the sidebar's collapsed width */
+/* No overflow:hidden here — the profile dropdown must render at full size */
 .sidebar-bottom {
   margin-top: auto;
   padding-top: 14px;
   border-top: 1px solid var(--sb-panel-border);
 }
 
+/* Login: same icon+label pattern as nav links, never rotated/vertical text */
 .sidebar-login-btn {
-  display: block;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 11px;
+  margin: 0 2px;
   background: var(--sb-pine);
   color: #fff;
   text-decoration: none;
   font-weight: 600;
+  font-size: 0.87rem;
   border-radius: 9px;
-  margin: 0 8px;
 }
 
-.sidebar--collapsed .sidebar-login-btn {
-  margin: 0;
+.sidebar-login-btn:hover {
+  background: #24705f;
 }
 
-.sidebar-profile { position: relative; }
+.sidebar-profile { position: relative; padding: 0 2px; }
 
 .sidebar-profile-trigger {
   display: flex;
@@ -296,8 +329,8 @@ body {
 .sidebar-profile-trigger:hover { background: var(--sb-hover); }
 
 .sidebar-profile-avatar {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--sb-pine);
   color: #fff;
@@ -331,12 +364,11 @@ body {
   color: var(--sb-cream);
 }
 
-/* Dropdown: fixed comfortable width, independent of sidebar's own width,   */
-/* so "View profile" / "Logout" always render fully instead of being cut off */
+/* Dropdown: fixed width, independent of sidebar's own width */
 .sidebar-profile-dropdown {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 0;
+  left: 4px;
   width: 200px;
   background: #1d1d1a;
   color: var(--sb-cream);
@@ -387,10 +419,3 @@ body {
 
 .sidebar-profile-item:hover { background: var(--sb-hover); }
 .sidebar-profile-item--danger { color: #e07b6c; }
-
-/* ---------- Content offset (apply in App.jsx / layout wrapper) ---------- */
-.app-content {
-  margin-left: calc(var(--sb-collapsed-w) + 24px); /* collapsed sidebar + 12px margin + 12px gap */
-  padding: 12px 24px 12px 0;
-  transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
