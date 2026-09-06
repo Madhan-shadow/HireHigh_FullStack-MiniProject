@@ -9,7 +9,81 @@
 /* =========================================================
    VISITOR SHOWCASE HOMEPAGE
    ========================================================= */
+/* =========================================================
+   PLACEMENTS TABLE
+   ========================================================= */
 
+.placements-grid {
+  grid-template-columns: 2.2fr 1.2fr 1.2fr 1.3fr 1.4fr;
+}
+
+.cell-company {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.company-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 4px;
+}
+
+.company-logo--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.company-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.company-name {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.company-role {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.applied-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--pine-soft);
+  color: var(--pine-deep);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .row-list-head.placements-grid,
+  .row-list-row.placements-grid {
+    min-width: 900px;
+  }
+}
 .showcase {
   max-width: 1180px;
   margin: 0 auto;

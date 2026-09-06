@@ -18,18 +18,43 @@ import JobCreateModal from './JobCreateModal';
 import ApplyDetailsModal from './ApplyDetailsModal';
 import ConfirmModal from '../common/ConfirmModal';
 import SearchFilterBar from '../common/SearchFilterBar';
-import CapacityBar from '../common/CapacityBar';
-import ApplicationProgress from '../common/ApplicationProgress';
 import EmptyState from '../common/EmptyState';
 
-const DEPT_COLORS = ['#3B6FA0', '#C1592E', '#6B4F9E', '#1F5E4A', '#B8862F'];
+const guessDomain = (companyName) => {
+  if (!companyName) return null;
+  return companyName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .split(/\s+/)[0] + '.com';
+};
 
-const deptColor = (name = '') => {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+const CompanyLogo = ({ company }) => {
+  const [failed, setFailed] = useState(false);
+  const domain = guessDomain(company);
+  const initial = (company || '?').charAt(0).toUpperCase();
+
+  if (!domain || failed) {
+    return (
+      <span className="company-logo company-logo--fallback">{initial}</span>
+    );
   }
-  return DEPT_COLORS[Math.abs(hash) % DEPT_COLORS.length];
+
+  return (
+    <img
+      className="company-logo"
+      src={`https://logo.clearbit.com/${domain}`}
+      alt=""
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
+const formatDate = (value) => {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
 const JobList = () => {
@@ -70,7 +95,6 @@ const JobList = () => {
     }
   }, [successMessage, warningMessage, appError, dispatch]);
 
-  // Map of jobId -> currentStage for jobs this candidate has already applied to.
   const appliedStageByJobId = {};
   if (isCandidate && Array.isArray(myApplications)) {
     myApplications.forEach((app) => {
@@ -150,7 +174,7 @@ const JobList = () => {
       )}
 
       <div className="page-header">
-        <h1>Open Roles</h1>
+        <h1>Placements</h1>
         {isRecruiter && (
           <button className="btn btn-primary" onClick={handleOpenCreate}>
             Post New Job
@@ -172,30 +196,29 @@ const JobList = () => {
         />
       ) : (
         <div className="row-list">
-          <div className="row-list-head jobs-grid">
-            <span>Job Title</span>
-            <span>Department</span>
-            <span>Capacity</span>
-            <span>Status</span>
+          <div className="row-list-head placements-grid">
+            <span>Company</span>
+            <span>Interview Date</span>
+            <span>Published On</span>
+            <span>Last Date to Apply</span>
             <span></span>
           </div>
           {jobs.map((job) => {
             const appliedStage = appliedStageByJobId[job.id];
 
             return (
-              <div className="row-list-row jobs-grid" key={job.id}>
-                <span className="cell-title">{job.title}</span>
-                <span className="cell-muted dept-tag">
-                  <span
-                    className="dept-dot"
-                    style={{ background: deptColor(job.department) }}
-                  />
-                  {job.department}
+              <div className="row-list-row placements-grid" key={job.id}>
+                <span className="cell-title cell-company">
+                  <CompanyLogo company={job.company} />
+                  <span className="company-info">
+                    <span className="company-name">{job.company || job.title}</span>
+                    <span className="company-role">{job.title}</span>
+                  </span>
                 </span>
-                <CapacityBar currentFills={job.currentFills} hiringGoal={job.hiringGoal} />
-                <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
-                  {job.status}
-                </span>
+                <span className="cell-mono">{formatDate(job.interviewDate)}</span>
+                <span className="cell-mono">{formatDate(job.publishedOn)}</span>
+                <span className="cell-mono">{formatDate(job.lastDateToApply)}</span>
+
                 <div className="cell-actions">
                   {isRecruiter && (
                     <>
@@ -212,7 +235,9 @@ const JobList = () => {
                   )}
                   {isCandidate && (
                     appliedStage ? (
-                      <ApplicationProgress stage={appliedStage} />
+                      <span className="applied-check" title={`Applied — ${appliedStage}`}>
+                        ✓ Applied
+                      </span>
                     ) : (
                       <button
                         className="btn btn-success"
