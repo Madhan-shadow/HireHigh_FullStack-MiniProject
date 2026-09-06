@@ -15,6 +15,13 @@
    /* =========================================================
    NAVBAR — light, gold underline on active tab
    ========================================================= */
+   .applications-grid {
+  grid-template-columns: 1.5fr 1.5fr 1.1fr 1.3fr 1fr 0.8fr;
+}
+
+.applications-grid.no-actions {
+  grid-template-columns: 1.5fr 1.5fr 1.1fr 1.3fr 1fr;
+}
 .profile-menu-trigger:hover {
   background: var(--paper);
 }
