@@ -42,11 +42,11 @@ const CompanyLogo = ({ company }) => {
 
   return (
     <img
-  className="company-logo"
-  src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
-  alt=""
-  onError={() => setFailed(true)}
-/>
+      className="company-logo"
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+      alt=""
+      onError={() => setFailed(true)}
+    />
   );
 };
 
@@ -198,9 +198,11 @@ const JobList = () => {
         <div className="row-list">
           <div className="row-list-head placements-grid">
             <span>Company</span>
+            <span>Department</span>
             <span>Interview Date</span>
             <span>Published On</span>
             <span>Last Date to Apply</span>
+            <span>Status</span>
             <span></span>
           </div>
           {jobs.map((job) => {
@@ -215,9 +217,13 @@ const JobList = () => {
                     <span className="company-role">{job.title}</span>
                   </span>
                 </span>
+                <span className="cell-muted">{job.department || '—'}</span>
                 <span className="cell-mono">{formatDate(job.interviewDate)}</span>
                 <span className="cell-mono">{formatDate(job.publishedOn)}</span>
                 <span className="cell-mono">{formatDate(job.lastDateToApply)}</span>
+                <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
+                  {job.status}
+                </span>
 
                 <div className="cell-actions">
                   {isRecruiter && (
