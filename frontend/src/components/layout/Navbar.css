@@ -14,7 +14,6 @@
   --sb-rail-expanded-w: 208px;
 }
 
-/* ---------- Push page content over via body classes set by Navbar.jsx ---------- */
 body.has-sidebar {
   padding-left: var(--sb-collapsed-w);
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -28,7 +27,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   padding-left: var(--sb-rail-expanded-w);
 }
 
-/* ---------- Flush sidebar: one solid panel, no float, no separate backdrop ---------- */
 .sidebar {
   position: fixed;
   top: 0;
@@ -44,7 +42,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ---------- Width states ---------- */
 .sidebar--collapsed {
   width: var(--sb-collapsed-w);
   padding: 16px 0 20px;
@@ -59,7 +56,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   width: var(--sb-rail-expanded-w);
 }
 
-/* ---------- Overflow scoped to sections that need it, never .sidebar-bottom ---------- */
 .sidebar-top {
   overflow: hidden;
 }
@@ -68,7 +64,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   overflow: hidden;
 }
 
-/* ---------- Content fade: labels/word only show once expanded ---------- */
 .sidebar-brand-word,
 .sidebar-label,
 .sidebar-profile-name-inline,
@@ -89,8 +84,7 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
 }
 
 .sidebar--collapsed .sidebar-link,
-.sidebar--collapsed .sidebar-profile-trigger,
-.sidebar--collapsed .sidebar-login-btn {
+.sidebar--collapsed .sidebar-profile-trigger {
   justify-content: center;
   padding: 11px;
 }
@@ -99,7 +93,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   display: none;
 }
 
-/* ---------- Top: toggle + brand ---------- */
 .sidebar-top {
   margin-bottom: 20px;
   padding-bottom: 16px;
@@ -141,7 +134,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   color: var(--sb-cream);
 }
 
-/* ---------- Brand ---------- */
 .sidebar-brand {
   display: flex;
   align-items: center;
@@ -185,7 +177,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   font-weight: 600;
 }
 
-/* ---------- Nav rows ---------- */
 .sidebar-rail-track {
   display: flex;
   flex-direction: column;
@@ -256,32 +247,43 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
 
 .sidebar-label { white-space: nowrap; }
 
-/* ---------- Bottom: login / profile ---------- */
-/* No overflow:hidden here — the profile dropdown must render at full size */
 .sidebar-bottom {
   margin-top: auto;
   padding-top: 14px;
   border-top: 1px solid var(--sb-panel-border);
 }
 
-/* Login: same icon+label pattern as nav links, blends in like a normal
-   link rather than standing out as its own colored button */
+/* ---------- Floating rotated login pill, bottom-left corner ---------- */
 .sidebar-login-btn {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  width: 40px;
+  height: 88px;
+  background: var(--sb-pine);
+  color: #fff;
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 10px 11px;
-  margin: 0 2px;
-  background: transparent;
-  color: var(--sb-cream);
+  justify-content: center;
+  gap: 6px;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.87rem;
-  border-radius: 9px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  z-index: 50;
 }
 
 .sidebar-login-btn:hover {
-  background: var(--sb-hover);
+  background: #24705f;
+}
+
+.sidebar-login-btn .sidebar-icon,
+.sidebar-login-btn .sidebar-label {
+  opacity: 1 !important;
+  max-width: none !important;
 }
 
 .sidebar-profile { position: relative; padding: 0 2px; }
@@ -337,7 +339,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   color: var(--sb-cream);
 }
 
-/* Dropdown: fixed width, independent of sidebar's own width */
 .sidebar-profile-dropdown {
   position: absolute;
   bottom: calc(100% + 8px);
