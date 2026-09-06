@@ -1,161 +1,3 @@
-// import React, { useEffect, useRef, useState } from 'react';
-// import { Link, NavLink, useNavigate } from 'react-router-dom';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { logout } from '../../store/slices/authSlice';
-// import { clearCandidateProfile } from '../../store/slices/candidateSlice';
-// import userService from '../../services/userService';
-
-// const ROLE_ABBR = {
-//   CANDIDATE: 'C',
-//   RECRUITER: 'R',
-//   TA_LEAD: 'TA',
-//   HIRING_MANAGER: 'HM',
-// };
-
-// const ROLE_LABELS = {
-//   CANDIDATE: 'Candidate',
-//   RECRUITER: 'Recruiter',
-//   TA_LEAD: 'TA Lead',
-//   HIRING_MANAGER: 'Hiring Manager',
-// };
-
-// const Navbar = () => {
-//   const dispatch = useDispatch();
-//   const navigate = useNavigate();
-//   const auth = useSelector((state) => state.auth);
-//   const isAuthenticated = auth.isAuthenticated;
-//   const role = auth.role;
-//   const user = auth.user;
-
-//   const [menuOpen, setMenuOpen] = useState(false);
-//   const [accountInfo, setAccountInfo] = useState(null);
-//   const menuRef = useRef(null);
-
-//   useEffect(() => {
-//     const handleClickOutside = (e) => {
-//       if (menuRef.current && !menuRef.current.contains(e.target)) {
-//         setMenuOpen(false);
-//       }
-//     };
-//     document.addEventListener('mousedown', handleClickOutside);
-//     return () => document.removeEventListener('mousedown', handleClickOutside);
-//   }, []);
-
-//   useEffect(() => {
-//     let cancelled = false;
-
-//     if (isAuthenticated) {
-//       userService
-//         .getMyAccount()
-//         .then((data) => {
-//           if (!cancelled) setAccountInfo(data);
-//         })
-//         .catch(() => {});
-//     } else {
-//       setAccountInfo(null);
-//     }
-
-//     return () => {
-//       cancelled = true;
-//     };
-//   }, [isAuthenticated]);
-
-//   const photoUrl = accountInfo && accountInfo.photoUrl ? accountInfo.photoUrl : null;
-
-//   const handleLogout = () => {
-//     setMenuOpen(false);
-//     dispatch(logout());
-//     dispatch(clearCandidateProfile());
-//     navigate('/login');
-//   };
-
-//   const canSeePipeline =
-//     role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
-
-//   const linkClass = (props) => (props.isActive ? 'active' : undefined);
-
-//   const displayName = (accountInfo && accountInfo.fullName) || (user && user.fullName) || role || 'user';
-//   const initial = displayName.charAt(0).toUpperCase();
-
-//   const roleAbbr = ROLE_ABBR[role] || (role ? role.charAt(0).toUpperCase() : '');
-//   const roleLabel = ROLE_LABELS[role] || (role ? role.toLowerCase() : '');
-
-//   return (
-//     <nav className="navbar">
-//       <div className="navbar-brand">
-//         <Link to="/">
-//           {isAuthenticated && roleAbbr ? (
-//             <span className="navbar-role-mark">
-//               <span className="navbar-role-mark-abbr">{roleAbbr}</span>
-//               <span className="navbar-role-mark-full">{roleLabel}</span>
-//             </span>
-//           ) : (
-//             <span className="navbar-brand-mark">H</span>
-//           )}
-//           <span className="navbar-brand-word">HireHigh</span>
-//         </Link>
-//       </div>
-//       <div className="navbar-links">
-//         <NavLink to="/" end className={linkClass}>
-//           Home
-//         </NavLink>
-//         <NavLink to="/jobs" className={linkClass}>
-//           Jobs
-//         </NavLink>
-//         {isAuthenticated && canSeePipeline && (
-//           <NavLink to="/applications" className={linkClass}>
-//             Applications
-//           </NavLink>
-//         )}
-//         {isAuthenticated && role === 'CANDIDATE' && (
-//           <NavLink to="/applications" className={linkClass}>
-//             My applications
-//           </NavLink>
-//         )}
-//       </div>
-//       <div className="navbar-user">
-//         {isAuthenticated ? (
-//           <div className="profile-menu" ref={menuRef}>
-//             <button
-//               className="profile-menu-trigger"
-//               onClick={() => setMenuOpen((prev) => !prev)}
-//             >
-//               <span className="profile-menu-avatar">
-//                 {photoUrl ? <img src={photoUrl} alt="Profile" /> : initial}
-//               </span>
-//               <span className="welcome-text">{displayName.toLowerCase()}</span>
-//             </button>
-
-//             {menuOpen && (
-//               <div className="profile-menu-dropdown">
-//                 <div className="profile-menu-header">
-//                   <span className="profile-menu-name">{displayName}</span>
-//                   <span className="profile-menu-role">{(role || '').toLowerCase()}</span>
-//                 </div>
-//                 <Link
-//                   to="/profile"
-//                   className="profile-menu-item"
-//                   onClick={() => setMenuOpen(false)}
-//                 >
-//                   View profile
-//                 </Link>
-//                 <button className="profile-menu-item profile-menu-item--danger" onClick={handleLogout}>
-//                   Logout
-//                 </button>
-//               </div>
-//             )}
-//           </div>
-//         ) : (
-//           <Link to="/login" className="btn btn-login">
-//             Login
-//           </Link>
-//         )}
-//       </div>
-//     </nav>
-//   );
-// };
-
-// export default Navbar;
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -339,118 +181,110 @@ const Navbar = () => {
   const widthState = expanded ? 'sidebar--expanded' : 'sidebar--collapsed';
 
   return (
-    <>
-      {/* Backdrop: a full-height fixed panel behind the floating sidebar
-          card. Always matches the sidebar's own background and always
-          spans the full viewport height, so nothing behind it (page
-          background, rounded corners, margins) can ever show through. */}
-      <div className={'sidebar-backdrop ' + variant + ' ' + widthState} aria-hidden="true" />
+    <nav className={'sidebar ' + variant + ' ' + widthState}>
+      <div className="sidebar-top">
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={() => setExpanded((prev) => !prev)}
+          aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
+          aria-expanded={expanded}
+        >
+          <HamburgerIcon />
+        </button>
 
-      <nav className={'sidebar ' + variant + ' ' + widthState}>
-        <div className="sidebar-top">
-          <button
-            type="button"
-            className="sidebar-toggle"
-            onClick={() => setExpanded((prev) => !prev)}
-            aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
-            aria-expanded={expanded}
-          >
-            <HamburgerIcon />
-          </button>
-
-          <Link to="/" className="sidebar-brand">
-            {isAuthenticated && roleAbbr ? (
-              <span className="sidebar-role-badge" title={roleLabel}>
-                {roleAbbr}
-              </span>
-            ) : (
-              <span className="sidebar-brand-mark">H</span>
-            )}
-            <span className="sidebar-brand-word">HireHigh</span>
-          </Link>
-        </div>
-
-        <div className="sidebar-rail-track">
-          {navItems.map((item, i) => (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              end={item.end}
-              className={linkClass}
-              title={item.label}
-              onClick={() => setExpanded(false)}
-            >
-              <span className="sidebar-dot-col">
-                <span className="sidebar-dot" />
-                {i < navItems.length - 1 && <span className="sidebar-dot-line" />}
-              </span>
-              <span className="sidebar-icon">
-                <item.Icon />
-              </span>
-              <span className="sidebar-label">{item.label}</span>
-            </NavLink>
-          ))}
-        </div>
-
-        <div className="sidebar-bottom">
-          {isAuthenticated ? (
-            <div className="sidebar-profile" ref={menuRef}>
-              {menuOpen && (
-                <div className="sidebar-profile-dropdown">
-                  <div className="sidebar-profile-dropdown-header">
-                    <span className="sidebar-profile-name">{displayName}</span>
-                    <span className="sidebar-profile-role">{(role || '').toLowerCase()}</span>
-                  </div>
-                  <Link
-                    to="/profile"
-                    className="sidebar-profile-item"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      setExpanded(false);
-                    }}
-                  >
-                    View profile
-                  </Link>
-                  <button
-                    className="sidebar-profile-item sidebar-profile-item--danger"
-                    onClick={handleLogout}
-                  >
-                    <LogoutIcon />
-                    <span>Logout</span>
-                  </button>
-                </div>
-              )}
-              <button
-                className="sidebar-profile-trigger"
-                onClick={() => setMenuOpen((prev) => !prev)}
-                aria-haspopup="true"
-                aria-expanded={menuOpen}
-              >
-                <span className="sidebar-profile-avatar">
-                  {photoUrl ? <img src={photoUrl} alt="Profile" /> : initial}
-                </span>
-                <span className="sidebar-profile-name-inline">{displayName.toLowerCase()}</span>
-                <span className="sidebar-profile-kebab">
-                  <KebabIcon />
-                </span>
-              </button>
-            </div>
+        <Link to="/" className="sidebar-brand">
+          {isAuthenticated && roleAbbr ? (
+            <span className="sidebar-role-badge" title={roleLabel}>
+              {roleAbbr}
+            </span>
           ) : (
-            <Link
-              to="/login"
-              className="sidebar-login-btn"
-              onClick={() => setExpanded(false)}
-              title="Login"
-            >
-              <span className="sidebar-icon">
-                <LoginIcon />
-              </span>
-              <span className="sidebar-label">Login</span>
-            </Link>
+            <span className="sidebar-brand-mark">H</span>
           )}
-        </div>
-      </nav>
-    </>
+          <span className="sidebar-brand-word">HireHigh</span>
+        </Link>
+      </div>
+
+      <div className="sidebar-rail-track">
+        {navItems.map((item, i) => (
+          <NavLink
+            key={item.label}
+            to={item.to}
+            end={item.end}
+            className={linkClass}
+            title={item.label}
+            onClick={() => setExpanded(false)}
+          >
+            <span className="sidebar-dot-col">
+              <span className="sidebar-dot" />
+              {i < navItems.length - 1 && <span className="sidebar-dot-line" />}
+            </span>
+            <span className="sidebar-icon">
+              <item.Icon />
+            </span>
+            <span className="sidebar-label">{item.label}</span>
+          </NavLink>
+        ))}
+      </div>
+
+      <div className="sidebar-bottom">
+        {isAuthenticated ? (
+          <div className="sidebar-profile" ref={menuRef}>
+            {menuOpen && (
+              <div className="sidebar-profile-dropdown">
+                <div className="sidebar-profile-dropdown-header">
+                  <span className="sidebar-profile-name">{displayName}</span>
+                  <span className="sidebar-profile-role">{(role || '').toLowerCase()}</span>
+                </div>
+                <Link
+                  to="/profile"
+                  className="sidebar-profile-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setExpanded(false);
+                  }}
+                >
+                  View profile
+                </Link>
+                <button
+                  className="sidebar-profile-item sidebar-profile-item--danger"
+                  onClick={handleLogout}
+                >
+                  <LogoutIcon />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+            <button
+              className="sidebar-profile-trigger"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              aria-haspopup="true"
+              aria-expanded={menuOpen}
+            >
+              <span className="sidebar-profile-avatar">
+                {photoUrl ? <img src={photoUrl} alt="Profile" /> : initial}
+              </span>
+              <span className="sidebar-profile-name-inline">{displayName.toLowerCase()}</span>
+              <span className="sidebar-profile-kebab">
+                <KebabIcon />
+              </span>
+            </button>
+          </div>
+        ) : (
+          <Link
+            to="/login"
+            className="sidebar-login-btn"
+            onClick={() => setExpanded(false)}
+            title="Login"
+          >
+            <span className="sidebar-icon">
+              <LoginIcon />
+            </span>
+            <span className="sidebar-label">Login</span>
+          </Link>
+        )}
+      </div>
+    </nav>
   );
 };
 

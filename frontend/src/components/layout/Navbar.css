@@ -12,58 +12,30 @@
   --sb-collapsed-w: 72px;
   --sb-expanded-w: 236px;
   --sb-rail-expanded-w: 208px;
-  --sb-margin: 12px;
 }
 
-/* ---------- Push page content over: managed via body classes set by ---------- */
-/* ---------- Navbar.jsx, so App.jsx never needs to be touched.        ---------- */
+/* ---------- Push page content over via body classes set by Navbar.jsx ---------- */
 body.has-sidebar {
-  padding-left: calc(var(--sb-collapsed-w) + var(--sb-margin) * 2);
+  padding-left: var(--sb-collapsed-w);
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body.has-sidebar.sidebar-expanded:not(.sidebar-rail-mode) {
-  padding-left: calc(var(--sb-expanded-w) + var(--sb-margin) * 2);
+  padding-left: var(--sb-expanded-w);
 }
 
 body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
-  padding-left: calc(var(--sb-rail-expanded-w) + var(--sb-margin) * 2);
+  padding-left: var(--sb-rail-expanded-w);
 }
 
-/* ---------- Backdrop: always full height, always matches sidebar bg, ---------- */
-/* ---------- guarantees nothing behind the floating card can show.    ---------- */
-.sidebar-backdrop {
+/* ---------- Flush sidebar: one solid panel, no float, no separate backdrop ---------- */
+.sidebar {
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
   background: var(--sb-bg);
-  z-index: 39;
-  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar-backdrop.sidebar--collapsed {
-  width: calc(var(--sb-collapsed-w) + var(--sb-margin) * 2);
-}
-
-.sidebar-backdrop.sidebar--app.sidebar--expanded {
-  width: calc(var(--sb-expanded-w) + var(--sb-margin) * 2);
-}
-
-.sidebar-backdrop.sidebar--rail.sidebar--expanded {
-  width: calc(var(--sb-rail-expanded-w) + var(--sb-margin) * 2);
-}
-
-/* ---------- The floating card itself ---------- */
-.sidebar {
-  position: fixed;
-  top: var(--sb-margin);
-  left: var(--sb-margin);
-  height: calc(100vh - var(--sb-margin) * 2);
-  background: var(--sb-bg);
-  border: 1px solid var(--sb-panel-border);
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  border-right: 1px solid var(--sb-panel-border);
   color: var(--sb-cream);
   display: flex;
   flex-direction: column;
