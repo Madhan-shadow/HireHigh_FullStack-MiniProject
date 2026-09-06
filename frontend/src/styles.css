@@ -1516,8 +1516,13 @@ a.profile-menu-item {
 .auth-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   background: var(--surface);
+}
+
+.auth-brand-panel,
+.auth-form-panel {
+  min-width: 0;
 }
 
 .auth-brand-panel {
@@ -1559,6 +1564,8 @@ a.profile-menu-item {
   letter-spacing: -3px;
   font-weight: 600;
   margin-bottom: 20px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .auth-brand-sub {
@@ -2635,22 +2642,8 @@ a.profile-menu-item {
   .home-features {
     grid-template-columns: 1fr;
   }
-}.auth-shell {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  background: var(--surface);
 }
 
-.auth-brand-panel,
-.auth-form-panel {
-  min-width: 0;
-}
-
-.auth-brand-headline {
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
 @media (max-width: 600px) {
   .navbar-brand-word {
     font-size: 18px;
