@@ -219,6 +219,16 @@ function LogoutIcon() {
   );
 }
 
+function LoginIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 8l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 12H3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function KebabIcon() {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
@@ -281,6 +291,19 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
+  // Push page content over without needing to touch App.jsx: the sidebar
+  // manages classes on <body> itself, and Navbar.css maps those classes
+  // to the correct padding-left for whichever width/variant is active.
+  useEffect(() => {
+    document.body.classList.add('has-sidebar');
+    document.body.classList.toggle('sidebar-rail-mode', !isAuthenticated);
+    document.body.classList.toggle('sidebar-expanded', expanded);
+
+    return () => {
+      document.body.classList.remove('has-sidebar', 'sidebar-rail-mode', 'sidebar-expanded');
+    };
+  }, [isAuthenticated, expanded]);
+
   const photoUrl = accountInfo && accountInfo.photoUrl ? accountInfo.photoUrl : null;
 
   const handleLogout = () => {
@@ -312,107 +335,122 @@ const Navbar = () => {
     navItems.push({ to: '/applications', label: 'My applications', Icon: PipelineIcon });
   }
 
-  const sidebarStateClass = isAuthenticated
-    ? (expanded ? ' sidebar--app sidebar--expanded' : ' sidebar--app sidebar--collapsed')
-    : (expanded ? ' sidebar--rail sidebar--expanded' : ' sidebar--rail sidebar--collapsed');
+  const variant = isAuthenticated ? 'sidebar--app' : 'sidebar--rail';
+  const widthState = expanded ? 'sidebar--expanded' : 'sidebar--collapsed';
 
   return (
-    <nav className={'sidebar' + sidebarStateClass}>
-      <div className="sidebar-top">
-        <button
-          type="button"
-          className="sidebar-toggle"
-          onClick={() => setExpanded((prev) => !prev)}
-          aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
-          aria-expanded={expanded}
-        >
-          <HamburgerIcon />
-        </button>
+    <>
+      {/* Backdrop: a full-height fixed panel behind the floating sidebar
+          card. Always matches the sidebar's own background and always
+          spans the full viewport height, so nothing behind it (page
+          background, rounded corners, margins) can ever show through. */}
+      <div className={'sidebar-backdrop ' + variant + ' ' + widthState} aria-hidden="true" />
 
-        <Link to="/" className="sidebar-brand">
-          {isAuthenticated && roleAbbr ? (
-            <span className="sidebar-role-badge" title={roleLabel}>
-              {roleAbbr}
-            </span>
-          ) : (
-            <span className="sidebar-brand-mark">H</span>
-          )}
-          <span className="sidebar-brand-word">HireHigh</span>
-        </Link>
-      </div>
-
-      <div className="sidebar-rail-track">
-        {navItems.map((item, i) => (
-          <NavLink
-            key={item.label}
-            to={item.to}
-            end={item.end}
-            className={linkClass}
-            title={item.label}
-            onClick={() => setExpanded(false)}
+      <nav className={'sidebar ' + variant + ' ' + widthState}>
+        <div className="sidebar-top">
+          <button
+            type="button"
+            className="sidebar-toggle"
+            onClick={() => setExpanded((prev) => !prev)}
+            aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
+            aria-expanded={expanded}
           >
-            <span className="sidebar-dot-col">
-              <span className="sidebar-dot" />
-              {i < navItems.length - 1 && <span className="sidebar-dot-line" />}
-            </span>
-            <span className="sidebar-icon">
-              <item.Icon />
-            </span>
-            <span className="sidebar-label">{item.label}</span>
-          </NavLink>
-        ))}
-      </div>
+            <HamburgerIcon />
+          </button>
 
-      <div className="sidebar-bottom">
-        {isAuthenticated ? (
-          <div className="sidebar-profile" ref={menuRef}>
-            {menuOpen && (
-              <div className="sidebar-profile-dropdown">
-                <div className="sidebar-profile-dropdown-header">
-                  <span className="sidebar-profile-name">{displayName}</span>
-                  <span className="sidebar-profile-role">{(role || '').toLowerCase()}</span>
-                </div>
-                <Link
-                  to="/profile"
-                  className="sidebar-profile-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setExpanded(false);
-                  }}
-                >
-                  View profile
-                </Link>
-                <button
-                  className="sidebar-profile-item sidebar-profile-item--danger"
-                  onClick={handleLogout}
-                >
-                  <LogoutIcon />
-                  <span>Logout</span>
-                </button>
-              </div>
+          <Link to="/" className="sidebar-brand">
+            {isAuthenticated && roleAbbr ? (
+              <span className="sidebar-role-badge" title={roleLabel}>
+                {roleAbbr}
+              </span>
+            ) : (
+              <span className="sidebar-brand-mark">H</span>
             )}
-            <button
-              className="sidebar-profile-trigger"
-              onClick={() => setMenuOpen((prev) => !prev)}
-              aria-haspopup="true"
-              aria-expanded={menuOpen}
-            >
-              <span className="sidebar-profile-avatar">
-                {photoUrl ? <img src={photoUrl} alt="Profile" /> : initial}
-              </span>
-              <span className="sidebar-profile-name-inline">{displayName.toLowerCase()}</span>
-              <span className="sidebar-profile-kebab">
-                <KebabIcon />
-              </span>
-            </button>
-          </div>
-        ) : (
-          <Link to="/login" className="sidebar-login-btn" onClick={() => setExpanded(false)}>
-            Login
+            <span className="sidebar-brand-word">HireHigh</span>
           </Link>
-        )}
-      </div>
-    </nav>
+        </div>
+
+        <div className="sidebar-rail-track">
+          {navItems.map((item, i) => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              end={item.end}
+              className={linkClass}
+              title={item.label}
+              onClick={() => setExpanded(false)}
+            >
+              <span className="sidebar-dot-col">
+                <span className="sidebar-dot" />
+                {i < navItems.length - 1 && <span className="sidebar-dot-line" />}
+              </span>
+              <span className="sidebar-icon">
+                <item.Icon />
+              </span>
+              <span className="sidebar-label">{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
+
+        <div className="sidebar-bottom">
+          {isAuthenticated ? (
+            <div className="sidebar-profile" ref={menuRef}>
+              {menuOpen && (
+                <div className="sidebar-profile-dropdown">
+                  <div className="sidebar-profile-dropdown-header">
+                    <span className="sidebar-profile-name">{displayName}</span>
+                    <span className="sidebar-profile-role">{(role || '').toLowerCase()}</span>
+                  </div>
+                  <Link
+                    to="/profile"
+                    className="sidebar-profile-item"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setExpanded(false);
+                    }}
+                  >
+                    View profile
+                  </Link>
+                  <button
+                    className="sidebar-profile-item sidebar-profile-item--danger"
+                    onClick={handleLogout}
+                  >
+                    <LogoutIcon />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
+              <button
+                className="sidebar-profile-trigger"
+                onClick={() => setMenuOpen((prev) => !prev)}
+                aria-haspopup="true"
+                aria-expanded={menuOpen}
+              >
+                <span className="sidebar-profile-avatar">
+                  {photoUrl ? <img src={photoUrl} alt="Profile" /> : initial}
+                </span>
+                <span className="sidebar-profile-name-inline">{displayName.toLowerCase()}</span>
+                <span className="sidebar-profile-kebab">
+                  <KebabIcon />
+                </span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="sidebar-login-btn"
+              onClick={() => setExpanded(false)}
+              title="Login"
+            >
+              <span className="sidebar-icon">
+                <LoginIcon />
+              </span>
+              <span className="sidebar-label">Login</span>
+            </Link>
+          )}
+        </div>
+      </nav>
+    </>
   );
 };
 
