@@ -12,6 +12,17 @@
 /* =========================================================
    PLACEMENTS TABLE
    ========================================================= */
+   .company-logo--sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.company-logo--sm.company-logo--fallback {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
 .placements-grid {
   grid-template-columns: 2fr 1fr 1.1fr 1.1fr 1.2fr 1fr 1.4fr;
 }

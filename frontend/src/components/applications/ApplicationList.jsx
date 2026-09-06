@@ -73,6 +73,34 @@ function CandidateAvatar(props) {
   );
 }
 
+function JobCompanyLogo(props) {
+  var company = props.company;
+  var failedState = useState(false);
+  var failed = failedState[0];
+  var setFailed = failedState[1];
+
+  var initial = (company || '?').charAt(0).toUpperCase();
+
+  if (!company || failed) {
+    return <span className="company-logo company-logo--sm company-logo--fallback">{initial}</span>;
+  }
+
+  var domain = company
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .split(/\s+/)[0] + '.com';
+
+  return (
+    <img
+      className="company-logo company-logo--sm"
+      src={'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64'}
+      alt=""
+      onError={function () { setFailed(true); }}
+    />
+  );
+}
+
 function ApplicationList() {
   var dispatch = useDispatch();
   var auth = useSelector(function (state) { return state.auth; });
@@ -200,7 +228,7 @@ function ApplicationList() {
         <div className="row-list">
           <div className={'row-list-head applications-grid' + (canEditStage ? '' : ' no-actions')}>
             <span>Candidate</span>
-            <span>Job title</span>
+            <span>Company</span>
             <span>Progress</span>
             <span>Applied</span>
             {canEditStage && <span></span>}
@@ -210,6 +238,7 @@ function ApplicationList() {
             var candidate = app.candidate || {};
             var user = candidate.user || {};
             var jobTitle = app.job ? app.job.title : null;
+            var companyName = app.job ? app.job.company : null;
             var appliedDate = app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '-';
             var resumeUrl = candidate.resumeUrl;
 
@@ -219,7 +248,13 @@ function ApplicationList() {
                   <CandidateAvatar candidate={candidate} />
                   {user.fullName || '-'}
                 </span>
-                <span className="cell-muted">{jobTitle || '-'}</span>
+                <span className="cell-title cell-company">
+                  <JobCompanyLogo company={companyName} />
+                  <span className="company-info">
+                    <span className="company-name">{companyName || jobTitle || '-'}</span>
+                    <span className="company-role">{jobTitle || '-'}</span>
+                  </span>
+                </span>
                 <ApplicationProgress stage={app.currentStage} />
                 <span className="cell-mono">{appliedDate}</span>
                 {canEditStage && (
