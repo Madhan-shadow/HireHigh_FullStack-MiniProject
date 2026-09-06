@@ -9,7 +9,6 @@ import JobList from './components/jobs/JobList';
 import ApplicationList from './components/applications/ApplicationList';
 import ProfilePage from './components/ProfilePage';
 import './App.css';
-import './Home.css';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -20,94 +19,44 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const Home = () => {
-  const auth = useSelector((state) => state.auth);
-  const isAuthenticated = auth.isAuthenticated;
-  const role = auth.role;
-
-  const isRecruiterSide =
-    role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
-  const isCandidate = role === 'CANDIDATE';
-
-  var headline = 'Hiring, without the mess.';
-  var subtitle =
-    "HireHigh connects recruiters and candidates on one clear pipeline — from first application to signed offer.";
-  var primaryLabel = 'Browse open roles';
-  var primaryTo = '/jobs';
-
-  if (isRecruiterSide) {
-    headline = 'Your pipeline, at a glance.';
-    subtitle =
-      'Review applications, move candidates through stages, and close roles faster — all from one dashboard.';
-    primaryLabel = 'View applications';
-    primaryTo = '/applications';
-  } else if (isCandidate) {
-    headline = 'Your next role starts here.';
-    subtitle =
-      'Browse open positions, apply in a click, and track every application in real time.';
-    primaryLabel = 'Browse open roles';
-    primaryTo = '/jobs';
-  }
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   return (
-    <div className="home-split">
-      <div className="home-split-left">
-        <span className="home-mark">HH</span>
-        <h1 className="home-headline">{headline}</h1>
-        <p className="home-sub">{subtitle}</p>
-
+    <div className="home-hero">
+      <div className="home-hero-content">
+        <span className="home-hero-eyebrow">Talent Acquisition, Simplified</span>
+        <h1 className="home-hero-headline">Find who's next.</h1>
+        <p className="home-hero-sub">
+          HireHigh brings recruiters, hiring leads, and candidates onto one
+          pipeline — from the first application to the signed offer.
+        </p>
         <div className="home-cta-row">
-          <Link to={primaryTo} className="btn btn-primary">
-            {primaryLabel}
+          <Link to="/jobs" className="btn btn-primary">
+            {isAuthenticated ? 'Browse open roles' : 'View open roles'}
           </Link>
           {!isAuthenticated && (
-            <React.Fragment>
-              <Link to="/login" className="btn btn-ghost">
-                Sign in
-              </Link>
-              <Link to="/register" className="btn btn-ghost">
-                Create account
-              </Link>
-            </React.Fragment>
+            <Link to="/register" className="btn btn-secondary">
+              Create an account
+            </Link>
           )}
-        </div>
-
-        <div className="home-metrics">
-          <div>
-            <span className="home-metric-value">6</span>
-            <span className="home-metric-label">Pipeline stages</span>
-          </div>
-          <div>
-            <span className="home-metric-value">1</span>
-            <span className="home-metric-label">Place to track it all</span>
-          </div>
         </div>
       </div>
 
-      <div className="home-split-right">
-        <div className="home-pipeline-card">
-          <span className="home-pipeline-title">Live pipeline</span>
-          <ul className="home-pipeline-list">
-            <li className="home-pipeline-stage home-pipeline-stage--done">
-              <span className="home-pipeline-dot" />
-              Applied
-            </li>
-            <li className="home-pipeline-stage home-pipeline-stage--done">
-              <span className="home-pipeline-dot" />
-              Screening
-            </li>
-            <li className="home-pipeline-stage home-pipeline-stage--active">
-              <span className="home-pipeline-dot" />
-              Interview
-            </li>
-            <li className="home-pipeline-stage">
-              <span className="home-pipeline-dot" />
-              Offer
-            </li>
-            <li className="home-pipeline-stage">
-              <span className="home-pipeline-dot" />
-              Hired
-            </li>
-          </ul>
+      <div className="home-features">
+        <div className="home-feature-card">
+          <span className="home-feature-icon" aria-hidden="true">🎯</span>
+          <h3>One pipeline, every stage</h3>
+          <p>Track candidates from Applied through Hired without leaving the app.</p>
+        </div>
+        <div className="home-feature-card">
+          <span className="home-feature-icon" aria-hidden="true">⚡</span>
+          <h3>Built for recruiters</h3>
+          <p>Post roles, set hiring goals, and move candidates forward in a click.</p>
+        </div>
+        <div className="home-feature-card">
+          <span className="home-feature-icon" aria-hidden="true">📄</span>
+          <h3>Simple for candidates</h3>
+          <p>Apply once, attach a resume link, and track your status in real time.</p>
         </div>
       </div>
     </div>
