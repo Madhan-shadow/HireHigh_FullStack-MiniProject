@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './store';
 import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
 import Login from './components/Login';
 import Register from './components/Register';
 import JobList from './components/jobs/JobList';
@@ -204,7 +205,6 @@ const Home = () => {
   }
 
   // Visitor (not authenticated) — public job count is real, fetched above.
-    // Visitor (not authenticated) — public job count is real, fetched above.
   const openJobsCount = jobs.filter((j) => j.status === 'OPEN').length;
 
   return (
@@ -354,6 +354,7 @@ function AppRoutes() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Footer />
     </>
   );
 }
