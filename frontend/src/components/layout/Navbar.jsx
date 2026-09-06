@@ -219,6 +219,16 @@ function LogoutIcon() {
   );
 }
 
+function KebabIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="5" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="12" cy="19" r="1.6" />
+    </svg>
+  );
+}
+
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -355,11 +365,16 @@ const Navbar = () => {
             <button
               className="sidebar-profile-trigger"
               onClick={() => setMenuOpen((prev) => !prev)}
+              aria-haspopup="true"
+              aria-expanded={menuOpen}
             >
               <span className="sidebar-profile-avatar">
                 {photoUrl ? <img src={photoUrl} alt="Profile" /> : initial}
               </span>
               <span className="sidebar-profile-name-inline">{displayName.toLowerCase()}</span>
+              <span className="sidebar-profile-kebab">
+                <KebabIcon />
+              </span>
             </button>
           </div>
         ) : (

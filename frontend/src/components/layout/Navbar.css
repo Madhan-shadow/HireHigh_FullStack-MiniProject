@@ -2,13 +2,13 @@
 
 :root {
   --sb-bg: #151513;
-  --sb-panel-border: rgba(255,255,255,0.06);
+  --sb-panel-border: rgba(255, 255, 255, 0.06);
   --sb-cream: #f3f1ea;
   --sb-muted: #85847d;
   --sb-gold: #d9a441;
   --sb-gold-tint: rgba(217, 164, 65, 0.12);
   --sb-pine: #1c5c4d;
-  --sb-hover: rgba(255,255,255,0.05);
+  --sb-hover: rgba(255, 255, 255, 0.05);
 }
 
 body {
@@ -23,7 +23,7 @@ body {
   background: var(--sb-bg);
   border: 1px solid var(--sb-panel-border);
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
   color: var(--sb-cream);
   display: flex;
   flex-direction: column;
@@ -234,9 +234,25 @@ body {
 .sidebar-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .sidebar-profile-name-inline {
+  flex: 1;
+  text-align: left;
   font-size: 0.83rem;
   text-transform: lowercase;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--sb-cream);
+}
+
+.sidebar-profile-kebab {
+  display: flex;
+  align-items: center;
+  color: var(--sb-muted);
+  flex-shrink: 0;
+  transition: color 0.14s ease;
+}
+
+.sidebar-profile-trigger:hover .sidebar-profile-kebab {
   color: var(--sb-cream);
 }
 
@@ -250,7 +266,7 @@ body {
   border: 1px solid var(--sb-panel-border);
   border-radius: 12px;
   padding: 10px;
-  box-shadow: 0 16px 34px rgba(0,0,0,0.5);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar-profile-dropdown-header {
@@ -280,3 +296,13 @@ body {
 
 .sidebar-profile-item:hover { background: var(--sb-hover); }
 .sidebar-profile-item--danger { color: #e07b6c; }
+
+/* ---------- Content offset (apply in App.jsx / layout wrapper) ---------- */
+.app-content {
+  margin-left: 256px; /* 232px sidebar + 12px left margin + 12px gap */
+  padding: 12px 24px 12px 0;
+}
+
+body.logged-out .app-content {
+  margin-left: 92px; /* 68px rail + 12px + 12px */
+}
