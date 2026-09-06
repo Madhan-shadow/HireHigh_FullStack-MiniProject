@@ -2635,6 +2635,21 @@ a.profile-menu-item {
   .home-features {
     grid-template-columns: 1fr;
   }
+}.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--surface);
+}
+
+.auth-brand-panel,
+.auth-form-panel {
+  min-width: 0;
+}
+
+.auth-brand-headline {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 @media (max-width: 600px) {
   .navbar-brand-word {
