@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
 :root {
   --sb-bg: #151513;
   --sb-panel-border: rgba(255, 255, 255, 0.08);
@@ -40,7 +41,7 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   flex-direction: column;
   z-index: 40;
   font-family: 'Inter', system-ui, sans-serif;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
@@ -87,8 +88,7 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
 }
 
 .sidebar--collapsed .sidebar-link,
-.sidebar--collapsed .sidebar-profile-trigger,
-.sidebar--collapsed .sidebar-login-btn {
+.sidebar--collapsed .sidebar-profile-trigger {
   justify-content: center;
   padding: 11px;
 }
@@ -152,7 +152,7 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   height: 32px;
   border-radius: 8px;
   background: var(--sb-gold);
-  color: #fff;
+  color: var(--sb-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,7 +166,7 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   height: 32px;
   border-radius: 50%;
   background: var(--sb-gold);
-  color: #fff;
+  color: var(--sb-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,22 +257,29 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   border-top: 1px solid var(--sb-panel-border);
 }
 
-/* ---------- Login: clean horizontal pill, same pattern as nav links ---------- */
 .sidebar-login-btn {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 10px 11px;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 6px;
+  margin: 0 4px;
   background: var(--sb-pine);
   color: #fff;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.87rem;
+  font-size: 0.8rem;
   border-radius: 9px;
 }
 
 .sidebar-login-btn:hover {
   background: #24705f;
+}
+
+.sidebar-login-btn .sidebar-icon,
+.sidebar-login-btn .sidebar-label {
+  opacity: 1 !important;
+  max-width: none !important;
 }
 
 .sidebar-profile { position: relative; padding: 0 2px; }
@@ -333,12 +340,12 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   bottom: calc(100% + 8px);
   left: 4px;
   width: 200px;
-  background: #ffffff;
+  background: #1d1d1a;
   color: var(--sb-cream);
   border: 1px solid var(--sb-panel-border);
   border-radius: 12px;
   padding: 10px;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
   white-space: normal;
 }
 

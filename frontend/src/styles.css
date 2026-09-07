@@ -23,13 +23,6 @@
    blocks the global body pattern from showing through. */
 .auth-form-panel {
   position: relative;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--border-light) 0px,
-    var(--border-light) 1px,
-    transparent 1px,
-    transparent 32px
-  );
 }
 
 .auth-form-panel::before {
