@@ -1,14 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
-
 :root {
-  --sb-bg: #eef0ea;
-  --sb-panel-border: #e1dfd3;
-  --sb-cream: #1b1f1d;
-  --sb-muted: #6b746e;
-  --sb-gold: #c9922a;
-  --sb-gold-tint: rgba(201, 146, 42, 0.14);
-  --sb-pine: #1f5e4a;
-  --sb-hover: #e4e6de;
+  --sb-bg: #151513;
+  --sb-panel-border: rgba(255, 255, 255, 0.08);
+  --sb-cream: #f3f1ea;
+  --sb-muted: #85847d;
+  --sb-gold: #d9a441;
+  --sb-gold-tint: rgba(217, 164, 65, 0.12);
+  --sb-pine: #1c5c4d;
+  --sb-hover: rgba(255, 255, 255, 0.05);
   --sb-margin: 14px;
   --sb-collapsed-w: 72px;
   --sb-expanded-w: 236px;
