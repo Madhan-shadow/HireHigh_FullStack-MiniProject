@@ -251,30 +251,28 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   padding-top: 14px;
   border-top: 1px solid var(--sb-panel-border);
 }
-
 .sidebar-login-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 6px;
+  gap: 11px;
+  padding: 10px 11px;
   margin: 0 4px;
   background: var(--sb-pine);
   color: #fff;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.87rem;
   border-radius: 9px;
+  overflow: hidden;
 }
 
 .sidebar-login-btn:hover {
   background: #24705f;
 }
 
-.sidebar-login-btn .sidebar-icon,
-.sidebar-login-btn .sidebar-label {
-  opacity: 1 !important;
-  max-width: none !important;
+.sidebar--collapsed .sidebar-login-btn {
+  justify-content: center;
+  padding: 11px;
 }
 
 .sidebar-profile { position: relative; padding: 0 2px; }
