@@ -6,20 +6,6 @@ import { clearCandidateProfile } from '../../store/slices/candidateSlice';
 import userService from '../../services/userService';
 import './Navbar.css';
 
-const ROLE_ABBR = {
-  CANDIDATE: 'C',
-  RECRUITER: 'R',
-  TA_LEAD: 'TA',
-  HIRING_MANAGER: 'HM',
-};
-
-const ROLE_LABELS = {
-  CANDIDATE: 'Candidate',
-  RECRUITER: 'Recruiter',
-  TA_LEAD: 'TA Lead',
-  HIRING_MANAGER: 'Hiring Manager',
-};
-
 function HomeIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -163,9 +149,6 @@ const Navbar = () => {
   const displayName = (accountInfo && accountInfo.fullName) || (user && user.fullName) || role || 'user';
   const initial = displayName.charAt(0).toUpperCase();
 
-  const roleAbbr = ROLE_ABBR[role] || (role ? role.charAt(0).toUpperCase() : '');
-  const roleLabel = ROLE_LABELS[role] || (role ? role.toLowerCase() : '');
-
   const navItems = [
     { to: '/', end: true, label: 'Home', Icon: HomeIcon },
     { to: '/jobs', label: 'Jobs', Icon: JobsIcon },
@@ -195,14 +178,10 @@ const Navbar = () => {
           </button>
 
           <Link to="/" className="sidebar-brand">
-            {isAuthenticated && roleAbbr ? (
-              <span className="sidebar-role-badge" title={roleLabel}>
-                {roleAbbr}
-              </span>
-            ) : (
-              <span className="sidebar-brand-mark">H</span>
-            )}
-            <span className="sidebar-brand-word">HireHigh</span>
+            <span className="sidebar-brand-mark">H</span>
+            <span className="sidebar-brand-word">
+              {isAuthenticated ? displayName : 'HireHigh'}
+            </span>
           </Link>
         </div>
 
