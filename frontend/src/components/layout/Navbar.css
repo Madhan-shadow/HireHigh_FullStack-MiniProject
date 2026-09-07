@@ -153,15 +153,16 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
 .sidebar-brand-mark {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: var(--sb-gold);
-  color: var(--sb-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
   flex-shrink: 0;
+}
+
+.sidebar-brand-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .sidebar-brand-word {
