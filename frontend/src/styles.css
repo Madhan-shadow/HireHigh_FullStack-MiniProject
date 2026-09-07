@@ -18,43 +18,7 @@
    /* =========================================================
    GLOBAL HH WATERMARK — faint, behind all page content
    ========================================================= */
-/* =========================================================
-   GLOBAL BACKGROUND — ruled lines + small HH corner mark
-   ========================================================= */
 
-body {
-  position: relative;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--border-light) 0px,
-    var(--border-light) 1px,
-    transparent 1px,
-    transparent 32px
-  );
-  background-attachment: fixed;
-}
-
-body::before {
-  content: 'HH';
-  position: fixed;
-  right: 24px;
-  bottom: 14px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 64px;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  opacity: 0.06;
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-}
-
-#root {
-  position: relative;
-  z-index: 1;
-}
 body {
   position: relative;
 }
