@@ -18,7 +18,41 @@
    /* =========================================================
    GLOBAL HH WATERMARK — faint, behind all page content
    ========================================================= */
+/* Bring the ruled-line + HH pattern onto the login/register light panel,
+   since .auth-form-panel has its own opaque background that otherwise
+   blocks the global body pattern from showing through. */
+.auth-form-panel {
+  position: relative;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--border-light) 0px,
+    var(--border-light) 1px,
+    transparent 1px,
+    transparent 32px
+  );
+}
 
+.auth-form-panel::before {
+  content: 'HH';
+  position: absolute;
+  right: 20px;
+  bottom: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+}
 body {
   position: relative;
 }
