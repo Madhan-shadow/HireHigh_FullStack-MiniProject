@@ -6,6 +6,13 @@ import { clearCandidateProfile } from '../../store/slices/candidateSlice';
 import userService from '../../services/userService';
 import './Navbar.css';
 
+const ROLE_LABELS = {
+  CANDIDATE: 'Candidate',
+  RECRUITER: 'Recruiter',
+  TA_LEAD: 'TA Lead',
+  HIRING_MANAGER: 'Hiring Manager',
+};
+
 function HomeIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -148,6 +155,7 @@ const Navbar = () => {
 
   const displayName = (accountInfo && accountInfo.fullName) || (user && user.fullName) || role || 'user';
   const initial = displayName.charAt(0).toUpperCase();
+  const roleLabel = ROLE_LABELS[role] || (role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : '');
 
   const navItems = [
     { to: '/', end: true, label: 'Home', Icon: HomeIcon },
@@ -215,7 +223,7 @@ const Navbar = () => {
               <div className="sidebar-profile-dropdown">
                 <div className="sidebar-profile-dropdown-header">
                   <span className="sidebar-profile-name">{displayName}</span>
-                  <span className="sidebar-profile-role">{(role || '').toLowerCase()}</span>
+                  <span className="sidebar-profile-role">{roleLabel}</span>
                 </div>
                 <Link
                   to="/profile"

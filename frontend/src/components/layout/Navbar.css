@@ -164,20 +164,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   flex-shrink: 0;
 }
 
-.sidebar-role-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--sb-gold);
-  color: var(--sb-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.72rem;
-  flex-shrink: 0;
-}
-
 .sidebar-brand-word {
   font-family: 'Playfair Display', serif;
   font-size: 1.05rem;
@@ -369,10 +355,16 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
 }
 
 .sidebar-profile-role {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--sb-muted);
-  text-transform: capitalize;
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #151513;
+  background: var(--sb-gold);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 4px;
 }
 
 .sidebar-profile-item {
