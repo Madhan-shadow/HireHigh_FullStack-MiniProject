@@ -92,10 +92,8 @@ import React from 'react';
 import { openBase64Pdf } from '../../utils/openBase64Pdf';
 
 function CandidateProfileModal(props) {
-  var application = props.application;
+  var application = props.application || {};
   var onClose = props.onClose;
-
-  if (!application) return null;
 
   var candidate = application.candidate || {};
   var user = candidate.user || {};
@@ -110,6 +108,7 @@ function CandidateProfileModal(props) {
       <div className="modal">
         <div className="modal-header">
           <h2>Applicant profile</h2>
+
           <button
             className="modal-close"
             onClick={onClose}
@@ -133,21 +132,30 @@ function CandidateProfileModal(props) {
           )}
 
           <div className="candidate-profile-field">
-            <span className="candidate-profile-label">Full name</span>
+            <span className="candidate-profile-label">
+              Full name
+            </span>
+
             <span className="candidate-profile-value">
               {user.fullName || '-'}
             </span>
           </div>
 
           <div className="candidate-profile-field">
-            <span className="candidate-profile-label">Email</span>
+            <span className="candidate-profile-label">
+              Email
+            </span>
+
             <span className="candidate-profile-value">
               {user.email || '-'}
             </span>
           </div>
 
           <div className="candidate-profile-field">
-            <span className="candidate-profile-label">Primary skill</span>
+            <span className="candidate-profile-label">
+              Primary skill
+            </span>
+
             <span className="candidate-profile-value">
               {candidate.primarySkill || '-'}
             </span>
@@ -157,6 +165,7 @@ function CandidateProfileModal(props) {
             <span className="candidate-profile-label">
               Years of experience
             </span>
+
             <span className="candidate-profile-value">
               {candidate.yearsExperience != null
                 ? candidate.yearsExperience
@@ -165,11 +174,15 @@ function CandidateProfileModal(props) {
           </div>
 
           <div className="candidate-profile-field">
-            <span className="candidate-profile-label">Resume</span>
+            <span className="candidate-profile-label">
+              Resume
+            </span>
 
             {candidate.resumeUrl ? (
               <div className="resume-card resume-card--compact">
-                <div className="resume-card-icon">PDF</div>
+                <div className="resume-card-icon">
+                  PDF
+                </div>
 
                 <div className="resume-card-info">
                   <span className="resume-card-name">
@@ -188,7 +201,9 @@ function CandidateProfileModal(props) {
                 </div>
               </div>
             ) : (
-              <span className="candidate-profile-value">-</span>
+              <span className="candidate-profile-value">
+                -
+              </span>
             )}
           </div>
         </div>
