@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
-
 :root {
   --sb-bg: #151513;
   --sb-panel-border: rgba(255, 255, 255, 0.08);
@@ -9,7 +8,7 @@
   --sb-gold-tint: rgba(217, 164, 65, 0.12);
   --sb-pine: #1c5c4d;
   --sb-hover: rgba(255, 255, 255, 0.05);
-  --sb-margin: 14px;
+  --sb-margin: 0px;
   --sb-collapsed-w: 72px;
   --sb-expanded-w: 236px;
   --sb-rail-expanded-w: 208px;
@@ -27,25 +26,21 @@ body.has-sidebar.sidebar-expanded:not(.sidebar-rail-mode) {
 body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   padding-left: calc(var(--sb-rail-expanded-w) + var(--sb-margin) * 2);
 }
-
 .sidebar {
   position: fixed;
-  top: var(--sb-margin);
-  left: var(--sb-margin);
-  height: calc(100vh - var(--sb-margin) * 2);
+  top: 0;
+  left: 0;
+  height: 100vh;
   background: var(--sb-bg);
-  border: 1px solid var(--sb-panel-border);
-  border-radius: 20px;
+  border-right: 1px solid var(--sb-panel-border);
   color: var(--sb-cream);
   display: flex;
   flex-direction: column;
   z-index: 40;
   font-family: 'Inter', system-ui, sans-serif;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
-
 .sidebar--collapsed {
   width: var(--sb-collapsed-w);
   padding: 16px 0 20px;
