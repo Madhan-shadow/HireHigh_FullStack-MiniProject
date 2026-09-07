@@ -8,7 +8,7 @@
   --sb-gold-tint: rgba(217, 164, 65, 0.12);
   --sb-pine: #1c5c4d;
   --sb-hover: rgba(255, 255, 255, 0.05);
-  --sb-margin: 0px;
+  --sb-margin: 14px;
   --sb-collapsed-w: 72px;
   --sb-expanded-w: 236px;
   --sb-rail-expanded-w: 208px;
@@ -28,16 +28,18 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
 }
 .sidebar {
   position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
+  top: var(--sb-margin);
+  left: var(--sb-margin);
+  height: calc(100vh - var(--sb-margin) * 2);
   background: var(--sb-bg);
-  border-right: 1px solid var(--sb-panel-border);
+  border: 1px solid var(--sb-panel-border);
+  border-radius: 20px;
   color: var(--sb-cream);
   display: flex;
   flex-direction: column;
   z-index: 40;
   font-family: 'Inter', system-ui, sans-serif;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
