@@ -187,7 +187,7 @@ const Navbar = () => {
 
           <Link to="/" className="sidebar-brand">
             <span className="sidebar-brand-mark">
-              <img src="/logo.png" alt="HireHigh" />
+              <img src="/logo-mark.png" alt="HireHigh" />
             </span>
             <span className="sidebar-brand-text">
               <span className="sidebar-brand-word">
