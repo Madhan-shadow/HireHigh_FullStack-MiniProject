@@ -15,7 +15,35 @@
    /* =========================================================
    NAVBAR — light, gold underline on active tab
    ========================================================= */
-   
+   /* =========================================================
+   GLOBAL HH WATERMARK — faint, behind all page content
+   ========================================================= */
+
+body {
+  position: relative;
+}
+
+body::before {
+  content: 'HH';
+  position: fixed;
+  right: -0.05em;
+  bottom: -0.18em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 42vw;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  opacity: 0.035;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
    .applications-grid {
   grid-template-columns: 1.5fr 1.5fr 1.1fr 1.3fr 1fr 0.8fr;
 }
