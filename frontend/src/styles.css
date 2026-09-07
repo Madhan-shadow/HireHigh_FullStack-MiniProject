@@ -35,7 +35,7 @@
   font-size: 48px;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--ink);
+  color: var(--watermark-color);
   opacity: 0.06;
   pointer-events: none;
   user-select: none;
@@ -60,7 +60,7 @@ body::before {
   font-size: 42vw;
   line-height: 1;
   letter-spacing: -0.04em;
-  color: var(--ink);
+  color: var(--watermark-color);
   opacity: 0.035;
   pointer-events: none;
   user-select: none;
@@ -702,6 +702,10 @@ body::before {
 
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Watermark flips color per theme — dark mark on light pages,
+     light mark on dark pages, so it never disappears. */
+  --watermark-color: var(--ink);
 }
 
 /* =========================================================
@@ -726,6 +730,59 @@ body::before {
 }
 
 /* =========================================================
+   DARK THEME — overrides the tokens above when the ThemeToggle
+   sets data-theme="dark" on <html>. Everything else in this
+   file references these variables (--surface, --paper, --text,
+   --border, the *-soft chip backgrounds, etc.) so the whole UI —
+   cards, tables, modals, inputs, chips, the auth/login card —
+   follows automatically. .navbar and .auth-brand-panel stay
+   hardcoded to var(--ink) by design and are unaffected, which is
+   intentional (they're dark in both themes).
+   ========================================================= */
+
+:root[data-theme="dark"] {
+  --paper: #121513;
+  --surface: #1B1F1D;
+
+  --text: #F3F1EA;
+  --text-secondary: #B7BEB6;
+  --muted: #8A928B;
+
+  --border: #2B302D;
+  --border-light: #232823;
+
+  /* "-deep" text tokens were built as darkened variants meant to sit
+     on pale light-mode chip backgrounds — on dark chip backgrounds
+     they'd be nearly invisible, so they get a lighter dark-mode
+     value here. Base accent colors (--pine, --gold, --red, --amber,
+     the --stage-* hues) stay the same in both themes; they're
+     already saturated enough to read fine on a dark surface. */
+  --pine-deep: #6FCFAA;
+  --amber: #E8B34D;
+
+  /* Soft chip backgrounds: pale tints only work on light surfaces.
+     On dark surfaces they become low-opacity tints of the same hue
+     instead, so status chips/badges still read as distinct color
+     families rather than all-white or all-pastel blocks. */
+  --pine-soft: rgba(31, 94, 74, 0.24);
+  --gold-soft: rgba(201, 146, 42, 0.22);
+  --red-soft: rgba(179, 38, 30, 0.22);
+  --amber-soft: rgba(232, 179, 77, 0.18);
+
+  --stage-applied-soft: rgba(59, 111, 160, 0.22);
+  --stage-screening-soft: rgba(184, 134, 47, 0.22);
+  --stage-interview-soft: rgba(193, 89, 46, 0.22);
+  --stage-offer-soft: rgba(107, 79, 158, 0.24);
+  --stage-hired-soft: rgba(31, 94, 74, 0.24);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.4);
+
+  --watermark-color: #F3F1EA;
+}
+
+/* =========================================================
    RESET
    ========================================================= */
 
@@ -744,6 +801,7 @@ body {
   background: var(--paper);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 button,
