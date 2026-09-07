@@ -100,7 +100,9 @@ function CandidateProfileModal(props) {
   var initial = (user.fullName || '?').charAt(0).toUpperCase();
 
   function handleOverlayClick(e) {
-    if (e.target === e.currentTarget) onClose();
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
   }
 
   return (
@@ -135,7 +137,6 @@ function CandidateProfileModal(props) {
             <span className="candidate-profile-label">
               Full name
             </span>
-
             <span className="candidate-profile-value">
               {user.fullName || '-'}
             </span>
@@ -145,7 +146,6 @@ function CandidateProfileModal(props) {
             <span className="candidate-profile-label">
               Email
             </span>
-
             <span className="candidate-profile-value">
               {user.email || '-'}
             </span>
@@ -155,7 +155,6 @@ function CandidateProfileModal(props) {
             <span className="candidate-profile-label">
               Primary skill
             </span>
-
             <span className="candidate-profile-value">
               {candidate.primarySkill || '-'}
             </span>
@@ -165,7 +164,6 @@ function CandidateProfileModal(props) {
             <span className="candidate-profile-label">
               Years of experience
             </span>
-
             <span className="candidate-profile-value">
               {candidate.yearsExperience != null
                 ? candidate.yearsExperience
