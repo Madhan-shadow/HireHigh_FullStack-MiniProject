@@ -13,38 +13,6 @@ const ROLE_LABELS = {
   HIRING_MANAGER: 'Hiring Manager',
 };
 
-function CrownMonogramIcon() {
-  return (
-    <svg viewBox="0 0 100 100" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="0" width="100" height="100" rx="18" fill="#0a0a0a" />
-      <g stroke="#c9a24a" strokeWidth="4" strokeLinecap="round">
-        <line x1="32" y1="42" x2="32" y2="78" />
-        <line x1="50" y1="42" x2="50" y2="78" />
-        <line x1="28" y1="42" x2="36" y2="42" />
-        <line x1="46" y1="42" x2="54" y2="42" />
-        <line x1="28" y1="78" x2="36" y2="78" />
-        <line x1="46" y1="78" x2="54" y2="78" />
-        <line x1="32" y1="58" x2="50" y2="58" />
-
-        <line x1="58" y1="34" x2="58" y2="82" />
-        <line x1="76" y1="34" x2="76" y2="82" />
-        <line x1="54" y1="34" x2="62" y2="34" />
-        <line x1="72" y1="34" x2="80" y2="34" />
-        <line x1="54" y1="82" x2="62" y2="82" />
-        <line x1="72" y1="82" x2="80" y2="82" />
-        <line x1="58" y1="62" x2="76" y2="62" />
-      </g>
-      <path
-        d="M61,34 L61,24.4 L63.9,29.2 L67,20.1 L70.1,29.2 L73,24.4 L73,34 Z"
-        fill="#c9a24a"
-      />
-      <circle cx="61" cy="24.4" r="1.4" fill="#c9a24a" />
-      <circle cx="67" cy="20.1" r="1.4" fill="#c9a24a" />
-      <circle cx="73" cy="24.4" r="1.4" fill="#c9a24a" />
-    </svg>
-  );
-}
-
 function HomeIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -219,10 +187,15 @@ const Navbar = () => {
 
           <Link to="/" className="sidebar-brand">
             <span className="sidebar-brand-mark">
-              <CrownMonogramIcon />
+              <img src="/logo.png" alt="HireHigh" />
             </span>
-            <span className="sidebar-brand-word">
-              {isAuthenticated ? displayName : 'HireHigh'}
+            <span className="sidebar-brand-text">
+              <span className="sidebar-brand-word">
+                {isAuthenticated ? displayName : 'HireHigh'}
+              </span>
+              {isAuthenticated && (
+                <span className="sidebar-brand-role">{roleLabel}</span>
+              )}
             </span>
           </Link>
         </div>
