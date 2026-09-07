@@ -1,0 +1,484 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+:root {
+  --sb-bg: #151513;
+  --sb-panel-border: rgba(255, 255, 255, 0.08);
+  --sb-cream: #f3f1ea;
+  --sb-muted: #85847d;
+  --sb-gold: #d9a441;
+  --sb-gold-tint: rgba(217, 164, 65, 0.12);
+  --sb-pine: #1c5c4d;
+  --sb-hover: rgba(255, 255, 255, 0.05);
+  --sb-margin: 14px;
+  --sb-collapsed-w: 72px;
+  --sb-expanded-w: 236px;
+  --sb-rail-expanded-w: 208px;
+
+  /* ---------- Theme tokens: default (light) page theme ---------- */
+  --page-bg: #f3f1ea;
+  --page-text: #151513;
+  --page-card-bg: #ffffff;
+  --page-card-border: rgba(21, 21, 19, 0.08);
+}
+
+/* Dark theme overrides — toggled via [data-theme="dark"] on <html> */
+:root[data-theme="dark"] {
+  --page-bg: #151513;
+  --page-text: #f3f1ea;
+  --page-card-bg: #1d1d1a;
+  --page-card-border: rgba(255, 255, 255, 0.08);
+}
+
+body.has-sidebar {
+  padding-left: calc(var(--sb-collapsed-w) + var(--sb-margin) * 2);
+  background: var(--page-bg);
+  color: var(--page-text);
+  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.2s ease, color 0.2s ease;
+}
+
+/* ---------- Site-wide watermark: the Hire High "HH" crown mark repeated ---------- */
+/* ---------- at low opacity behind every page's content, non-interactive. --------- */
+/* Light theme: dark mark on the light page. Swapped to a light mark  */
+/* under [data-theme="dark"] below so it stays visible either way.    */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22240%22%20height%3D%22240%22%20viewBox%3D%220%200%20240%20240%22%3E%20%20%3Cg%20fill%3D%22%23151513%22%20opacity%3D%220.06%22%3E%20%20%20%20%3Cpath%20d%3D%22M148%2C58%20L156%2C80%20L168%2C60%20L180%2C80%20L188%2C58%20L188%2C86%20L148%2C86%20Z%22/%3E%20%20%20%20%3Ccircle%20cx%3D%22148%22%20cy%3D%2253%22%20r%3D%224%22/%3E%20%20%20%20%3Ccircle%20cx%3D%22168%22%20cy%3D%2255%22%20r%3D%224%22/%3E%20%20%20%20%3Ccircle%20cx%3D%22188%22%20cy%3D%2253%22%20r%3D%224%22/%3E%20%20%20%20%3Ctext%20x%3D%22120%22%20y%3D%22168%22%20font-family%3D%22Georgia%2C%20%27Playfair%20Display%27%2C%20serif%22%20font-size%3D%2296%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-2%22%20text-anchor%3D%22middle%22%3EHH%3C/text%3E%20%20%20%20%3Ctext%20x%3D%22120%22%20y%3D%22196%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2215%22%20letter-spacing%3D%223.5%22%20text-anchor%3D%22middle%22%3EHIRE%20HIGH%3C/text%3E%20%20%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 240px 240px;
+}
+
+:root[data-theme="dark"] body::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22240%22%20height%3D%22240%22%20viewBox%3D%220%200%20240%20240%22%3E%20%20%3Cg%20fill%3D%22%23f3f1ea%22%20opacity%3D%220.07%22%3E%20%20%20%20%3Cpath%20d%3D%22M148%2C58%20L156%2C80%20L168%2C60%20L180%2C80%20L188%2C58%20L188%2C86%20L148%2C86%20Z%22/%3E%20%20%20%20%3Ccircle%20cx%3D%22148%22%20cy%3D%2253%22%20r%3D%224%22/%3E%20%20%20%20%3Ccircle%20cx%3D%22168%22%20cy%3D%2255%22%20r%3D%224%22/%3E%20%20%20%20%3Ccircle%20cx%3D%22188%22%20cy%3D%2253%22%20r%3D%224%22/%3E%20%20%20%20%3Ctext%20x%3D%22120%22%20y%3D%22168%22%20font-family%3D%22Georgia%2C%20%27Playfair%20Display%27%2C%20serif%22%20font-size%3D%2296%22%20font-weight%3D%22700%22%20letter-spacing%3D%22-2%22%20text-anchor%3D%22middle%22%3EHH%3C/text%3E%20%20%20%20%3Ctext%20x%3D%22120%22%20y%3D%22196%22%20font-family%3D%22Arial%2C%20Helvetica%2C%20sans-serif%22%20font-size%3D%2215%22%20letter-spacing%3D%223.5%22%20text-anchor%3D%22middle%22%3EHIRE%20HIGH%3C/text%3E%20%20%3C/g%3E%3C/svg%3E");
+}
+
+/* ---------- Theme toggle button: fixed top-right, same dark/gold  ---------- */
+/* ---------- language as the sidebar, independent of sidebar state. --------- */
+.theme-toggle-btn {
+  position: fixed;
+  top: var(--sb-margin);
+  right: var(--sb-margin);
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sb-bg);
+  border: 1px solid var(--sb-panel-border);
+  border-radius: 12px;
+  color: var(--sb-gold);
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  transition: background 0.16s ease, transform 0.16s ease, border-color 0.16s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: #1d1d1a;
+  border-color: var(--sb-gold);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.94);
+}
+
+.theme-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+body.has-sidebar.sidebar-expanded:not(.sidebar-rail-mode) {
+  padding-left: calc(var(--sb-expanded-w) + var(--sb-margin) * 2);
+}
+
+body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
+  padding-left: calc(var(--sb-rail-expanded-w) + var(--sb-margin) * 2);
+}
+
+/* ---------- The floating card: NO overflow:hidden here — that was  ---------- */
+/* ---------- clipping the profile dropdown in .sidebar-bottom. The   ---------- */
+/* ---------- rounded-corner clipping it was there for is handled by  ---------- */
+/* ---------- putting overflow:hidden on .sidebar-top / .sidebar-rail-track ---- */
+/* ---------- instead, further down.                                  ---------- */
+.sidebar {
+  position: fixed;
+  top: var(--sb-margin);
+  left: var(--sb-margin);
+  height: calc(100vh - var(--sb-margin) * 2);
+  background: var(--sb-bg);
+  border: 1px solid var(--sb-panel-border);
+  border-radius: 20px;
+  color: var(--sb-cream);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  font-family: 'Inter', system-ui, sans-serif;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar--collapsed {
+  width: var(--sb-collapsed-w);
+  padding: 16px 0 20px;
+}
+
+.sidebar--expanded {
+  width: var(--sb-expanded-w);
+  padding: 16px 14px 20px;
+}
+
+.sidebar--rail.sidebar--expanded {
+  width: var(--sb-rail-expanded-w);
+}
+
+/* overflow:hidden scoped only to the sections that need it for the  */
+/* label-fade animation — never on .sidebar-bottom (breaks dropdown) */
+.sidebar-top {
+  overflow: hidden;
+}
+
+.sidebar-rail-track {
+  overflow: hidden;
+}
+
+.sidebar-brand-word,
+.sidebar-brand-role,
+.sidebar-label,
+.sidebar-profile-name-inline,
+.sidebar-profile-kebab {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.18s ease, max-width 0.24s ease;
+}
+
+.sidebar--expanded .sidebar-brand-word,
+.sidebar--expanded .sidebar-brand-role,
+.sidebar--expanded .sidebar-label,
+.sidebar--expanded .sidebar-profile-name-inline,
+.sidebar--expanded .sidebar-profile-kebab {
+  opacity: 1;
+  max-width: 160px;
+}
+
+.sidebar--collapsed .sidebar-link,
+.sidebar--collapsed .sidebar-profile-trigger {
+  justify-content: center;
+  padding: 11px;
+}
+
+.sidebar--collapsed .sidebar-dot-col {
+  display: none;
+}
+
+.sidebar-top {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--sb-panel-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar--collapsed .sidebar-top {
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar--expanded .sidebar-top {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--sb-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.sidebar-toggle:hover {
+  background: var(--sb-hover);
+  color: var(--sb-cream);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--sb-cream);
+  min-width: 0;
+}
+
+.sidebar-brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #0a0a0a;
+}
+
+.sidebar-brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sidebar-brand-role {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sb-gold);
+  white-space: nowrap;
+}
+
+.sidebar-brand-word {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.sidebar-rail-track {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.sidebar-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 11px;
+  border-radius: 9px;
+  text-decoration: none;
+  color: var(--sb-muted);
+  font-size: 0.87rem;
+  font-weight: 500;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.sidebar-link:hover {
+  background: var(--sb-hover);
+  color: var(--sb-cream);
+}
+
+.sidebar-link.active {
+  background: var(--sb-gold-tint);
+  color: var(--sb-cream);
+  font-weight: 600;
+}
+
+.sidebar--expanded .sidebar-link.active::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--sb-gold);
+}
+
+.sidebar-dot-col {
+  display: flex;
+  align-items: center;
+  width: 8px;
+  flex-shrink: 0;
+}
+
+.sidebar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1.4px solid var(--sb-muted);
+  background: transparent;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.sidebar-link.active .sidebar-dot {
+  background: var(--sb-gold);
+  border-color: var(--sb-gold);
+}
+
+.sidebar-dot-line { display: none; }
+
+.sidebar-icon { display: flex; flex-shrink: 0; }
+
+.sidebar-label { white-space: nowrap; }
+
+/* No overflow:hidden on .sidebar-bottom — the profile dropdown must  */
+/* be free to render at full size regardless of the sidebar's own width */
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--sb-panel-border);
+}
+.sidebar-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 11px;
+  margin: 0 4px;
+  background: var(--sb-pine);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.87rem;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.sidebar-login-btn:hover {
+  background: #24705f;
+}
+
+.sidebar--collapsed .sidebar-login-btn {
+  justify-content: center;
+  padding: 11px;
+}
+
+.sidebar-profile { position: relative; padding: 0 2px; }
+
+.sidebar-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--sb-cream);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 9px;
+}
+
+.sidebar-profile-trigger:hover { background: var(--sb-hover); }
+
+.sidebar-profile-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--sb-pine);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.sidebar-profile-name-inline {
+  flex: 1;
+  text-align: left;
+  font-size: 0.83rem;
+  text-transform: lowercase;
+  color: var(--sb-cream);
+}
+
+.sidebar-profile-kebab {
+  display: flex;
+  align-items: center;
+  color: var(--sb-muted);
+  flex-shrink: 0;
+  transition: color 0.14s ease;
+}
+
+.sidebar-profile-trigger:hover .sidebar-profile-kebab {
+  color: var(--sb-cream);
+}
+
+/* Responsive width: stays 200px on desktop, shrinks to fit narrow */
+/* phone screens instead of running off the right edge              */
+.sidebar-profile-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 4px;
+  width: min(200px, calc(100vw - 32px));
+  background: #1d1d1a;
+  color: var(--sb-cream);
+  border: 1px solid var(--sb-panel-border);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
+  white-space: normal;
+}
+
+.sidebar-profile-dropdown-header {
+  padding: 4px 8px 10px;
+  border-bottom: 1px solid var(--sb-panel-border);
+  margin-bottom: 6px;
+}
+
+.sidebar-profile-name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.sidebar-profile-role {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #151513;
+  background: var(--sb-gold);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
+.sidebar-profile-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  text-decoration: none;
+  color: var(--sb-cream);
+  font-size: 0.85rem;
+  padding: 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sidebar-profile-item:hover { background: var(--sb-hover); }
+.sidebar-profile-item--danger { color: #e07b6c; }
