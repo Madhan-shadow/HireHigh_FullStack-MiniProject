@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './store';
 import Navbar from './components/layout/Navbar';
+import ThemeToggle from './components/layout/ThemeToggle';
 import Login from './components/Login';
 import Register from './components/Register';
 import JobList from './components/jobs/JobList';
@@ -322,6 +323,7 @@ const Home = () => {
 function AppRoutes() {
   return (
     <>
+      <ThemeToggle />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />

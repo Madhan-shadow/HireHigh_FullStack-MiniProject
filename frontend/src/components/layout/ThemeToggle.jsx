@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
 /**
- * Fixed top-right theme toggle.
- * Mount this once near the root of your layout (e.g. alongside <Navbar />
- * in App.jsx), outside the sidebar, so it stays top-right regardless of
- * whether the sidebar is collapsed or expanded.
+ * Fixed top-right theme toggle. Rendered once in AppRoutes (App.js),
+ * as a sibling of <Navbar />, so it shows on every route regardless of
+ * sidebar collapse state or auth status.
  *
  * Persists the choice in localStorage and sets data-theme on <html>,
- * which navbar-sidebar.css reads to swap --page-bg / --page-text and
- * the watermark color.
+ * which styles.css reads to swap --page-bg / --page-text and the
+ * watermark color.
  */
 export default function ThemeToggle() {
   const [theme, setTheme] = useState(
