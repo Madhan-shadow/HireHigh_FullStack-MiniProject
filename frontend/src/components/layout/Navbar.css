@@ -13,7 +13,18 @@
   --sb-expanded-w: 236px;
   --sb-rail-expanded-w: 208px;
 }
+body.has-sidebar {
+  padding-left: calc(var(--sb-collapsed-w) + var(--sb-margin) * 2);
+  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
+body.has-sidebar.sidebar-expanded:not(.sidebar-rail-mode) {
+  padding-left: calc(var(--sb-expanded-w) + var(--sb-margin) * 2);
+}
+
+body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
+  padding-left: calc(var(--sb-rail-expanded-w) + var(--sb-margin) * 2);
+}
 body.has-sidebar {
   padding-left: calc(var(--sb-collapsed-w) + var(--sb-margin) * 2);
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
