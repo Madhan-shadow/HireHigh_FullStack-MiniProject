@@ -741,15 +741,17 @@ body::before {
    ========================================================= */
 
 :root[data-theme="dark"] {
-  --paper: #121513;
-  --surface: #1B1F1D;
+  /* Softer charcoal, not near-black — a "dim" feel rather than
+     true dark mode, closer in weight to Slack/GitHub's dim themes. */
+  --paper: #26282A;
+  --surface: #313436;
 
-  --text: #F3F1EA;
-  --text-secondary: #B7BEB6;
-  --muted: #8A928B;
+  --text: #ECEAE4;
+  --text-secondary: #B0B4B0;
+  --muted: #868B87;
 
-  --border: #2B302D;
-  --border-light: #232823;
+  --border: #454846;
+  --border-light: #3A3D3B;
 
   /* "-deep" text tokens were built as darkened variants meant to sit
      on pale light-mode chip backgrounds — on dark chip backgrounds
@@ -764,20 +766,20 @@ body::before {
      On dark surfaces they become low-opacity tints of the same hue
      instead, so status chips/badges still read as distinct color
      families rather than all-white or all-pastel blocks. */
-  --pine-soft: rgba(31, 94, 74, 0.24);
-  --gold-soft: rgba(201, 146, 42, 0.22);
-  --red-soft: rgba(179, 38, 30, 0.22);
-  --amber-soft: rgba(232, 179, 77, 0.18);
+  --pine-soft: rgba(31, 94, 74, 0.28);
+  --gold-soft: rgba(201, 146, 42, 0.26);
+  --red-soft: rgba(179, 38, 30, 0.26);
+  --amber-soft: rgba(232, 179, 77, 0.22);
 
-  --stage-applied-soft: rgba(59, 111, 160, 0.22);
-  --stage-screening-soft: rgba(184, 134, 47, 0.22);
-  --stage-interview-soft: rgba(193, 89, 46, 0.22);
-  --stage-offer-soft: rgba(107, 79, 158, 0.24);
-  --stage-hired-soft: rgba(31, 94, 74, 0.24);
+  --stage-applied-soft: rgba(59, 111, 160, 0.26);
+  --stage-screening-soft: rgba(184, 134, 47, 0.26);
+  --stage-interview-soft: rgba(193, 89, 46, 0.26);
+  --stage-offer-soft: rgba(107, 79, 158, 0.28);
+  --stage-hired-soft: rgba(31, 94, 74, 0.28);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
-  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
+  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.3);
 
   --watermark-color: #F3F1EA;
 }
