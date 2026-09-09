@@ -4,6 +4,8 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './store';
 import Navbar from './components/layout/Navbar';
 import ThemeToggle from './components/layout/ThemeToggle';
+import HeroIllustration from './components/common/HeroIllustration';
+import useScrollReveal from './hooks/useScrollReveal';
 import Login from './components/Login';
 import Register from './components/Register';
 import JobList from './components/jobs/JobList';
@@ -65,6 +67,11 @@ const Home = () => {
   const isAuthenticated = auth.isAuthenticated;
   const role = auth.role;
   const user = auth.user;
+
+  // Watches for .reveal elements (used in the visitor showcase below)
+  // and fades them in as they scroll into view. No-op on the other
+  // two branches since they render no .reveal elements.
+  useScrollReveal([isAuthenticated, role]);
 
   const isRecruiterSide =
     role === 'RECRUITER' || role === 'TA_LEAD' || role === 'HIRING_MANAGER';
@@ -268,7 +275,7 @@ const Home = () => {
   return (
     <div className="showcase">
       <section className="showcase-hero">
-        <div className="showcase-hero-text">
+        <div className="showcase-hero-text reveal">
           <span className="home-hero-eyebrow">Talent Acquisition, Simplified</span>
           <h1 className="showcase-headline">
             One pipeline.<br />Every hire.
@@ -288,49 +295,52 @@ const Home = () => {
         </div>
 
         <div className="showcase-hero-visual">
-          <div className="showcase-pipeline-card">
-            <span className="showcase-pipeline-title">Live pipeline</span>
-            <ul className="showcase-pipeline-list">
-              <li className="showcase-pipeline-stage is-done">
-                <span className="showcase-pipeline-dot stage-applied" />
-                Applied
-                <span className="showcase-pipeline-count">18</span>
-              </li>
-              <li className="showcase-pipeline-stage is-done">
-                <span className="showcase-pipeline-dot stage-screening" />
-                Screening
-                <span className="showcase-pipeline-count">11</span>
-              </li>
-              <li className="showcase-pipeline-stage is-active">
-                <span className="showcase-pipeline-dot stage-interview" />
-                Interview
-                <span className="showcase-pipeline-count">6</span>
-              </li>
-              <li className="showcase-pipeline-stage">
-                <span className="showcase-pipeline-dot stage-offer" />
-                Offer
-                <span className="showcase-pipeline-count">2</span>
-              </li>
-              <li className="showcase-pipeline-stage">
-                <span className="showcase-pipeline-dot stage-hired" />
-                Hired
-                <span className="showcase-pipeline-count">1</span>
-              </li>
-            </ul>
+          <div className="reveal" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px' }}>
+            <HeroIllustration />
+            <div className="showcase-pipeline-card">
+              <span className="showcase-pipeline-title">Live pipeline</span>
+              <ul className="showcase-pipeline-list">
+                <li className="showcase-pipeline-stage is-done">
+                  <span className="showcase-pipeline-dot stage-applied" />
+                  Applied
+                  <span className="showcase-pipeline-count">18</span>
+                </li>
+                <li className="showcase-pipeline-stage is-done">
+                  <span className="showcase-pipeline-dot stage-screening" />
+                  Screening
+                  <span className="showcase-pipeline-count">11</span>
+                </li>
+                <li className="showcase-pipeline-stage is-active">
+                  <span className="showcase-pipeline-dot stage-interview" />
+                  Interview
+                  <span className="showcase-pipeline-count">6</span>
+                </li>
+                <li className="showcase-pipeline-stage">
+                  <span className="showcase-pipeline-dot stage-offer" />
+                  Offer
+                  <span className="showcase-pipeline-count">2</span>
+                </li>
+                <li className="showcase-pipeline-stage">
+                  <span className="showcase-pipeline-dot stage-hired" />
+                  Hired
+                  <span className="showcase-pipeline-count">1</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="showcase-stats">
-        <div className="showcase-stat">
+        <div className="showcase-stat reveal">
           <span className="showcase-stat-value">{openJobsCount}</span>
           <span className="showcase-stat-label">Open roles right now</span>
         </div>
-        <div className="showcase-stat">
+        <div className="showcase-stat reveal">
           <span className="showcase-stat-value">6</span>
           <span className="showcase-stat-label">Pipeline stages tracked</span>
         </div>
-        <div className="showcase-stat">
+        <div className="showcase-stat reveal">
           <span className="showcase-stat-value">1</span>
           <span className="showcase-stat-label">Place to manage it all</span>
         </div>
@@ -339,17 +349,17 @@ const Home = () => {
       <section className="showcase-roles">
         <h2 className="showcase-section-title">Built for how hiring actually works</h2>
         <div className="showcase-role-grid">
-          <div className="showcase-role-card">
+          <div className="showcase-role-card reveal">
             <span className="showcase-role-tag stage-applied-tag">For Recruiters</span>
             <h3>Post, track, close.</h3>
             <p>Publish a role with a hiring goal, watch applicants flow in, and move each one through the pipeline without leaving the app.</p>
           </div>
-          <div className="showcase-role-card">
+          <div className="showcase-role-card reveal">
             <span className="showcase-role-tag stage-offer-tag">For TA Leads &amp; Managers</span>
             <h3>See the whole pipeline.</h3>
             <p>A live view of every open role and every candidate stage — no status meetings needed to know where things stand.</p>
           </div>
-          <div className="showcase-role-card">
+          <div className="showcase-role-card reveal">
             <span className="showcase-role-tag stage-hired-tag">For Candidates</span>
             <h3>Apply once, track always.</h3>
             <p>Attach your resume and details once, apply to any role in a click, and watch your status update in real time.</p>
@@ -358,17 +368,17 @@ const Home = () => {
       </section>
 
       <section className="showcase-steps">
-        <div className="visitor-step">
+        <div className="visitor-step reveal">
           <span className="visitor-step-number">01</span>
           <h3>Post a role</h3>
           <p>Recruiters set a hiring goal and publish the opening in seconds.</p>
         </div>
-        <div className="visitor-step">
+        <div className="visitor-step reveal">
           <span className="visitor-step-number">02</span>
           <h3>Candidates apply</h3>
           <p>One application form with resume, skills, and experience attached.</p>
         </div>
-        <div className="visitor-step">
+        <div className="visitor-step reveal">
           <span className="visitor-step-number">03</span>
           <h3>Track every stage</h3>
           <p>Applied, Screening, Interview, Offer, Hired — all in one pipeline.</p>
