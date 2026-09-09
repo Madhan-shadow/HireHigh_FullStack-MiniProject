@@ -14,7 +14,7 @@ const Login = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/jobs');
+      navigate('/');
     }
   }, [isAuthenticated, navigate]);
 
