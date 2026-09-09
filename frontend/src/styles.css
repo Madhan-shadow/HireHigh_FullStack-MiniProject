@@ -1738,12 +1738,10 @@ a.profile-menu-item {
   background: var(--gold-bright);
   box-shadow: 0 0 0 4px rgba(232, 174, 61, 0.25);
 }
-
 .auth-rail-step--current .auth-rail-label {
-  color: white;
+  color: var(--text);
   font-weight: 600;
 }
-
 .auth-form-panel {
   display: flex;
   align-items: center;
