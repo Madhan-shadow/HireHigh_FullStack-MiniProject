@@ -20,8 +20,6 @@ import ConfirmModal from '../common/ConfirmModal';
 import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
 
-const PAGE_SIZE = 5;
-
 const guessDomain = (companyName) => {
   if (!companyName) return null;
   return companyName
@@ -77,11 +75,6 @@ const JobList = () => {
   const [applyingJob, setApplyingJob] = useState(null);
   const [applySubmitting, setApplySubmitting] = useState(false);
 
-  // Client-side pagination — jobs is already the fully filtered list
-  // (selectFilteredJobs), so we just slice it 5 at a time here, the
-  // same pattern used on the dashboard and Applications page.
-  const [page, setPage] = useState(0);
-
   const isRecruiter = role === 'RECRUITER' || role === 'TA_LEAD';
   const isCandidate = role === 'CANDIDATE';
 
@@ -101,21 +94,6 @@ const JobList = () => {
       return () => clearTimeout(timer);
     }
   }, [successMessage, warningMessage, appError, dispatch]);
-
-  // Jump back to page 1 whenever the filtered result count changes
-  // (new search, job created/deleted), so the user is never stranded
-  // on a page that no longer has any rows.
-  useEffect(() => {
-    setPage(0);
-  }, [jobs.length]);
-
-  const totalPages = Math.ceil(jobs.length / PAGE_SIZE) || 1;
-  const pagedJobs = jobs.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-
-  const handleSearch = (value) => {
-    dispatch(setSearchQuery(value));
-    setPage(0);
-  };
 
   const appliedStageByJobId = {};
   if (isCandidate && Array.isArray(myApplications)) {
@@ -206,7 +184,7 @@ const JobList = () => {
 
       <SearchFilterBar
         placeholder="Search by job title or department"
-        onSearch={handleSearch}
+        onSearch={(v) => dispatch(setSearchQuery(v))}
       />
 
       {loading ? (
@@ -217,92 +195,70 @@ const JobList = () => {
           message="There are no job postings matching your search."
         />
       ) : (
-        <>
-          <div className="row-list">
-            <div className="row-list-head placements-grid">
-              <span>Company</span>
-              <span>Department</span>
-              <span>Interview Date</span>
-              <span>Published On</span>
-              <span>Last Date to Apply</span>
-              <span>Status</span>
-              <span></span>
-            </div>
-            {pagedJobs.map((job) => {
-              const appliedStage = appliedStageByJobId[job.id];
-
-              return (
-                <div className="row-list-row placements-grid" key={job.id}>
-                  <span className="cell-title cell-company">
-                    <CompanyLogo company={job.company} />
-                    <span className="company-info">
-                      <span className="company-name">{job.company || job.title}</span>
-                      <span className="company-role">{job.title}</span>
-                    </span>
-                  </span>
-                  <span className="cell-muted">{job.department || '—'}</span>
-                  <span className="cell-mono">{formatDate(job.interviewDate)}</span>
-                  <span className="cell-mono">{formatDate(job.publishedOn)}</span>
-                  <span className="cell-mono">{formatDate(job.lastDateToApply)}</span>
-                  <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
-                    {job.status}
-                  </span>
-
-                  <div className="cell-actions">
-                    {isRecruiter && (
-                      <>
-                        <button className="btn btn-link" onClick={() => handleOpenEdit(job)}>
-                          Edit
-                        </button>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => handleDeleteRequest(job.id)}
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                    {isCandidate && (
-                      appliedStage ? (
-                        <span className="applied-check" title={`Applied — ${appliedStage}`}>
-                          ✓ Applied
-                        </span>
-                      ) : (
-                        <button
-                          className="btn btn-success"
-                          data-testid={`apply-button-${job.id}`}
-                          onClick={() => handleOpenApply(job)}
-                        >
-                          Apply Now
-                        </button>
-                      )
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+        <div className="row-list">
+          <div className="row-list-head placements-grid">
+            <span>Company</span>
+            <span>Department</span>
+            <span>Interview Date</span>
+            <span>Published On</span>
+            <span>Last Date to Apply</span>
+            <span>Status</span>
+            <span></span>
           </div>
+          {jobs.map((job) => {
+            const appliedStage = appliedStageByJobId[job.id];
 
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button
-                className="btn btn-secondary"
-                disabled={page <= 0}
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-              >
-                Previous
-              </button>
-              <span>Page {page + 1} of {totalPages}</span>
-              <button
-                className="btn btn-secondary"
-                disabled={page >= totalPages - 1}
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </>
+            return (
+              <div className="row-list-row placements-grid" key={job.id}>
+                <span className="cell-title cell-company">
+                  <CompanyLogo company={job.company} />
+                  <span className="company-info">
+                    <span className="company-name">{job.company || job.title}</span>
+                    <span className="company-role">{job.title}</span>
+                  </span>
+                </span>
+                <span className="cell-muted">{job.department || '—'}</span>
+                <span className="cell-mono">{formatDate(job.interviewDate)}</span>
+                <span className="cell-mono">{formatDate(job.publishedOn)}</span>
+                <span className="cell-mono">{formatDate(job.lastDateToApply)}</span>
+                <span className={`status-chip status-${(job.status || '').toLowerCase()}`}>
+                  {job.status}
+                </span>
+
+                <div className="cell-actions">
+                  {isRecruiter && (
+                    <>
+                      <button className="btn btn-link" onClick={() => handleOpenEdit(job)}>
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDeleteRequest(job.id)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {isCandidate && (
+                    appliedStage ? (
+                      <span className="applied-check" title={`Applied — ${appliedStage}`}>
+                        ✓ Applied
+                      </span>
+                    ) : (
+                      <button
+                        className="btn btn-success"
+                        data-testid={`apply-button-${job.id}`}
+                        onClick={() => handleOpenApply(job)}
+                      >
+                        Apply Now
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {showModal && (
