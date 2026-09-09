@@ -126,6 +126,19 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
+  // Set the watermark image path via a CSS custom property instead of a
+  // literal url() in the .css file. process.env.PUBLIC_URL is the
+  // officially correct way CRA resolves paths into the public folder;
+  // a raw url('/logo-mark.png') inside Navbar.css makes css-loader try
+  // to resolve it as a JS module relative to this component's folder,
+  // which fails to compile. Setting it from JS sidesteps that entirely.
+  useEffect(() => {
+    document.body.style.setProperty(
+      '--watermark-image',
+      `url(${process.env.PUBLIC_URL}/logo-mark.png)`
+    );
+  }, []);
+
   // Push page content over without needing to touch App.jsx: the sidebar
   // manages classes on <body> itself, and Navbar.css maps those classes
   // to the correct padding-left for whichever width/variant is active.
