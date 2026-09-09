@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './store';
@@ -33,6 +33,32 @@ const STAGE_LABELS = {
   REJECTED: 'Rejected',
 };
 
+const RECENT_PAGE_SIZE = 5;
+
+function RecentActivityPagination({ page, setPage, totalPages }) {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="pagination">
+      <button
+        className="btn btn-secondary"
+        disabled={page <= 0}
+        onClick={() => setPage((p) => Math.max(0, p - 1))}
+      >
+        Previous
+      </button>
+      <span>Page {page + 1} of {totalPages}</span>
+      <button
+        className="btn btn-secondary"
+        disabled={page >= totalPages - 1}
+        onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+      >
+        Next
+      </button>
+    </div>
+  );
+}
+
 const Home = () => {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
@@ -51,6 +77,12 @@ const Home = () => {
   const appItems = appsState.items || [];
   const totalApplicants = appsState.totalElements || 0;
 
+  // Recent-activity pagination is local to this dashboard card — it
+  // slices the already-fetched appItems rather than refetching, since
+  // the recruiter/TA-lead fetch already pulls a larger page (size: 50)
+  // for exactly this purpose.
+  const [recentPage, setRecentPage] = useState(0);
+
   // Public job listing loads for everyone (recruiters, candidates, and
   // visitors alike) so even a logged-out visitor sees real activity.
   useEffect(() => {
@@ -67,13 +99,25 @@ const Home = () => {
     }
   }, [dispatch, isRecruiterSide, isCandidate]);
 
+  // Reset back to page 1 whenever the underlying data set changes size
+  // (e.g. a new application comes in), so the user isn't stranded on a
+  // now-empty page.
+  useEffect(() => {
+    setRecentPage(0);
+  }, [appItems.length]);
+
   const displayName = (user && user.fullName) || (role ? role.toLowerCase() : 'there');
 
   if (isRecruiterSide) {
     const openJobsCount = jobs.filter((j) => j.status === 'OPEN').length;
     const hiredCount = appItems.filter((a) => a.currentStage === 'HIRED').length;
     const interviewingCount = appItems.filter((a) => a.currentStage === 'INTERVIEW').length;
-    const recent = appItems.slice(0, 5);
+
+    const totalRecentPages = Math.ceil(appItems.length / RECENT_PAGE_SIZE) || 1;
+    const recent = appItems.slice(
+      recentPage * RECENT_PAGE_SIZE,
+      recentPage * RECENT_PAGE_SIZE + RECENT_PAGE_SIZE
+    );
 
     return (
       <div className="page-container">
@@ -106,7 +150,7 @@ const Home = () => {
           <Link to="/applications" className="btn btn-secondary">View all applications</Link>
         </div>
 
-        {recent.length > 0 && (
+        {appItems.length > 0 && (
           <div className="profile-section">
             <div className="profile-section-header">
               <h2 className="profile-section-title">Recent activity</h2>
@@ -133,6 +177,11 @@ const Home = () => {
                 );
               })}
             </div>
+            <RecentActivityPagination
+              page={recentPage}
+              setPage={setRecentPage}
+              totalPages={totalRecentPages}
+            />
           </div>
         )}
       </div>
@@ -148,7 +197,11 @@ const Home = () => {
       }
     });
 
-    const recent = appItems.slice(0, 5);
+    const totalRecentPages = Math.ceil(appItems.length / RECENT_PAGE_SIZE) || 1;
+    const recent = appItems.slice(
+      recentPage * RECENT_PAGE_SIZE,
+      recentPage * RECENT_PAGE_SIZE + RECENT_PAGE_SIZE
+    );
 
     return (
       <div className="page-container">
@@ -175,7 +228,7 @@ const Home = () => {
           <Link to="/applications" className="btn btn-secondary">View my applications</Link>
         </div>
 
-        {recent.length > 0 && (
+        {appItems.length > 0 && (
           <div className="profile-section">
             <div className="profile-section-header">
               <h2 className="profile-section-title">Recent applications</h2>
@@ -198,6 +251,11 @@ const Home = () => {
                 );
               })}
             </div>
+            <RecentActivityPagination
+              page={recentPage}
+              setPage={setRecentPage}
+              totalPages={totalRecentPages}
+            />
           </div>
         )}
       </div>
