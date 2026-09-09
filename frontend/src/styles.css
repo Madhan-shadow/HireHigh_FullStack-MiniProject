@@ -1639,17 +1639,15 @@ a.profile-menu-item {
 .auth-form-panel {
   min-width: 0;
 }
-
 .auth-brand-panel {
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
   padding: 80px 64px;
-  background: var(--ink);
-  color: white;
+  background: var(--paper);
+  color: var(--text);
 }
-
 .auth-brand-panel::before {
   content: 'NEXT';
   position: absolute;
@@ -1659,7 +1657,7 @@ a.profile-menu-item {
   font-size: 340px;
   font-weight: 600;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.05);
+  color: rgba(20, 24, 26, 0.05);
   letter-spacing: -0.04em;
   pointer-events: none;
   user-select: none;
@@ -1697,7 +1695,6 @@ a.profile-menu-item {
   margin: 0;
   padding: 0;
 }
-
 .auth-rail::before {
   content: '';
   position: absolute;
@@ -1705,9 +1702,8 @@ a.profile-menu-item {
   top: 6px;
   bottom: 6px;
   width: 1px;
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--border);
 }
-
 .auth-rail-step {
   position: relative;
   display: flex;
@@ -1715,20 +1711,19 @@ a.profile-menu-item {
   gap: 14px;
   padding: 9px 0;
 }
-
 .auth-rail-dot {
   position: relative;
   z-index: 1;
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--border);
   flex-shrink: 0;
 }
 
 .auth-rail-label {
   font-size: 14px;
-  color: #8B938E;
+  color: var(--muted);
 }
 
 .auth-rail-step--done .auth-rail-dot {
@@ -1736,7 +1731,7 @@ a.profile-menu-item {
 }
 
 .auth-rail-step--done .auth-rail-label {
-  color: #C7CCC8;
+  color: var(--text-secondary);
 }
 
 .auth-rail-step--current .auth-rail-dot {
