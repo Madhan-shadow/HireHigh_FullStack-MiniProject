@@ -111,7 +111,7 @@ const Register = () => {
             id="fullName"
             name="fullName"
             type="text"
-            placeholder="John Doe"
+            placeholder="Madhan R"
             value={formData.fullName}
             onChange={handleChange}
             className={fieldErrors.fullName ? 'input-error' : ''}
@@ -123,7 +123,7 @@ const Register = () => {
             id="email"
             name="email"
             type="email"
-            placeholder="john@example.com"
+            placeholder="madhanr@example.com"
             value={formData.email}
             onChange={handleChange}
             className={fieldErrors.email ? 'input-error' : ''}
