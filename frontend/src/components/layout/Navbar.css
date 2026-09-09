@@ -39,11 +39,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   padding-left: calc(var(--sb-rail-expanded-w) + var(--sb-margin) * 2);
 }
 
-/* ---------- The floating card: NO overflow:hidden here — that was  ---------- */
-/* ---------- clipping the profile dropdown in .sidebar-bottom. The   ---------- */
-/* ---------- rounded-corner clipping it was there for is handled by  ---------- */
-/* ---------- putting overflow:hidden on .sidebar-top / .sidebar-rail-track ---- */
-/* ---------- instead, further down.                                  ---------- */
 .sidebar {
   position: fixed;
   top: var(--sb-margin);
@@ -57,7 +52,7 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   flex-direction: column;
   z-index: 40;
   font-family: 'Inter', system-ui, sans-serif;
-   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
   transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar--collapsed {
@@ -74,8 +69,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   width: var(--sb-rail-expanded-w);
 }
 
-/* overflow:hidden scoped only to the sections that need it for the  */
-/* label-fade animation — never on .sidebar-bottom (breaks dropdown) */
 .sidebar-top {
   overflow: hidden;
 }
@@ -277,8 +270,6 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
 
 .sidebar-label { white-space: nowrap; }
 
-/* No overflow:hidden on .sidebar-bottom — the profile dropdown must  */
-/* be free to render at full size regardless of the sidebar's own width */
 .sidebar-bottom {
   margin-top: auto;
   padding-top: 14px;
@@ -361,19 +352,17 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   color: var(--sb-cream);
 }
 
-/* Responsive width: stays 200px on desktop, shrinks to fit narrow */
-/* phone screens instead of running off the right edge              */
 .sidebar-profile-dropdown {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 4px;
   width: min(200px, calc(100vw - 32px));
-  background: #1d1d1a;
+  background: #ffffff;
   color: var(--sb-cream);
   border: 1px solid var(--sb-panel-border);
   border-radius: 12px;
   padding: 10px;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.15);
   white-space: normal;
 }
 
@@ -397,7 +386,7 @@ body.has-sidebar.sidebar-rail-mode.sidebar-expanded {
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #151513;
+  color: #ffffff;
   background: var(--sb-gold);
   padding: 2px 8px;
   border-radius: 999px;
