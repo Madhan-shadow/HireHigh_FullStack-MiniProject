@@ -533,6 +533,163 @@ body::before {
     border-bottom: none;
   }
 }
+
+/* =========================================================
+   SHOWCASE — SCROLL REVEAL SYSTEM
+   Add className="reveal" to any element; useScrollReveal() adds
+   "is-visible" once it scrolls into view, triggering this fade
+   + slide-up. Stagger delays below target the specific grids in
+   the visitor showcase so cards/steps/stats cascade in one by
+   one instead of popping in together.
+   ========================================================= */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.showcase-hero-text.reveal { transition-delay: 0s; }
+.showcase-hero-visual .reveal { transition-delay: 0.15s; }
+
+.showcase-role-grid .reveal:nth-child(1) { transition-delay: 0s; }
+.showcase-role-grid .reveal:nth-child(2) { transition-delay: 0.12s; }
+.showcase-role-grid .reveal:nth-child(3) { transition-delay: 0.24s; }
+
+.showcase-steps .reveal:nth-child(1) { transition-delay: 0s; }
+.showcase-steps .reveal:nth-child(2) { transition-delay: 0.12s; }
+.showcase-steps .reveal:nth-child(3) { transition-delay: 0.24s; }
+
+.showcase-stats .reveal:nth-child(1) { transition-delay: 0s; }
+.showcase-stats .reveal:nth-child(2) { transition-delay: 0.1s; }
+.showcase-stats .reveal:nth-child(3) { transition-delay: 0.2s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .hero-illustration-dot,
+  .showcase-hero::before,
+  .showcase-hero::after {
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   SHOWCASE HERO — floating background blobs + illustration
+   ========================================================= */
+
+.showcase-hero {
+  position: relative;
+  overflow: visible;
+}
+
+.showcase-hero::before,
+.showcase-hero::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.showcase-hero::before {
+  width: 320px;
+  height: 320px;
+  top: -60px;
+  left: -80px;
+  background: var(--pine-soft);
+  opacity: 0.6;
+  animation: heroBlobFloat 14s ease-in-out infinite;
+}
+
+.showcase-hero::after {
+  width: 260px;
+  height: 260px;
+  bottom: -40px;
+  right: 10%;
+  background: var(--gold-soft);
+  opacity: 0.55;
+  animation: heroBlobFloat 11s ease-in-out infinite reverse;
+}
+
+@keyframes heroBlobFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(18px, -22px) scale(1.08); }
+}
+
+.showcase-hero-text,
+.showcase-hero-visual {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-illustration {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+}
+
+.hero-illustration-dot {
+  animation: heroDotFloat 3.2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes heroDotFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Headline underline flourish — draws in under "next." on load */
+.showcase-headline {
+  position: relative;
+  display: inline-block;
+}
+
+.showcase-headline::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+  height: 6px;
+  width: 0%;
+  background: var(--gold-soft);
+  z-index: -1;
+  border-radius: 3px;
+  animation: headlineUnderline 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+@keyframes headlineUnderline {
+  to { width: 88%; }
+}
+
+/* =========================================================
+   SHOWCASE CARDS — hover lift
+   ========================================================= */
+
+.showcase-role-card,
+.showcase-pipeline-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.showcase-role-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.showcase-pipeline-card:hover {
+  transform: translateY(-3px);
+}
 .dash-header {
   margin-bottom: 24px;
 }
