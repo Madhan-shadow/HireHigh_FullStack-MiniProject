@@ -1,0 +1,88 @@
+/* Lavender + gold light theme for the auth brand panel.
+   Scoped as .auth-shell .auth-brand-panel for extra specificity so this
+   reliably overrides whatever background is already set globally,
+   regardless of CSS import order. */
+.auth-shell .auth-brand-panel {
+  position: relative;
+  background: #ece6f5;
+  overflow: hidden;
+}
+
+.auth-shell .auth-brand-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 180px 180px 0;
+  border-color: transparent #f0dfae transparent transparent;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.auth-shell .auth-brand-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 140px 0 0 140px;
+  border-color: transparent transparent transparent #d8c9ea;
+  pointer-events: none;
+}
+
+.auth-shell .auth-brand-panel .auth-brand-content {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-shell .auth-brand-headline {
+  color: #2e2438;
+}
+
+.auth-shell .auth-brand-sub {
+  color: #5c5266;
+}
+
+/* Quote block */
+.auth-quote {
+  margin-top: 28px;
+}
+
+.auth-quote-mark {
+  display: block;
+  font-family: Georgia, 'Playfair Display', serif;
+  font-size: 52px;
+  line-height: 0.5;
+  color: #a9791f;
+  margin-bottom: 6px;
+}
+
+.auth-quote-text {
+  font-family: Georgia, 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 19px;
+  line-height: 1.45;
+  color: #2e2438;
+  margin: 0 0 14px;
+  max-width: 340px;
+}
+
+.auth-quote-rule {
+  display: block;
+  width: 32px;
+  height: 2px;
+  background: #a9791f;
+  margin-bottom: 10px;
+}
+
+.auth-quote-attribution {
+  font-size: 13px;
+  color: #5c5266;
+  letter-spacing: 0.03em;
+  margin: 0;
+}

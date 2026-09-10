@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { register, clearAuthError } from '../store/slices/authSlice';
 import AuthRail from './common/AuthRail';
+import AuthQuote from './common/AuthQuote';
 
 const ROLES = ['CANDIDATE', 'RECRUITER',  'HIRING MANAGER', 'TA_LEAD'];
 
@@ -95,6 +96,10 @@ const Register = () => {
             postings, or move candidates forward.
           </p>
           <AuthRail activeStage="Applied" />
+          <AuthQuote
+            quote="Every application deserves to be seen."
+            attribution="One account, every stage of the journey"
+          />
         </div>
       </div>
 

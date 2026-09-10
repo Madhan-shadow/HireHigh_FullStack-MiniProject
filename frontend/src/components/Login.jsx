@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { login, clearAuthError } from '../store/slices/authSlice';
 import AuthRail from './common/AuthRail';
+import AuthQuote from './common/AuthQuote';
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -55,6 +56,10 @@ const Login = () => {
             signed offer.
           </p>
           <AuthRail activeStage="Hired" />
+          <AuthQuote
+            quote={'Somewhere between "Applied" and "Hired," people are waiting. We keep them visible.'}
+            attribution="Built for recruiters and candidates alike"
+          />
         </div>
       </div>
 
