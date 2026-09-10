@@ -6,6 +6,12 @@
   position: relative;
   background: #ece6f5;
   overflow: hidden;
+  height: auto;
+  min-height: 100vh;
+}
+
+.auth-shell {
+  align-items: stretch;
 }
 
 .auth-shell .auth-brand-panel::before {
