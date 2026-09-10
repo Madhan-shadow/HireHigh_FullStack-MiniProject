@@ -896,7 +896,6 @@ body::before {
    hardcoded to var(--ink) by design and are unaffected, which is
    intentional (they're dark in both themes).
    ========================================================= */
-
 :root[data-theme="dark"] {
   /* Softer charcoal, not near-black — a "dim" feel rather than
      true dark mode, closer in weight to Slack/GitHub's dim themes. */
@@ -906,6 +905,12 @@ body::before {
   --text: #ECEAE4;
   --text-secondary: #B0B4B0;
   --muted: #868B87;
+
+  /* --ink is used directly (not via --text) by several headline and
+     showcase elements. It's never overridden by default, so without
+     this line it stays near-black in dark mode and becomes invisible
+     against the dark background. */
+  --ink: #ECEAE4;
 
   --border: #454846;
   --border-light: #3A3D3B;
