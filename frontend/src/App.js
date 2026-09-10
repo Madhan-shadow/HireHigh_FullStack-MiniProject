@@ -278,12 +278,11 @@ const Home = () => {
         <div className="showcase-hero-text reveal">
           <span className="home-hero-eyebrow">Talent Acquisition, Simplified</span>
           <h1 className="showcase-headline">
-            One pipeline.<br />Every hire.
+            Stop chasing spreadsheets.<br />Start closing roles.
           </h1>
           <p className="home-hero-sub">
-            HireHigh brings recruiters, hiring leads, and candidates onto a
-            single, live pipeline — from the first application to the signed
-            offer, with nothing lost in spreadsheets or email threads.
+            Track every candidate, every stage, in one place — from the
+            first application to the signed offer.
           </p>
           <div className="home-cta-row">
             <Link to="/jobs" className="btn btn-primary">
@@ -327,6 +326,11 @@ const Home = () => {
                 </li>
               </ul>
             </div>
+
+            <blockquote className="showcase-hero-quote">
+              <p>"The best hires don't get lost in email threads."</p>
+              <cite>— Built for recruiters and candidates alike</cite>
+            </blockquote>
           </div>
         </div>
       </section>
