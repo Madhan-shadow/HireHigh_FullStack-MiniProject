@@ -9,11 +9,9 @@
   height: auto;
   min-height: 100vh;
 }
-
 [data-theme="dark"] .auth-shell .auth-brand-panel {
-  background: #241f30;
+  background: radial-gradient(ellipse 140% 60% at 50% -10%, #4a4160, #241f30 55%, #1a1722);
 }
-
 .auth-shell {
   align-items: stretch;
 }
