@@ -55,7 +55,7 @@ const Login = () => {
             One pipeline for every open role, from the first application to the
             signed offer.
           </p>
-          <AuthRail activeStage="Hired" />
+          {/* <AuthRail activeStage="Hired" /> */}
           <AuthQuote
             quote={'Somewhere between "Applied" and "Hired," people are waiting. We keep them visible.'}
             attribution="Built for recruiters and candidates alike"
