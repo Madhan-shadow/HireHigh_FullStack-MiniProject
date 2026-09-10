@@ -1909,7 +1909,7 @@ a.profile-menu-item {
   align-items: center;
   justify-content: center;
   padding: 50px 30px;
-  background: var(--paper);
+    background: linear-gradient(180deg, #f4f0fa, var(--paper) 60%);
 }
 
 .auth-card {
