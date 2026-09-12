@@ -13,7 +13,6 @@ import ApplicationList from './components/applications/ApplicationList';
 import ProfilePage from './components/ProfilePage';
 import { fetchJobs } from './store/slices/jobSlice';
 import { fetchApplications, fetchMyApplications } from './store/slices/applicationSlice';
-import './App.css';
 import './styles.css';
 
 const ProtectedRoute = ({ children }) => {
