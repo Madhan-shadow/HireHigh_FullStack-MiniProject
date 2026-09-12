@@ -126,6 +126,18 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
+  // Keeps the sidebar avatar in sync the instant ProfilePage saves a new
+  // photo (or removes one) — without this, the sidebar only picked up
+  // the change on next login/reload since its own fetch above only runs
+  // when `isAuthenticated` changes, not when the photo itself changes.
+  useEffect(() => {
+    const handlePhotoUpdate = (e) => {
+      setAccountInfo(e.detail);
+    };
+    window.addEventListener('account-photo-updated', handlePhotoUpdate);
+    return () => window.removeEventListener('account-photo-updated', handlePhotoUpdate);
+  }, []);
+
   // Set the watermark image path via a CSS custom property instead of a
   // literal url() in the .css file. process.env.PUBLIC_URL is the
   // officially correct way CRA resolves paths into the public folder;

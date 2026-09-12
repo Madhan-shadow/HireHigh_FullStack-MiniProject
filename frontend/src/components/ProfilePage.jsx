@@ -115,7 +115,7 @@ const ProfilePage = () => {
       .then(function (dataUrl) {
         return userService.updateMyPhoto(dataUrl);
       })
-            .then(function (updatedAccount) {
+      .then(function (updatedAccount) {
         setAccount(updatedAccount);
         window.dispatchEvent(new CustomEvent('account-photo-updated', { detail: updatedAccount }));
       })
@@ -132,7 +132,7 @@ const ProfilePage = () => {
     setAvatarError(null);
 
     userService.updateMyPhoto(null)
-            .then(function (updatedAccount) {
+      .then(function (updatedAccount) {
         setAccount(updatedAccount);
         window.dispatchEvent(new CustomEvent('account-photo-updated', { detail: updatedAccount }));
       })
