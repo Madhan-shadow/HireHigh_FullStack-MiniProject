@@ -115,8 +115,9 @@ const ProfilePage = () => {
       .then(function (dataUrl) {
         return userService.updateMyPhoto(dataUrl);
       })
-      .then(function (updatedAccount) {
+            .then(function (updatedAccount) {
         setAccount(updatedAccount);
+        window.dispatchEvent(new CustomEvent('account-photo-updated', { detail: updatedAccount }));
       })
       .catch(function () {
         setAvatarError('Could not save your photo. Please try again.');
@@ -131,8 +132,9 @@ const ProfilePage = () => {
     setAvatarError(null);
 
     userService.updateMyPhoto(null)
-      .then(function (updatedAccount) {
+            .then(function (updatedAccount) {
         setAccount(updatedAccount);
+        window.dispatchEvent(new CustomEvent('account-photo-updated', { detail: updatedAccount }));
       })
       .catch(function () {
         setAvatarError('Could not remove your photo. Please try again.');
