@@ -5,7 +5,7 @@ import store from './store';
 import Navbar from './components/layout/Navbar';
 import ThemeToggle from './components/layout/ThemeToggle';
 import HeroIllustration from './components/common/HeroIllustration';
-import useScrollReveal from './hooks/useScrollReveal';
+// import useScrollReveal from './hooks/useScrollReveal';
 import Login from './components/Login';
 import Register from './components/Register';
 import JobList from './components/jobs/JobList';
