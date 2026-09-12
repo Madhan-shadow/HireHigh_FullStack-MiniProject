@@ -3,24 +3,7 @@
    ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
-/* =========================================================
-   DASHBOARD HOME (logged-in recruiter/candidate)
-   ========================================================= */
-/* =========================================================
-   VISITOR SHOWCASE HOMEPAGE
-   ========================================================= */
-/* =========================================================
-   PLACEMENTS TABLE
-   ========================================================= */
-   /* =========================================================
-   NAVBAR — light, gold underline on active tab
-   ========================================================= */
-   /* =========================================================
-   GLOBAL HH WATERMARK — faint, behind all page content
-   ========================================================= */
-/* Bring the ruled-line + HH pattern onto the login/register light panel,
-   since .auth-form-panel has its own opaque background that otherwise
-   blocks the global body pattern from showing through. */
+
 .auth-form-panel {
   position: relative;
 }
