@@ -240,20 +240,24 @@ const JobList = () => {
                     </>
                   )}
                   {isCandidate && (
-                    appliedStage ? (
-                      <span className="applied-check" title={`Applied — ${appliedStage}`}>
-                        ✓ Applied
-                      </span>
-                    ) : (
-                      <button
-                        className="btn btn-success"
-                        data-testid={`apply-button-${job.id}`}
-                        onClick={() => handleOpenApply(job)}
-                      >
-                        Apply Now
-                      </button>
-                    )
-                  )}
+  appliedStage ? (
+    <span className="applied-check" title={`Applied — ${appliedStage}`}>
+      ✓ Applied
+    </span>
+  ) : job.status === 'CLOSED' ? (
+    <span className="closed-check" title="This role is closed">
+      Closed
+    </span>
+  ) : (
+    <button
+      className="btn btn-success"
+      data-testid={`apply-button-${job.id}`}
+      onClick={() => handleOpenApply(job)}
+    >
+      Apply Now
+    </button>
+  )
+)}
                 </div>
               </div>
             );

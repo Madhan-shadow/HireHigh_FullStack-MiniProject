@@ -7,7 +7,16 @@
 .auth-form-panel {
   position: relative;
 }
-
+.closed-check {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--red-soft);
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 700;
+}
 .auth-form-panel::before {
   content: 'HH';
   position: absolute;
