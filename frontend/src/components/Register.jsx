@@ -5,7 +5,7 @@ import { register, clearAuthError } from '../store/slices/authSlice';
 import AuthRail from './common/AuthRail';
 import AuthQuote from './common/AuthQuote';
 
-const ROLES = ['CANDIDATE', 'RECRUITER',  'HIRING MANAGER', 'TA_LEAD'];
+const ROLES = ['CANDIDATE', 'RECRUITER',   'TA_LEAD'];
 
 const Register = () => {
   const dispatch = useDispatch();
